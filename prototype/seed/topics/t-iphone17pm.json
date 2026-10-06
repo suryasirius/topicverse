@@ -1,0 +1,35 @@
+{
+ "answer": {
+  "at": 1791315800000,
+  "by": "seed-arjun",
+  "commentCount": 7,
+  "points": [
+   "Battery is the biggest upgrade over the 15 Pro",
+   "Samsung S26 Ultra still wins on night zoom, according to a community battle",
+   "Worth it mainly if you keep the phone for several years"
+  ],
+  "sources": [
+   "c-ip1",
+   "c-ip2",
+   "c-ip4a",
+   "t-ip-vs-s26-cam"
+  ],
+  "text": "Most owners rate it highly (about 4.3/5) for battery life, video and display, but the price and weight are the common complaints. Early reviews were near-perfect; recent ones mention battery drain after an update."
+ },
+ "authorId": "seed-arjun",
+ "category": "Tech",
+ "createdAt": 1782675270305,
+ "desc": "Apple's biggest flagship this year. Is the upgrade worth it from a 15 or 16 Pro? #iphone17",
+ "kind": "topic",
+ "location": "",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 41,
+ "tags": [
+  "iphone17",
+  "apple",
+  "smartphones"
+ ],
+ "title": "iPhone 17 Pro Max"
+}

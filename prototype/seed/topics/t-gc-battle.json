@@ -1,0 +1,17 @@
+{
+ "authorId": "seed-lakshmi",
+ "category": "Sports",
+ "createdAt": 1791280144556,
+ "desc": "",
+ "groupId": "g-sunday-cricket",
+ "kind": "battle",
+ "location": "Arakkonam",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 0,
+ "tags": [
+  "sundaycricket"
+ ],
+ "title": "Who wins this Sunday's match?"
+}

@@ -1,0 +1,1703 @@
+<title>TopicTalk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Schibsted+Grotesk:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap">
+<style>
+/* Layout: sticky top bar, centred 1120px column; topic page = discussion column + graph rail; phone = bottom tab bar */
+:root{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#12201B; --muted:#66756F; --line:#E1E8E4;
+  --brand:#1F9D63; --brand-deep:#0E7045; --brand-soft:#E3F3EA; --on-brand:#FFFFFF;
+  --chip:#EEF2F0; --star:#B87A0B; --danger:#B4412F; --shadow:0 1px 2px rgba(18,32,27,.06),0 4px 14px rgba(18,32,27,.05);
+  --tile-l:90%; --tile-ink:26%;
+  --f-display:"Bricolage Grotesque","Noto Sans Tamil","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Schibsted Grotesk","Noto Sans Tamil","Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B1110; --surface:#121A18; --ink:#E6EEEA; --muted:#93A39C; --line:#22302C;
+  --brand:#34B57A; --brand-deep:#7FD3A8; --brand-soft:#15302A; --on-brand:#06120D;
+  --chip:#1A2421; --star:#E2A93B; --danger:#E58A76; --shadow:0 1px 2px rgba(0,0,0,.4);
+  --tile-l:22%; --tile-ink:82%; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0B1110; --surface:#121A18; --ink:#E6EEEA; --muted:#93A39C; --line:#22302C;
+  --brand:#34B57A; --brand-deep:#7FD3A8; --brand-soft:#15302A; --on-brand:#06120D;
+  --chip:#1A2421; --star:#E2A93B; --danger:#E58A76; --shadow:0 1px 2px rgba(0,0,0,.4);
+  --tile-l:22%; --tile-ink:82%; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.muted{color:var(--muted)}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;height:62px}
+.logo{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-weight:800;font-size:21px;letter-spacing:-.02em;flex-shrink:0}
+.logo b{color:var(--brand)}
+.logo svg{width:28px;height:28px}
+.search{position:relative;flex:1;min-width:0;max-width:520px;margin-inline:auto}
+.search input{width:100%;height:42px;border-radius:999px;border:1px solid var(--line);background:var(--surface);padding:0 16px 0 40px;outline:none}
+.search input:focus{border-color:var(--brand)}
+.search .ico{position:absolute;left:14px;top:12px;width:18px;height:18px;color:var(--muted)}
+.dd{position:absolute;top:48px;left:0;right:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:6px;max-height:70vh;overflow:auto}
+.dd .grp{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:8px 10px 4px}
+.dd a{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:10px}
+.dd a:hover,.dd a.hl{background:var(--chip)}
+.navr{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.ibtn{position:relative;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:999px;border:0;background:transparent;color:var(--ink)}
+.ibtn:hover{background:var(--chip)}
+.ibtn svg{width:21px;height:21px}
+.dot{position:absolute;top:4px;right:3px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--brand);color:var(--on-brand);font-size:11px;font-weight:700;display:grid;place-items:center}
+.btn{display:inline-flex;align-items:center;gap:7px;height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.btn.pri:hover{background:var(--brand-deep);border-color:var(--brand-deep)}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.navlink{font-weight:600;padding:8px 12px;border-radius:999px}
+.navlink:hover{background:var(--chip)}
+
+/* avatars & tiles */
+.av{flex-shrink:0;width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;font-size:12px;font-weight:700;background:hsl(var(--h,150) 40% var(--tile-l));color:hsl(var(--h,150) 50% var(--tile-ink));object-fit:cover}
+.av.lg{width:72px;height:72px;font-size:24px}
+.av.xs{width:22px;height:22px;font-size:10px}
+.tile{flex-shrink:0;width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:15px;background:hsl(var(--h) 42% var(--tile-l));color:hsl(var(--h) 55% var(--tile-ink))}
+
+main{padding-block:22px 110px}
+.banner{margin-top:12px;padding:10px 14px;border-radius:12px;background:var(--brand-soft);font-size:14px}
+
+/* home */
+.hero{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:18px;padding:12px 0 26px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.hero h1{font-size:clamp(32px,5.4vw,54px);font-weight:800;letter-spacing:-.03em;max-width:13ch}
+.hero h1 em{font-style:normal;color:var(--brand)}
+.hero p{margin:10px 0 0;color:var(--muted);max-width:46ch;font-size:16px}
+.hero .ctas{display:flex;gap:10px;flex-wrap:wrap}
+.sec{margin-bottom:34px}
+.sech{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.sech h2{font-size:22px;font-weight:700}
+.sech a{color:var(--brand-deep);font-weight:600;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px}
+@media(max-width:880px){.cols{grid-template-columns:1fr}}
+
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);transition:border-color .15s,transform .15s}
+.tcard:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.tcard>a{display:flex;gap:14px;padding:16px;height:100%}
+.tcard .body{min-width:0;display:flex;flex-direction:column;gap:6px}
+.tcard h3{font-size:17px;font-weight:700}
+.meta{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.stats{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;font-variant-numeric:tabular-nums}
+.rating{color:var(--star);font-weight:700}
+.hot{color:var(--brand-deep);font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:var(--chip);font-size:12.5px;font-weight:500;color:var(--muted);border:0}
+a.chip:hover,button.chip:hover{color:var(--ink)}
+.chip.on{background:var(--ink);color:var(--bg)}
+.brmark{color:var(--brand-deep);font-weight:600}
+
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.list>*{display:flex;gap:12px;padding:13px 16px;border-top:1px solid var(--line)}
+.list>*:first-child{border-top:0}
+.list .txt{min-width:0;flex:1}
+.list .q{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* tree */
+.tree{list-style:none;margin:0;padding:0;font-size:14px}
+.tree ul{list-style:none;margin:0;padding-left:16px;border-left:1.5px solid var(--line);margin-left:7px}
+.tree li{position:relative;padding:3px 0}
+.tree ul>li::before{content:"";position:absolute;left:-16px;top:15px;width:12px;border-top:1.5px solid var(--line)}
+.tree a{display:inline-block;padding:3px 8px;border-radius:8px}
+.tree a:hover{background:var(--chip)}
+.tree a.cur{background:var(--brand-soft);color:var(--brand-deep);font-weight:700}
+.tree .n{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+
+/* topic page */
+.tp{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
+@media(max-width:900px){.tp{grid-template-columns:1fr}}
+.rail{display:flex;flex-direction:column;gap:16px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 80px)}
+@media(max-width:900px){.rail{position:static}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.panel h3{font-size:15px;margin-bottom:10px}
+.lineage{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted);margin-bottom:12px}
+.lineage a{color:var(--brand-deep);font-weight:600}
+.thead{display:flex;gap:16px;align-items:flex-start}
+.thead h1{font-size:clamp(26px,4vw,36px);font-weight:800;letter-spacing:-.02em}
+.thead .tile{width:60px;height:60px;font-size:18px;border-radius:14px}
+.origin{margin-top:14px;padding:12px 14px;border-radius:12px;background:var(--chip);font-size:14px}
+.origin q{font-style:italic}
+.desc{margin:14px 0 0;max-width:68ch}
+.tbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.verdict{display:flex;gap:18px;align-items:center}
+.big{font-family:var(--f-display);font-size:42px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.bars{display:grid;gap:4px;font-size:12px;color:var(--muted);margin-top:12px;font-variant-numeric:tabular-nums}
+.bars div{display:grid;grid-template-columns:22px 1fr 34px;gap:8px;align-items:center}
+.bars span.b{height:7px;border-radius:9px;background:var(--chip);overflow:hidden}
+.bars span.b i{display:block;height:100%;background:var(--star)}
+.pc{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pc .chip.p{color:var(--brand-deep)}
+.pc .chip.c{color:var(--danger)}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:28px 0 18px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:10px 14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--brand)}
+
+.composer{display:flex;gap:10px;align-items:flex-start;margin-bottom:20px}
+.composer .box{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+textarea,input.f,select.f{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;outline:none;resize:vertical}
+textarea:focus,input.f:focus,select.f:focus{border-color:var(--brand)}
+.hint{font-size:12px;color:var(--muted);align-self:flex-start}
+
+.cmt{display:flex;gap:10px;padding-top:14px}
+.cmt .main{min-width:0;flex:1}
+.cmt .head{font-size:13.5px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cmt .head a{font-weight:700}
+.op{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:1px 6px;border-radius:6px;background:var(--brand-soft);color:var(--brand-deep)}
+.sample{font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:6px;background:var(--chip);color:var(--muted)}
+.ctext{margin-top:3px;white-space:pre-wrap;overflow-wrap:anywhere}
+.ctext a.tag,.ctext a.mention{color:var(--brand-deep);font-weight:600}
+.actions{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;margin-left:-8px}
+.act{border:0;background:none;padding:5px 8px;border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);display:inline-flex;gap:5px;align-items:center}
+.act:hover{background:var(--chip);color:var(--ink)}
+.act.on{color:var(--brand-deep)}
+.act.br{color:var(--brand-deep)}
+.act svg{width:15px;height:15px}
+.kids{border-left:2px solid var(--line);padding-left:14px;margin-left:4px}
+.bout{display:inline-flex;gap:6px;align-items:center;margin-top:8px;padding:6px 10px;border-radius:10px;border:1px dashed color-mix(in srgb,var(--brand) 55%,var(--line));font-size:13px;color:var(--brand-deep);font-weight:600}
+.flash{animation:fl 1.6s ease}
+@keyframes fl{0%,40%{background:var(--brand-soft)}100%{background:transparent}}
+
+.rv{padding:16px 0;border-top:1px solid var(--line)}
+.rv:first-child{border-top:0}
+.stars{color:var(--star);letter-spacing:1px;font-size:14px}
+.rv h4{margin:6px 0 2px;font-size:16px}
+.pros{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:13.5px}
+@media(max-width:520px){.pros{grid-template-columns:1fr}}
+.pros b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.pros .p b{color:var(--brand-deep)} .pros .c b{color:var(--danger)}
+.starpick{display:flex;gap:4px}
+.starpick button{border:0;background:none;font-size:26px;line-height:1;color:var(--line);padding:2px}
+.starpick button.on{color:var(--star)}
+.form{display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.row2{grid-template-columns:1fr}}
+label.l{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;display:grid;gap:5px}
+
+.empty{padding:28px 18px;text-align:center;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+.empty b{display:block;color:var(--ink);font-family:var(--f-display);font-size:18px;margin-bottom:4px}
+
+/* modal */
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(8,14,12,.45);display:grid;place-items:center;padding:16px}
+.modal{width:min(560px,100%);max-height:calc(100dvh - 32px);overflow:auto;background:var(--surface);border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25);display:grid;gap:12px}
+.modal h2{font-size:22px}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.choice:hover:not(:disabled){border-color:var(--brand)}
+.choice b{font-family:var(--f-display);font-size:16px}
+.choice span{font-size:12.5px;color:var(--muted)}
+.choice:disabled{opacity:.55;cursor:default}
+.seg{display:inline-flex;background:var(--chip);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;font-weight:600;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:calc(100% - 32px)}
+
+/* profile */
+.phead{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.phead h1{font-size:30px}
+.kpis{display:flex;flex-wrap:wrap;gap:22px;margin-top:18px}
+.kpis div{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.kpis b{display:block;font-family:var(--f-display);font-size:24px;color:var(--ink);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+.lvl{display:inline-flex;padding:3px 10px;border-radius:999px;border:1px solid var(--line);font-size:12.5px;font-weight:600}
+
+/* bottom nav */
+.bnav{display:none}
+@media(max-width:720px){
+  .navr .hide-m{display:none}
+  .top .wrap{gap:10px}
+  .logo span{display:none}
+  .bnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+  .bnav a,.bnav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:600;color:var(--muted);border:0;background:none;padding:4px 0;position:relative}
+  .bnav .on{color:var(--brand-deep)}
+  .bnav svg{width:22px;height:22px}
+  .bnav .plus{width:46px;height:46px;border-radius:50%;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;margin-top:-18px;box-shadow:var(--shadow)}
+  .bnav .dot{top:0;right:calc(50% - 22px)}
+}
+footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* v2: battles, predictions, analysis, cities, share cards */
+.battle{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:12px}
+.battle.inline{margin-top:10px;padding:14px;background:var(--bg)}
+.bhead{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bhead .live{color:var(--brand-deep)}
+.bhead .live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--brand);margin-right:6px;vertical-align:1px;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.bq{font-family:var(--f-display);font-size:19px;font-weight:700;line-height:1.2}
+.sides{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+.vs{align-self:center;font-family:var(--f-display);font-weight:800;color:var(--muted);font-size:14px}
+.side{position:relative;overflow:hidden;text-align:left;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);padding:12px;min-height:64px;display:flex;flex-direction:column;justify-content:space-between;gap:4px}
+.side:hover:not(:disabled){border-color:var(--brand)}
+.side:disabled{cursor:default}
+.side .fill{position:absolute;inset:0 auto 0 0;background:var(--brand-soft);z-index:0;transition:width .5s}
+.side>*:not(.fill){position:relative;z-index:1}
+.side b{font-size:15px;line-height:1.25;overflow-wrap:anywhere}
+.side .pct{font-family:var(--f-display);font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+.side.mine{border-color:var(--brand)}
+.side.win{border-color:var(--star)}
+.side .you{font-size:11px;font-weight:700;color:var(--brand-deep);letter-spacing:.04em;text-transform:uppercase}
+.bfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.winner{font-weight:700;color:var(--ink)}
+.pred .sides{grid-template-columns:1fr 1fr}
+.called{padding:8px 12px;border-radius:10px;font-weight:700;font-size:14px}
+.called.ok{background:var(--brand-soft);color:var(--brand-deep)}
+.called.no{background:var(--chip);color:var(--muted)}
+.ai{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:18px;display:grid;gap:10px}
+.ai h4{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ai ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.deb{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+@media(max-width:520px){.deb{grid-template-columns:1fr}}
+.deb div{background:var(--bg);border-radius:10px;padding:10px;font-size:14px}
+.sortbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.otherchip{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:6px;background:color-mix(in srgb,var(--star) 18%,transparent);color:var(--star)}
+.spark{width:100%;height:56px;margin-top:12px;display:block}
+.trend{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.otherside{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13.5px}
+.otherside q{display:block;margin-top:4px;font-style:italic}
+.botd{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:grid;gap:8px}
+.botd .from{font-size:13px;color:var(--muted)}
+.botd q{font-style:italic;color:var(--muted);font-size:14px}
+.botd .to{font-family:var(--f-display);font-size:19px;font-weight:700;display:flex;gap:8px;align-items:baseline}
+.cityrow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.citychip{flex-shrink:0;display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);min-width:130px}
+.citychip b{font-family:var(--f-display);font-size:16px}
+.citychip span{font-size:12px;color:var(--muted)}
+.citychip.on{border-color:var(--brand);background:var(--brand-soft)}
+.lang{border:1px solid var(--line);background:var(--surface);border-radius:999px;height:32px;padding:0 10px;font-size:12.5px;font-weight:700}
+.cardimg{width:100%;border-radius:12px;border:1px solid var(--line);display:block}
+.grid.b{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.answer{background:var(--surface);border:1.5px solid color-mix(in srgb,var(--brand) 40%,var(--line));border-radius:var(--r);padding:16px 18px;display:grid;gap:10px;margin-top:14px}
+.answer.slim{border-style:dashed}
+.ahead{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand-deep)}
+.atext{font-size:17px;line-height:1.5;max-width:70ch}
+.answer ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.srcs{display:grid;gap:4px;font-size:13.5px}
+.srcs summary{cursor:pointer;color:var(--brand-deep);font-weight:600;font-size:13px}
+.src{display:block;padding:6px 10px;border-radius:8px;background:var(--bg);color:var(--muted)}
+.src b{color:var(--ink)}
+.src:hover{color:var(--ink)}
+.afoot{font-size:12.5px;color:var(--muted)}
+.dd a{flex-wrap:wrap}
+.gcard{display:flex;gap:12px;align-items:center;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.gcard:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.gcard b{font-family:var(--f-display);font-size:16px}
+.gtag{color:var(--brand-deep);font-weight:600}
+.gbanner{margin-top:14px;padding:10px 14px;border-radius:12px;background:var(--brand-soft);font-size:14px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.gbanner a{font-weight:700;color:var(--brand-deep)}
+.code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:26px;font-weight:700;letter-spacing:.18em;padding:10px 14px;border-radius:12px;background:var(--bg);text-align:center;user-select:all}
+@media(max-width:720px){.bnav a,.bnav button{font-size:10.5px}}
+.duelmini{display:grid;gap:8px;padding:14px;margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.duelmini:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.dm-q{font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.3}
+.dm-p{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}
+.dplayers{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin:18px 0}
+@media(max-width:560px){.dplayers{grid-template-columns:1fr}.dplayers .vs{justify-self:start}}
+.dplayer{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0}
+.dplayer.win{border-color:var(--star)}
+.for{color:var(--brand-deep);font-weight:700}.against{color:var(--danger);font-weight:700}
+.dbox{padding:14px 16px;border-radius:var(--r);background:var(--brand-soft);font-size:14.5px}
+.dbox.muted{background:var(--chip);color:var(--muted)}
+.dbox.result{background:color-mix(in srgb,var(--star) 16%,var(--surface));font-weight:700;font-size:16px}
+.dbox textarea{background:var(--surface)}
+.drounds{display:grid;gap:18px;margin-top:22px}
+.dlabel{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.dpair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.dpair{grid-template-columns:1fr}}
+.dturn{padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);min-width:0}
+.dturn.empty{color:var(--muted);font-size:13.5px;border-style:dashed}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#home" aria-label="TopicTalk home">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 5h20a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H14l-6 5v-5H6a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3z" fill="var(--brand)"/><path d="M13 10l-1.5 9M19 10l-1.5 9M10 13h11M9.5 16.5h11" stroke="var(--on-brand)" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>Topic<b>Talk</b></span>
+    </a>
+    <div class="search">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Ask anything… which UPI app is most reliable?" autocomplete="off" aria-label="Search">
+      <div class="dd" id="dd" hidden></div>
+    </div>
+    <div class="navr">
+      <button class="lang" id="langBtn" data-act="lang" aria-label="Switch language">தமிழ்</button>
+      <a class="navlink hide-m" href="#explore" data-l="Explore">Explore</a>
+      <a class="navlink hide-m" href="#groups" data-l="Groups">Groups</a>
+      <a class="ibtn hide-m" href="#alerts" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="dot" id="bell" hidden></span></a>
+      <button class="btn pri hide-m" data-act="create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg><span data-l="Create">Create</span></button>
+      <a id="meLink" href="#me" aria-label="Your profile"></a>
+    </div>
+  </div>
+</header>
+<div class="wrap" id="banner"></div>
+<main class="wrap" id="view"></main>
+<footer class="wrap">TopicTalk prototype · Topics, reviews, discussion and branching. Battles, predictions, branching and share cards are live. Polls, competitions and maps come next.</footer>
+
+<nav class="bnav" id="bnav">
+  <a href="#home" data-r="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span data-l="Home">Home</span></a>
+  <a href="#explore" data-r="explore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg><span data-l="Explore">Explore</span></a>
+  <a href="#groups" data-r="groups"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9.5" r="2.5"/><path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M15 15.3c2.6-.5 5 .8 6 3.7"/></svg><span data-l="Groups">Groups</span></a>
+  <button data-act="create" aria-label="Create"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></span></button>
+  <a href="#alerts" data-r="alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="dot" id="bell2" hidden></span><span data-l="Alerts">Alerts</span></a>
+  <a href="#me" data-r="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span data-l="Profile">Profile</span></a>
+</nav>
+<div id="modal"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath();};}
+(() => {
+const CATS = ["Tech","Food","Movies","Travel","Apps","Shopping","Sports","Gaming","Finance","Education","Health","Cars","Bikes","Local","Services","Entertainment","Lifestyle","Other"];
+const S = { topics:new Map(), comments:new Map(), reviews:new Map(), likes:new Map(), follows:new Map(), handles:new Map(),
+  battles:new Map(), bvotes:new Map(), pvotes:new Map(), groups:new Map(), gmembers:new Map(), duels:new Map(), dvotes:new Map(), myGroups:new Set(), notifs:[], me:null, isOwner:false, readOnly:false, ready:{}, dbOk:null };
+const UI = { replyOpen:new Set(), tab:"discussion", rvOpen:false, rvRating:0, exCat:"All", exSort:"trending", ptab:"topics", query:"", lastRoute:"", lastPost:0,
+  csort:"top", ai:{}, aiBusy:{}, ans:{}, ansBusy:null, dReady:{}, city:null, lang:"en" };
+let db=null, user=null, sampleFn=null, downloads=null;
+const R = { topics:new Map(), comments:new Map(), reviews:new Map(), battles:new Map(), duels:new Map() };  // raw, before group privacy filtering
+const pcache = {};
+const $ = s => document.querySelector(s);
+const view = $("#view");
+try{ UI.city=localStorage.getItem("tt-city"); UI.lang=localStorage.getItem("tt-lang")||"en"; }catch{}
+
+/* ---------- language ---------- */
+const TA = {
+  "Anything can become a":"எதுவும் ஒரு", "topic.":"தலைப்பாகலாம்.",
+  "Review it. Talk about it. When a comment deserves its own conversation, branch it into a new topic.":"விமர்சிக்கலாம். பேசலாம். ஒரு கருத்து தனி விவாதத்துக்கு தகுதியானால், அதை புதிய தலைப்பாக்கலாம்.",
+  "Start a topic":"தலைப்பைத் தொடங்கு","Ask the community":"சமூகத்திடம் கேள்","Explore":"ஆராய்","Trending now":"இப்போது பிரபலம்","See all":"அனைத்தும்",
+  "Live battles":"நேரடிப் போட்டிகள்","Predictions":"கணிப்புகள்","Hot discussions":"சூடான விவாதங்கள்","New topics":"புதிய தலைப்புகள்","Popular hashtags":"பிரபல ஹேஷ்டேக்குகள்",
+  "Branch of the day":"இன்றைய கிளை","How a topic branches":"ஒரு தலைப்பு எப்படி கிளைக்கிறது","Your city":"உங்கள் ஊர்",
+  "Post":"பதிவிடு","Reply":"பதில்","Branch into topic":"புதிய தலைப்பாக்கு","Settle it":"தீர்த்து வைப்போம்","Challenge to a duel":"விவாதத்துக்கு அழை","Debates to judge":"தீர்ப்பு சொல்ல வேண்டிய விவாதங்கள்","Follow":"பின்தொடர்","Following":"பின்தொடர்கிறீர்கள்",
+  "Review":"விமர்சனம்","Write a review":"விமர்சனம் எழுது","Discussion":"விவாதம்","Reviews":"விமர்சனங்கள்","Community verdict":"சமூகத் தீர்ப்பு","Share card":"பகிர்வு அட்டை",
+  "Catch me up":"சுருக்கமாகச் சொல்","Top":"சிறந்தவை","New":"புதியவை","Other side first":"மறுபக்கம் முதலில்","Topic graph":"தலைப்பு வரைபடம்",
+  "Home":"முகப்பு","Groups":"குழுக்கள்","Alerts":"அறிவிப்புகள்","Profile":"சுயவிவரம்","Create":"உருவாக்கு","Vote":"வாக்களி","Yes":"ஆம்","No":"இல்லை",
+  "Tamil, Tanglish or English. All welcome.":"தமிழ், தங்கிலீஷ், ஆங்கிலம் — எதுவும் சரி."
+};
+const L = s => UI.lang==="ta" ? (TA[s]||s) : s;
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const enc = s => encodeURIComponent(s);
+const rid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const hueOf = s => { let h=0; for (const c of String(s)) h=(h*31+c.charCodeAt(0))%360; return h; };
+const catHue = c => ({Tech:205,Food:28,Movies:330,Travel:185,Apps:265,Shopping:45,Sports:120,Local:150,Services:95,Finance:60,Gaming:290,Entertainment:350}[c] ?? hueOf(c));
+const abbr = t => t.kind==="question"?"Q?":t.kind==="battle"?"VS":t.kind==="prediction"?"P?":(t.category||"?").slice(0,2);
+function ago(t){ const s=(Date.now()-t)/1000; if(s<60) return "just now"; if(s<3600) return Math.floor(s/60)+"m"; if(s<86400) return Math.floor(s/3600)+"h"; if(s<86400*30) return Math.floor(s/86400)+"d"; return new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}); }
+function left(ms){ const s=ms/1000; if(s<3600) return Math.max(1,Math.ceil(s/60))+"m"; if(s<86400) return Math.floor(s/3600)+"h "+Math.floor(s%3600/60)+"m"; return Math.floor(s/86400)+"d "+Math.floor(s%86400/3600)+"h"; }
+const fmtDate = t => new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+const isSeed = id => String(id).startsWith("seed-");
+const handleOf = id => S.handles.get(id)?.handle;
+function nameOf(id){ return handleOf(id) || pcache[id]?.name || (id===S.me ? "you" : "someone"); }
+function handleToId(h){ h=h.toLowerCase(); for (const [id,d] of S.handles) if ((d.handle||"").toLowerCase()===h) return id; return null; }
+function avatar(id, cls=""){ const n=nameOf(id); const p=pcache[id];
+  if (!isSeed(id) && p?.avatarUrl && !handleOf(id)) return `<img class="av ${cls}" src="${esc(p.avatarUrl)}" alt="">`;
+  return `<span class="av ${cls}" style="--h:${hueOf(id)}" aria-hidden="true">${esc(n.replace(/[^A-Za-z0-9]/g,"").slice(0,2).toUpperCase()||"?")}</span>`; }
+function who(id){ return `<a href="#u-${esc(id)}">${esc(nameOf(id))}</a>${isSeed(id)?' <span class="sample" title="Sample account">sample</span>':''}`; }
+const TAGRE = /(^|[\s(])#([\p{L}\p{M}\p{N}_]{2,40})/gu;
+function rich(text){
+  return esc(text)
+    .replace(TAGRE,(m,p,t)=>`${p}<a class="tag" href="#tag-${enc(t.toLowerCase())}">#${t}</a>`)
+    .replace(/(^|[\s(])@([A-Za-z0-9_]{2,24})/g,(m,p,h)=>{ const id=handleToId(h); return id?`${p}<a class="mention" href="#u-${esc(id)}">@${h}</a>`:`${p}@${h}`; });
+}
+const tagsIn = t => [...String(t).matchAll(TAGRE)].map(m=>m[2].toLowerCase());
+const mentionsIn = t => [...String(t).matchAll(/(?:^|[\s(])@([A-Za-z0-9_]{2,24})/g)].map(m=>handleToId(m[1])).filter(Boolean);
+function parseTags(s){ return [...new Set(String(s).split(/[\s,#]+/u).map(x=>x.trim().toLowerCase()).filter(x=>/^[\p{L}\p{M}\p{N}_]{2,40}$/u.test(x)))].slice(0,8); }
+const slugCity = s => String(s||"").toLowerCase().trim().replace(/[^\p{L}\p{M}\p{N}]+/gu,"-").replace(/^-|-$/g,"");
+const stars = n => "★★★★★".slice(0,Math.round(n)) + "☆☆☆☆☆".slice(0,5-Math.round(n));
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>t.hidden=true,3400); }
+const ICON = {
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 11l5-6 5 6M12 5v14"/></svg>',
+  reply:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v4"/></svg>',
+  branch:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-11 6"/></svg>',
+  duel:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20l8-8M14.5 4.5L20 4l-.5 5.5-7.5 7.5-5-5zM20 20l-4-4M4 4l5 5"/></svg>',
+  vs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l7 7M4 4v4M4 4h4M20 4l-7 7M20 4v4M20 4h-4M8 16l-4 4M16 16l4 4"/></svg>',
+  share:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg>'
+};
+
+/* ---------- derived index ---------- */
+let IX;
+function canSee(t){ if(!t.groupId) return true; const g=S.groups.get(t.groupId); if(!g) return false; return g.visibility==="public"||t.madePublic||S.myGroups.has(g.id); }
+function buildIndex(){
+  S.myGroups=new Set([...S.gmembers.values()].filter(m=>m.userId===S.me&&S.me).map(m=>m.groupId));
+  S.topics=new Map([...R.topics].filter(([k,t])=>canSee(t)));
+  S.comments=new Map([...R.comments].filter(([k,c])=>S.topics.has(c.topicId)));
+  S.reviews=new Map([...R.reviews].filter(([k,r])=>S.topics.has(r.topicId)));
+  S.battles=new Map([...R.battles].filter(([k,b])=>S.topics.has(b.topicId)));
+  S.duels=new Map([...R.duels].filter(([k,d])=>S.topics.has(d.topicId)));
+  const ix = { cByTopic:new Map(), cKids:new Map(), rByTopic:new Map(), likeN:new Map(), myLikes:new Set(), fByTopic:new Map(), myFollows:new Set(),
+    tKids:new Map(), tByOrigin:new Map(), stats:new Map(), trend:new Map(), bByTopic:new Map(), bByComment:new Map(), bv:new Map(), myB:new Map(), pv:new Map(), myP:new Map(), pVoters:new Map(), gMem:new Map(), tByGroup:new Map(), dByTopic:new Map(), dByComment:new Map(), dv:new Map(), myDV:new Map() };
+  const push=(m,k,v)=>{ if(!m.has(k)) m.set(k,[]); m.get(k).push(v); };
+  for (const c of S.comments.values()){ push(ix.cByTopic,c.topicId,c); if(c.parentId) push(ix.cKids,c.parentId,c); }
+  for (const r of S.reviews.values()) push(ix.rByTopic,r.topicId,r);
+  for (const m of S.gmembers.values()) push(ix.gMem,m.groupId,m);
+  for (const d of S.duels.values()){ push(ix.dByTopic,d.topicId,d); if(d.commentId) push(ix.dByComment,d.commentId,d); ix.dv.set(d.id,{c:d.seedC||0,o:d.seedO||0}); }
+  for (const v of S.dvotes.values()){ const x=ix.dv.get(v.duelId); if(x) x[v.side==="o"?"o":"c"]++; if(v.userId===S.me) ix.myDV.set(v.duelId,v.side); }
+  for (const t of S.topics.values()) if(t.groupId) push(ix.tByGroup,t.groupId,t);
+  for (const l of S.likes.values()){ ix.likeN.set(l.targetId,(ix.likeN.get(l.targetId)||0)+1); if(l.userId===S.me) ix.myLikes.add(l.targetId); }
+  for (const f of S.follows.values()){ push(ix.fByTopic,f.topicId,f.userId); if(f.userId===S.me) ix.myFollows.add(f.topicId); }
+  for (const t of S.topics.values()){ if(t.parentId) push(ix.tKids,t.parentId,t); if(t.originCommentId) push(ix.tByOrigin,t.originCommentId,t); }
+  for (const b of S.battles.values()){ push(ix.bByTopic,b.topicId,b); if(b.commentId) push(ix.bByComment,b.commentId,b); ix.bv.set(b.id,{a:b.seedA||0,b:b.seedB||0,recent:0}); }
+  const now=Date.now(), decay = t => Math.pow(.5,(now-(t||now))/3.6e6/36);
+  for (const v of S.bvotes.values()){ const x=ix.bv.get(v.battleId); if(x){ x[v.side==="b"?"b":"a"]++; x.recent+=decay(v.createdAt); } if(v.userId===S.me) ix.myB.set(v.battleId,v.side); }
+  for (const t of S.topics.values()) if(t.kind==="prediction") ix.pv.set(t.id,{yes:t.seedYes||0,no:t.seedNo||0});
+  for (const v of S.pvotes.values()){ const x=ix.pv.get(v.topicId); if(x) x[v.side==="no"?"no":"yes"]++; if(v.userId===S.me) ix.myP.set(v.topicId,v.side); push(ix.pVoters,v.topicId,v); }
+  IX = ix;
+  for (const t of S.topics.values()){
+    const rs = ix.rByTopic.get(t.id)||[], cs = ix.cByTopic.get(t.id)||[], kids = ix.tKids.get(t.id)||[], bs=ix.bByTopic.get(t.id)||[];
+    const avg = rs.length ? rs.reduce((a,r)=>a+r.rating,0)/rs.length : 0;
+    const followers = (ix.fByTopic.get(t.id)||[]).length + (t.seedFollowers||0);
+    let score = 3*decay(t.createdAt);
+    cs.forEach(c=>score += 2*decay(c.createdAt) + .25*likes(c));
+    rs.forEach(r=>score += 3*decay(r.createdAt) + .25*likes(r));
+    kids.forEach(k=>score += 4*decay(k.createdAt));
+    bs.forEach(b=>{ const x=ix.bv.get(b.id); score += 3*decay(b.createdAt) + (b.endsAt>now?2:0) + 2*x.recent + .01*(x.a+x.b); });
+    if(t.kind==="prediction"){ const p=ix.pv.get(t.id); score += .005*(p.yes+p.no); }
+    score += .3*followers;
+    ix.stats.set(t.id,{ reviews:rs.length, avg, comments:cs.length, branches:kids.length, followers });
+    ix.trend.set(t.id, score);
+  }
+}
+const likes = d => (IX.likeN.get(d.id)||0) + (d.seedLikes||0);
+const stat = id => IX.stats.get(id) || {reviews:0,avg:0,comments:0,branches:0,followers:0};
+const byTrend = () => [...S.topics.values()].sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id));
+function rootOf(t){ const seen=new Set(); while(t.parentId && S.topics.get(t.parentId) && !seen.has(t.id)){ seen.add(t.id); t=S.topics.get(t.parentId); } return t; }
+function descCount(id, seen=new Set()){ if(seen.has(id)) return 0; seen.add(id); return (IX.tKids.get(id)||[]).reduce((a,k)=>a+1+descCount(k.id,seen),0); }
+function cities(){ const m=new Map(); for(const t of S.topics.values()){ if(!t.location) continue; const s=slugCity(t.location); if(!m.has(s)) m.set(s,{slug:s,name:t.location,n:0,score:0}); const c=m.get(s); c.n++; c.score+=IX.trend.get(t.id); } return [...m.values()].sort((a,b)=>b.score-a.score); }
+
+const LOCK='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="vertical-align:-1px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const isAdmin = gid => !!S.me && (S.gmembers.get(gid+"__"+S.me)?.role==="admin");
+const memberOf = gid => S.myGroups.has(gid);
+function groupTag(t){ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private"&&!t.madePublic; return `<span class="gtag">${priv?LOCK+" ":""}${t.madePublic?"from ":"in "}${esc(g.name)}</span>`; }
+function groupOptions(sel){ const mine=[...S.groups.values()].filter(g=>memberOf(g.id)).sort((a,b)=>a.name.localeCompare(b.name));
+  return `<option value="">Everyone (public)</option>${mine.map(g=>`<option value="${esc(g.id)}" ${g.id===sel?"selected":""}>${g.visibility==="private"?"🔒 ":""}${esc(g.name)}</option>`).join("")}`; }
+function curGroup(){ const r=parseRoute(); if(r.startsWith("g-")) return r.slice(2); if(r.startsWith("t-")){ const t=S.topics.get(r.slice(2).split("~")[0]); return t?.groupId&&!t.madePublic?t.groupId:""; } return ""; }
+const newCode = () => Array.from({length:6},()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
+function groupCard(g){
+  const ms=(IX.gMem.get(g.id)||[]).length, ts=(IX.tByGroup.get(g.id)||[]).length;
+  return `<a class="gcard" href="#g-${esc(g.id)}"><div class="tile" style="--h:${hueOf(g.name)};width:44px;height:44px;font-size:15px">${esc(g.name.replace(/[^A-Za-z0-9\p{L}]/gu,"").slice(0,2).toUpperCase())}</div>
+    <div style="min-width:0"><b>${esc(g.name)}</b><div class="meta"><span>${g.visibility==="private"?LOCK+" Private":"Public"}</span><span>${ms} member${ms===1?"":"s"}</span><span>${ts} topic${ts===1?"":"s"}</span>${g.city?`<span>${esc(g.city)}</span>`:""}${memberOf(g.id)?`<span class="brmark">Joined</span>`:""}</div></div></a>`;
+}
+
+/* ---------- debate duels ---------- */
+const DH=3.6e6, TURN_MS=24*DH, PENDING_MS=48*DH, VOTE_MS=48*DH, MIN_VOTES=5, MAX_WORDS=150, MIN_WORDS=10;
+const ROUND_NAMES=["Opening","Rebuttal","Final word"];
+const wordCount = t => (String(t).trim().match(/\S+/g)||[]).length;
+function duelState(d){
+  const now=Date.now(), r=d.rounds||[];
+  if(d.declined) return {phase:"declined"};
+  if(!d.acceptedAt) return now>d.createdAt+PENDING_MS ? {phase:"expired"} : {phase:"pending", deadline:d.createdAt+PENDING_MS};
+  if(r.length<6){
+    const turn=r.length%2===0?"c":"o", last=Math.max(d.acceptedAt, r.length?r[r.length-1].at:0);
+    const who=turn==="c"?d.challengerId:d.opponentId;
+    if(now>last+TURN_MS) return {phase:"forfeit", winner:turn==="c"?"o":"c", loser:turn};
+    return {phase:"active", turn, who, round:Math.floor(r.length/2)+1, deadline:last+TURN_MS};
+  }
+  const v=IX.dv.get(d.id)||{c:0,o:0}, n=v.c+v.o, pc=n?Math.round(100*v.c/n):50;
+  if(now<d.votingEndsAt) return {phase:"voting", v, n, pc, po:100-pc, ends:d.votingEndsAt};
+  if(n<MIN_VOTES) return {phase:"done", v, n, pc, po:100-pc, winner:null, noresult:true};
+  return {phase:"done", v, n, pc, po:100-pc, winner:v.c>v.o?"c":v.o>v.c?"o":"draw"};
+}
+const duelPlayer = (d,side) => side==="c"?d.challengerId:d.opponentId;
+function duelRecord(uid){
+  let w=0,l=0,dr=0;
+  for(const d of S.duels.values()){
+    const side=d.challengerId===uid?"c":d.opponentId===uid?"o":null; if(!side) continue;
+    const st=duelState(d);
+    if(st.phase==="forfeit"||(st.phase==="done"&&st.winner)){ if(st.winner==="draw") dr++; else if(st.winner===side) w++; else l++; }
+  }
+  return {w,l,d:dr,total:w+l+dr};
+}
+const recordText = r => r.total?`${r.w}W · ${r.l}L${r.d?` · ${r.d}D`:""}`:"No debates yet";
+function phaseLabel(d,st){
+  if(st.phase==="pending") return `<span class="live">Challenge · waiting for ${esc(nameOf(d.opponentId))}</span>`;
+  if(st.phase==="active") return `<span class="live">Round ${st.round} of 3 · ${esc(nameOf(st.who))}’s turn</span>`;
+  if(st.phase==="voting") return `<span class="live">Voting open · ends in ${left(st.ends-Date.now())}</span>`;
+  if(st.phase==="forfeit") return `<span>Ended · ${esc(nameOf(duelPlayer(d,st.winner)))} won by forfeit</span>`;
+  if(st.phase==="done") return `<span>Ended · ${st.noresult?"no result":st.winner==="draw"?"draw":esc(nameOf(duelPlayer(d,st.winner)))+" won"}</span>`;
+  return `<span>${st.phase==="declined"?"Declined":"Challenge expired"}</span>`;
+}
+function duelMini(d){
+  const st=duelState(d);
+  return `<a class="duelmini" href="#d-${esc(d.id)}"><div class="bhead">${phaseLabel(d,st)}</div>
+    <div class="dm-q">“${esc(d.motion)}”</div>
+    <div class="dm-p">${avatar(d.challengerId,"xs")}<b>${esc(nameOf(d.challengerId))}</b><span class="against">against</span><span class="vs">VS</span>${avatar(d.opponentId,"xs")}<b>${esc(nameOf(d.opponentId))}</b><span class="for">for</span>${st.phase==="voting"||st.phase==="done"?`<span class="muted" style="margin-left:auto">${st.n} votes</span>`:""}</div></a>`;
+}
+
+/* ---------- components ---------- */
+function topicCard(t, rank){
+  const s = stat(t.id), tags=(t.tags||[]).slice(0,3);
+  const extra = t.kind==="prediction" ? (()=>{ const p=IX.pv.get(t.id), n=p.yes+p.no; return `<span>${n?Math.round(100*p.yes/n):0}% say yes</span><span>${t.outcome?"Resolved":"Resolves "+fmtDate(t.resolveBy)}</span>`; })()
+    : (IX.bByTopic.get(t.id)||[]).some(b=>b.endsAt>Date.now()) ? `<span class="brmark">Live battle</span>` : "";
+  return `<article class="tcard"><a href="#t-${t.id}">
+    <div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>
+    <div class="body">
+      <div class="meta"><span>${esc(t.category)}</span>${t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
+      <h3>${esc(t.title)}</h3>
+      <div class="stats">${s.reviews?`<span class="rating">★ ${s.avg.toFixed(1)}</span><span>${s.reviews} review${s.reviews>1?"s":""}</span>`:""}<span>${s.comments} comment${s.comments===1?"":"s"}</span>${s.branches?`<span>${s.branches} branch${s.branches>1?"es":""}</span>`:""}${extra}</div>
+      ${tags.length?`<div class="tagrow">${tags.map(x=>`<span class="chip">#${esc(x)}</span>`).join("")}</div>`:""}
+    </div></a></article>`;
+}
+function treeHTML(rootId, curId, seen=new Set()){
+  if (seen.has(rootId)) return ""; seen.add(rootId);
+  const t=S.topics.get(rootId); if(!t) return "";
+  const kids=(IX.tKids.get(rootId)||[]).sort((a,b)=>a.createdAt-b.createdAt);
+  return `<li><a href="#t-${t.id}" class="${t.id===curId?"cur":""}">${esc(t.title)}</a> <span class="n">· ${stat(t.id).comments}</span>${kids.length?`<ul>${kids.map(k=>treeHTML(k.id,curId,seen)).join("")}</ul>`:""}</li>`;
+}
+function emptyBox(title, line, btn){ return `<div class="empty"><b>${title}</b>${line}${btn?`<div style="margin-top:12px">${btn}</div>`:""}</div>`; }
+
+function battleState(b){
+  const v=IX.bv.get(b.id)||{a:0,b:0}, n=v.a+v.b, ended=Date.now()>=b.endsAt, my=IX.myB.get(b.id);
+  const pa=n?Math.round(100*v.a/n):50, pb=n?100-pa:50;
+  const winner = ended ? (v.a>v.b?"a":v.b>v.a?"b":"tie") : null;
+  return {v,n,ended,my,pa,pb,winner};
+}
+function battleCard(b, o={}){
+  const s=battleState(b), show=s.my||s.ended, t=S.topics.get(b.topicId);
+  const side=(k,label,pct)=>`<button class="side ${s.my===k?"mine":""} ${s.winner===k?"win":""}" data-act="bvote" data-id="${b.id}" data-v="${k}" ${s.ended?"disabled":""}>
+      ${show?`<span class="fill" style="width:${pct}%"></span>`:""}
+      <b>${esc(label)}</b>${show?`<span class="pct">${pct}%</span>`:`<span class="muted" style="font-size:12.5px">${L("Vote")}</span>`}${s.my===k?`<span class="you">Your pick</span>`:""}</button>`;
+  return `<div class="battle ${o.inline?"inline":""}" id="b-${b.id}">
+    <div class="bhead">${s.ended?`<span>Battle · ended</span>`:`<span class="live">Live battle · ends in ${left(b.endsAt-Date.now())}</span>`}${o.topicLink&&t?`<a href="#t-${t.id}" style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--brand-deep)">${esc(t.title.length>34?t.title.slice(0,32)+"…":t.title)}</a>`:""}</div>
+    <div class="bq">${esc(b.question)}</div>
+    <div class="sides">${side("a",b.a,s.pa)}<span class="vs">VS</span>${side("b",b.b,s.pb)}</div>
+    <div class="bfoot"><span>${s.ended?(s.winner==="tie"?`<span class="winner">It’s a tie</span>`:`<span class="winner">🏆 ${esc(s.winner==="a"?b.a:b.b)} wins</span>`)+" · ":""}${s.n.toLocaleString("en-IN")} votes${b.authorId?` · started by ${esc(nameOf(b.authorId))}`:""}</span>
+      <button class="act" data-act="shareBattle" data-id="${b.id}">${ICON.share} ${L("Share card")}</button></div>
+  </div>`;
+}
+function predCard(t){
+  const p=IX.pv.get(t.id)||{yes:0,no:0}, n=p.yes+p.no, my=IX.myP.get(t.id), now=Date.now();
+  const open=!t.outcome&&now<t.resolveBy, show=my||!open;
+  const py=n?Math.round(100*p.yes/n):50, pn=n?100-py:50;
+  const canResolve=!t.outcome&&now>=t.resolveBy&&S.me&&(S.me===t.authorId||S.isOwner);
+  const side=(k,label,pct)=>`<button class="side ${my===k?"mine":""} ${t.outcome===k?"win":""}" data-act="pvote" data-id="${t.id}" data-v="${k}" ${open?"":"disabled"}>${show?`<span class="fill" style="width:${pct}%"></span>`:""}<b>${label}</b>${show?`<span class="pct">${pct}%</span>`:`<span class="muted" style="font-size:12.5px">${L("Vote")}</span>`}${my===k?`<span class="you">Your call</span>`:""}</button>`;
+  return `<div class="battle pred">
+    <div class="bhead">${t.outcome?`<span>Prediction · resolved</span>`:open?`<span class="live">Prediction · voting open</span>`:`<span>Prediction · waiting for result</span>`}<span style="text-transform:none;letter-spacing:0">${t.outcome?"Resolved "+fmtDate(t.resolvedAt||t.resolveBy):"Resolves "+fmtDate(t.resolveBy)}</span></div>
+    <div class="sides">${side("yes",L("Yes"),py)}${side("no",L("No"),pn)}</div>
+    ${t.outcome?`<div class="winner">Result: ${t.outcome==="yes"?"YES":"NO"}</div>${my?`<div class="called ${my===t.outcome?"ok":"no"}">${my===t.outcome?"✓ You called it":"You missed this one"}</div>`:""}`:""}
+    ${canResolve?`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="muted" style="font-size:13px">The date has passed. What happened?</span><button class="btn sm" data-act="resolve" data-id="${t.id}" data-v="yes">It happened (Yes)</button><button class="btn sm" data-act="resolve" data-id="${t.id}" data-v="no">It didn’t (No)</button></div>`:""}
+    <div class="bfoot"><span>${n.toLocaleString("en-IN")} predictions · no money involved, just your record</span><button class="act" data-act="sharePred" data-id="${t.id}">${ICON.share} ${L("Share card")}</button></div>
+  </div>`;
+}
+
+/* ---------- views ---------- */
+function heroHTML(){ return `<section class="hero"><div><h1>${L("Anything can become a")} <em>${L("topic.")}</em></h1><p>${L("Review it. Talk about it. When a comment deserves its own conversation, branch it into a new topic.")}</p></div>
+  <div class="ctas"><button class="btn pri" data-act="newTopic">${L("Start a topic")}</button><button class="btn" data-act="newQuestion">${L("Ask the community")}</button><a class="btn" href="#explore">${L("Explore")}</a></div></section>`; }
+function branchOfDay(){
+  const now=Date.now();
+  const br=[...S.topics.values()].filter(t=>t.parentId&&t.originCommentId&&S.comments.has(t.originCommentId));
+  if(!br.length) return null;
+  const sc=t=>stat(t.id).comments+3*stat(t.id).branches+(now-t.createdAt<72*3.6e6?10:0);
+  return br.sort((a,b)=>sc(b)-sc(a))[0];
+}
+function vHome(){
+  if (!S.topics.size) return heroHTML() + emptyBox("No topics yet","Start the first one. Anything can become a topic: a phone, a dish, a film, a local issue.",`<button class="btn pri" data-act="newTopic">${L("Start a topic")}</button>`);
+  const now=Date.now(), tr = byTrend();
+  const latestC = [...S.comments.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,6);
+  const tagCount = new Map(); for (const t of S.topics.values()) (t.tags||[]).forEach(x=>tagCount.set(x,(tagCount.get(x)||0)+2));
+  for (const c of S.comments.values()) tagsIn(c.text).forEach(x=>tagCount.set(x,(tagCount.get(x)||0)+1));
+  const topTags=[...tagCount].sort((a,b)=>b[1]-a[1]).slice(0,14);
+  const roots=[...S.topics.values()].filter(t=>!t.parentId).map(t=>[t,descCount(t.id)]).sort((a,b)=>b[1]-a[1]);
+  const bigTree = roots[0] && roots[0][1]>0 ? roots[0][0] : null;
+  const newest=[...S.topics.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
+  const live=[...S.battles.values()].filter(b=>b.endsAt>now).sort((a,b)=>{ const x=IX.bv.get(a.id),y=IX.bv.get(b.id); return (y.a+y.b)-(x.a+x.b); }).slice(0,3);
+  const preds=[...S.topics.values()].filter(t=>t.kind==="prediction").sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id)).slice(0,3);
+  const cs=cities().slice(0,10);
+  const cur=UI.city&&cs.find(c=>c.slug===UI.city);
+  const cityTopics=cur?byTrend().filter(t=>slugCity(t.location)===cur.slug).slice(0,3):[];
+  const bod=branchOfDay(), bodC=bod&&S.comments.get(bod.originCommentId), bodP=bod&&S.topics.get(bod.parentId);
+  return heroHTML() + `
+  ${cs.length?`<section class="sec"><div class="sech"><h2>${L("Your city")}</h2>${cur?`<a href="#city-${enc(cur.slug)}">${esc(cur.name)} →</a>`:`<span class="muted" style="font-size:13px">Pick one to see local debates</span>`}</div>
+    <div class="cityrow">${cs.map(c=>`<button class="citychip ${UI.city===c.slug?"on":""}" data-act="pickCity" data-v="${esc(c.slug)}"><b>${esc(c.name)}</b><span>${c.n} topic${c.n>1?"s":""}</span></button>`).join("")}</div>
+    ${cityTopics.length?`<div class="grid" style="margin-top:12px">${cityTopics.map(t=>topicCard(t)).join("")}</div>`:""}</section>`:""}
+  ${S.myGroups.size?`<section class="sec"><div class="sech"><h2>Your groups</h2><a href="#groups">All groups</a></div><div class="grid">${[...S.myGroups].map(id=>S.groups.get(id)).filter(Boolean).map(groupCard).join("")}</div></section>`:""}
+  ${(()=>{ const ds=[...S.duels.values()].filter(d=>duelState(d).phase==="voting"&&!IX.myDV.has(d.id)&&d.challengerId!==S.me&&d.opponentId!==S.me).slice(0,2); return ds.length?`<section class="sec"><div class="sech"><h2>${L("Debates to judge")}</h2><a href="#explore" data-act="exGo" data-v="duels">${L("See all")}</a></div><div class="grid b">${ds.map(duelMini).join("")}</div></section>`:""; })()}
+  ${live.length?`<section class="sec"><div class="sech"><h2>${L("Live battles")}</h2><a href="#explore" data-act="exGo" data-v="battles">${L("See all")}</a></div><div class="grid b">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
+  <section class="sec"><div class="sech"><h2>${L("Trending now")}</h2><a href="#explore">${L("See all")}</a></div>
+    <div class="grid">${tr.slice(0,6).map((t,i)=>topicCard(t,i)).join("")}</div></section>
+  <div class="cols">
+    <div>
+      <section class="sec"><div class="sech"><h2>${L("Hot discussions")}</h2></div>
+        <div class="list">${latestC.map(c=>{ const t=S.topics.get(c.topicId); if(!t) return ""; return `<a href="#t-${t.id}~${c.id}">${avatar(c.authorId)}<div class="txt"><div class="meta"><b style="color:var(--ink)">${esc(nameOf(c.authorId))}</b><span>in ${esc(t.title)}</span><span>${ago(c.createdAt)}</span></div><div class="q">${esc(c.text)}</div></div></a>`; }).join("") || `<div class="muted">No comments yet.</div>`}</div></section>
+      ${preds.length?`<section class="sec"><div class="sech"><h2>${L("Predictions")}</h2><a href="#explore" data-act="exGo" data-v="predictions">${L("See all")}</a></div><div class="grid" style="grid-template-columns:1fr">${preds.map(t=>`<div><a href="#t-${t.id}" style="display:block;font-family:var(--f-display);font-weight:700;font-size:17px;margin-bottom:8px">${esc(t.title)}</a>${predCard(t)}</div>`).join("")}</div></section>`:""}
+      <section class="sec"><div class="sech"><h2>${L("New topics")}</h2></div>
+        <div class="list">${newest.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>by ${esc(nameOf(t.authorId))}</span><span>${ago(t.createdAt)}</span></div></div></a>`).join("")}</div></section>
+    </div>
+    <div>
+      ${bod&&bodC&&bodP?`<section class="sec"><div class="sech"><h2>${L("Branch of the day")}</h2></div><a class="botd" href="#t-${bod.id}">
+        <div class="from">${esc(nameOf(bodC.authorId))}’s comment in <b style="color:var(--ink)">${esc(bodP.title)}</b></div>
+        <q>${esc(bodC.text.slice(0,140))}${bodC.text.length>140?"…":""}</q>
+        <div class="to"><span style="color:var(--brand-deep)">↳</span>${esc(bod.title)}</div>
+        <div class="stats"><span>${stat(bod.id).comments} comments</span>${stat(bod.id).branches?`<span>${stat(bod.id).branches} more branches</span>`:""}<span>${ago(bod.createdAt)}</span></div></a></section>`:""}
+      ${bigTree?`<section class="sec"><div class="sech"><h2>${L("How a topic branches")}</h2></div><div class="panel"><p class="muted" style="margin:0 0 10px;font-size:13.5px">One conversation about <b style="color:var(--ink)">${esc(bigTree.title)}</b> grew into ${descCount(bigTree.id)} new topics.</p><ul class="tree">${treeHTML(bigTree.id,null)}</ul></div></section>`:""}
+      <section class="sec"><div class="sech"><h2>${L("Popular hashtags")}</h2></div><div class="tagrow">${topTags.map(([x])=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")||'<span class="muted">None yet</span>'}</div></section>
+    </div>
+  </div>`;
+}
+
+function vExplore(){
+  const cats = ["All",...new Set([...S.topics.values()].map(t=>t.category))];
+  const tabs=[["trending","Trending"],["latest","Latest"],["battles","Battles"],["duels","Debates"],["predictions","Predictions"],["discussed","Most discussed"],["reviewed","Most reviewed"],["branched","Most branched"],["questions","Questions"]];
+  const head=`<h1 style="font-size:32px;font-weight:800">${L("Explore")}</h1>
+  <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button class="${UI.exSort===k?"on":""}" data-act="exSort" data-v="${k}">${l}</button>`).join("")}</div>
+  <div class="tagrow" style="margin-bottom:18px">${cats.map(c=>`<button class="chip ${UI.exCat===c?"on":""}" data-act="exCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
+  const catOk=t=>UI.exCat==="All"||t?.category===UI.exCat;
+  if(UI.exSort==="battles"){
+    const now=Date.now(), bs=[...S.battles.values()].filter(b=>catOk(S.topics.get(b.topicId))).sort((a,b)=>(b.endsAt>now)-(a.endsAt>now)||b.createdAt-a.createdAt);
+    return head+(bs.length?`<div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div>`:emptyBox("No battles yet","Start one from the Create menu, or tap Settle it on any argument in the comments."));
+  }
+  if(UI.exSort==="duels"){
+    const order={voting:0,active:1,pending:2,done:3,forfeit:3,declined:9,expired:9};
+    const ds=[...S.duels.values()].filter(d=>catOk(S.topics.get(d.topicId))).filter(d=>order[duelState(d).phase]<9).sort((a,b)=>order[duelState(a).phase]-order[duelState(b).phase]||b.createdAt-a.createdAt);
+    return head+(ds.length?`<div class="grid b">${ds.map(duelMini).join("")}</div>`:emptyBox("No debates yet","Tap “Challenge to a duel” on any comment you disagree with."));
+  }
+  let list=[...S.topics.values()].filter(catOk);
+  const sorts={trending:(a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id), latest:(a,b)=>b.createdAt-a.createdAt, discussed:(a,b)=>stat(b.id).comments-stat(a.id).comments, reviewed:(a,b)=>stat(b.id).reviews-stat(a.id).reviews||stat(b.id).avg-stat(a.id).avg, branched:(a,b)=>descCount(b.id)-descCount(a.id), questions:(a,b)=>b.createdAt-a.createdAt, predictions:(a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id)};
+  if (UI.exSort==="questions") list=list.filter(t=>t.kind==="question");
+  if (UI.exSort==="predictions") list=list.filter(t=>t.kind==="prediction");
+  list.sort(sorts[UI.exSort]);
+  return head+(list.length?`<div class="grid">${list.map(t=>topicCard(t)).join("")}</div>`:emptyBox("Nothing here yet","No topics match this filter.",`<button class="btn pri" data-act="newTopic">Start one</button>`));
+}
+
+function vDuel(id){
+  const d=S.duels.get(id);
+  if(!d){ const raw=R.duels.get(id); if(raw&&!S.topics.has(raw.topicId)) return emptyBox(`${LOCK} Private group debate`,"Only members of the group can see this debate.");
+    return S.ready.duels?emptyBox("Debate not found","It may have been removed.",`<a class="btn" href="#home">Go home</a>`):`<p class="muted">Loading…</p>`; }
+  const st=duelState(d), t=S.topics.get(d.topicId), r=d.rounds||[];
+  const meSide=S.me===d.challengerId?"c":S.me===d.opponentId?"o":null;
+  const myVote=IX.myDV.get(id);
+  const player=(side)=>{ const uid=duelPlayer(d,side), rec=duelRecord(uid), win=(st.winner===side);
+    return `<div class="dplayer ${win?"win":""}">${avatar(uid)}<div style="min-width:0"><div><a href="#u-${esc(uid)}" style="font-weight:700">${esc(nameOf(uid))}</a>${win?" 🏆":""}</div><div class="meta"><span class="${side==="o"?"for":"against"}">${side==="o"?"For":"Against"} the motion</span><span>${recordText(rec)}</span></div></div></div>`; };
+  const bubble=(i)=>{ const x=r[i], side=i%2===0?"c":"o";
+    if(x) return `<div class="dturn ${side}"><div class="meta"><b style="color:var(--ink)">${esc(nameOf(duelPlayer(d,side)))}</b><span class="${side==="o"?"for":"against"}">${side==="o"?"For":"Against"}</span><span>${wordCount(x.text)} words</span><span>${ago(x.at)}</span></div><div class="ctext">${esc(x.text)}</div></div>`;
+    const waiting=st.phase==="active"&&r.length===i;
+    return `<div class="dturn ${side} empty">${waiting?`Waiting for ${esc(nameOf(duelPlayer(d,side)))}… (${left(st.deadline-Date.now())} left)`:"Not written yet"}</div>`; };
+  // challenger (AGAINST) speaks first each round, so they sit on the left
+  const rounds=[0,1,2].map(k=>`<div class="dround"><div class="dlabel">Round ${k+1} · ${ROUND_NAMES[k]}</div><div class="dpair">${bubble(2*k)}${bubble(2*k+1)}</div></div>`).join("");
+  let action="";
+  if(st.phase==="pending"){
+    if(meSide==="o") action=`<div class="dbox"><b>${esc(nameOf(d.challengerId))} challenged you.</b> Argue <b>for</b> the motion in 3 rounds of up to ${MAX_WORDS} words. You have ${left(st.deadline-Date.now())} to accept.<div style="display:flex;gap:8px;margin-top:10px"><button class="btn pri sm" data-act="duelAccept" data-id="${esc(id)}">Accept the duel</button><button class="btn sm" data-act="duelDecline" data-id="${esc(id)}">Decline</button></div></div>`;
+    else action=`<div class="dbox muted">Waiting for ${esc(nameOf(d.opponentId))} to accept. The challenge expires in ${left(st.deadline-Date.now())}.</div>`;
+  } else if(st.phase==="active"){
+    if(meSide===st.turn) action=`<div class="dbox"><b>Your turn: Round ${st.round}, ${ROUND_NAMES[st.round-1]}.</b> <span class="muted">You have ${left(st.deadline-Date.now())}. If you don’t reply in time, you lose by forfeit.</span>
+      <textarea id="duel-text" rows="5" data-wc="duel-wc" placeholder="${st.round===1?"Make your case.":st.round===2?"Answer their points directly.":"Sum up why your side is stronger."}" style="margin-top:10px"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px"><span class="hint" id="duel-wc">0 / ${MAX_WORDS} words</span><button class="btn pri sm" data-act="duelPost" data-id="${esc(id)}">Post round ${st.round}</button></div></div>`;
+    else if(meSide) action=`<div class="dbox muted">Waiting for ${esc(nameOf(st.who))} to reply.</div>`;
+  } else if(st.phase==="voting"){
+    if(meSide) action=`<div class="dbox"><b>Voting is open.</b> You can’t vote in your own duel. ${st.n} vote${st.n===1?"":"s"} so far; at least ${MIN_VOTES} are needed for a result.</div>`;
+    else if(!myVote&&!UI.dReady[id]) action=`<div class="dbox"><b>Who argued better?</b> Judge the arguments, not which side you agree with. Read all three rounds first.<div style="margin-top:10px"><button class="btn pri sm" data-act="duelReady" data-id="${esc(id)}">I’ve read both sides</button></div></div>`;
+    else action=`<div class="dbox"><b>Who argued better?</b><div class="sides" style="margin-top:10px">${["c","o"].map((k,i)=>`${i?`<span class="vs">VS</span>`:""}<button class="side ${myVote===k?"mine":""}" data-act="duelVote" data-id="${esc(id)}" data-v="${k}">${myVote?`<span class="fill" style="width:${k==="c"?st.pc:st.po}%"></span>`:""}<b>${esc(nameOf(duelPlayer(d,k)))}</b>${myVote?`<span class="pct">${k==="c"?st.pc:st.po}%</span>`:`<span class="muted" style="font-size:12.5px">${k==="o"?"For":"Against"}</span>`}${myVote===k?`<span class="you">Your vote</span>`:""}</button>`).join("")}</div><div class="hint" style="margin-top:6px">${st.n} votes · ends in ${left(st.ends-Date.now())} · you can change your vote until then</div></div>`;
+  } else if(st.phase==="done"||st.phase==="forfeit"){
+    const msg = st.phase==="forfeit" ? `🏆 ${esc(nameOf(duelPlayer(d,st.winner)))} wins by forfeit. ${esc(nameOf(duelPlayer(d,st.loser)))} didn’t reply within 24 hours.`
+      : st.noresult ? `No result. Only ${st.n} vote${st.n===1?"":"s"}; a debate needs at least ${MIN_VOTES}.`
+      : st.winner==="draw" ? `It’s a draw, ${st.pc}% to ${st.po}% from ${st.n} votes.`
+      : `🏆 ${esc(nameOf(duelPlayer(d,st.winner)))} argued better, winning ${Math.max(st.pc,st.po)}% to ${Math.min(st.pc,st.po)}% from ${st.n} votes.`;
+    action=`<div class="dbox result">${msg}</div>`;
+  } else action=`<div class="dbox muted">${st.phase==="declined"?`${esc(nameOf(d.opponentId))} declined this duel.`:"This challenge expired before it was accepted."}</div>`;
+  const oc=d.commentId&&S.comments.get(d.commentId);
+  return `<div class="meta" style="font-size:13px"><span>Debate duel</span>${t?`<a href="#t-${t.id}${oc?"~"+oc.id:""}" style="color:var(--brand-deep);font-weight:600">in ${esc(t.title)}</a>`:""}</div>
+   <div class="bhead" style="margin-top:6px">${phaseLabel(d,st)}</div>
+   <h1 style="font-size:clamp(24px,3.6vw,34px);font-weight:800;margin-top:6px">“${esc(d.motion)}”</h1>
+   <div class="dplayers">${player("c")}<span class="vs">VS</span>${player("o")}</div>
+   ${action}
+   <div class="drounds">${rounds}</div>
+   <p class="muted" style="font-size:13px;margin-top:18px">Win the debate, not the argument. Voters judge who argued better, not who they agree with. Argue the point, never the person.</p>`;
+}
+function vGroups(){
+  const all=[...S.groups.values()];
+  const mine=all.filter(g=>memberOf(g.id)), pub=all.filter(g=>!memberOf(g.id)&&g.visibility==="public");
+  return `<div class="sech"><h1 style="font-size:32px;font-weight:800">Groups</h1><button class="btn pri sm" data-act="newGroup">Create a group</button></div>
+   <p class="muted" style="margin-top:-6px">Debate with your friends, team or family. Private groups are only for members. Any great debate can be made public later.</p>
+   <div class="panel" style="margin:16px 0 26px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><b style="font-size:14px">Got an invite code?</b><input class="f" id="join-code" maxlength="8" placeholder="e.g. K7Q2MX" style="max-width:180px;text-transform:uppercase"><button class="btn sm" data-act="joinCode">Join</button><span class="hint" id="join-err"></span></div>
+   <section class="sec"><div class="sech"><h2>Your groups</h2></div>${mine.length?`<div class="grid">${mine.map(groupCard).join("")}</div>`:emptyBox("You’re not in any group yet","Create one and share the code with friends, or join a public group below.")}</section>
+   ${pub.length?`<section class="sec"><div class="sech"><h2>Public groups to join</h2></div><div class="grid">${pub.map(groupCard).join("")}</div></section>`:""}`;
+}
+function vGroup(gid){
+  const g=S.groups.get(gid);
+  if(!g) return S.ready.groups?emptyBox("Group not found","It may have been deleted.",`<a class="btn" href="#groups">All groups</a>`):`<p class="muted">Loading…</p>`;
+  const member=memberOf(gid), admin=isAdmin(gid), priv=g.visibility==="private";
+  const mem=(IX.gMem.get(gid)||[]).sort((a,b)=>(b.role==="admin")-(a.role==="admin")||a.joinedAt-b.joinedAt);
+  const head=`<div class="phead"><div class="tile" style="--h:${hueOf(g.name)};width:64px;height:64px;font-size:22px;border-radius:16px">${esc(g.name.slice(0,2).toUpperCase())}</div><div style="min-width:0">
+      <div class="meta"><span>${priv?LOCK+" Private group":"Public group"}</span>${g.city?`<span>📍 ${esc(g.city)}</span>`:""}<span>${mem.length} member${mem.length===1?"":"s"}</span></div>
+      <h1 style="font-size:30px">${esc(g.name)}</h1>${g.desc?`<p style="margin:4px 0 0">${esc(g.desc)}</p>`:""}</div></div>`;
+  if(priv&&!member) return head+`<div class="empty" style="margin-top:20px"><b>This group is private</b>Only members can see its topics. Ask a member for the invite code.<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><input class="f" id="join-code" maxlength="8" placeholder="Invite code" style="max-width:160px;text-transform:uppercase"><button class="btn pri sm" data-act="joinCode">Join</button></div><div class="hint" id="join-err" style="text-align:center"></div></div>`;
+  const ts=(IX.tByGroup.get(gid)||[]).sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id));
+  const now=Date.now(), bs=[...S.battles.values()].filter(b=>ts.some(t=>t.id===b.topicId)&&b.endsAt>now);
+  const best=ts.flatMap(t=>IX.cByTopic.get(t.id)||[]).sort((a,b)=>likes(b)-likes(a)).slice(0,3);
+  // leaderboard: called-it on group predictions, then activity
+  const score=new Map(); const add=(u,k,v)=>{ if(!score.has(u)) score.set(u,{called:0,calls:0,posts:0}); score.get(u)[k]+=v; };
+  ts.forEach(t=>{ (IX.cByTopic.get(t.id)||[]).forEach(c=>add(c.authorId,"posts",1)); add(t.authorId,"posts",1);
+    if(t.kind==="prediction"&&t.outcome) (IX.pVoters.get(t.id)||[]).forEach(v=>{ add(v.userId,"calls",1); if(v.side===t.outcome) add(v.userId,"called",1); }); });
+  const board=[...score].filter(([u])=>mem.some(m=>m.userId===u)).sort((a,b)=>b[1].called-a[1].called||b[1].posts-a[1].posts).slice(0,5);
+  return head+`
+   <div class="tbar" style="margin-bottom:22px">
+     ${member?`<button class="btn pri sm" data-act="newTopic" data-group="${esc(gid)}">New topic</button><button class="btn sm" data-act="newBattle" data-group="${esc(gid)}">New battle</button><button class="btn sm" data-act="newPred" data-group="${esc(gid)}">New prediction</button>`:`<button class="btn pri sm" data-act="joinGroup" data-id="${esc(gid)}">Join group</button>`}
+   </div>
+   <div class="tp"><div>
+     ${bs.length?`<section class="sec"><div class="sech"><h2>${L("Live battles")}</h2></div><div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
+     <section class="sec"><div class="sech"><h2>Topics</h2></div>${ts.length?`<div class="grid" style="grid-template-columns:1fr">${ts.map(t=>topicCard(t)).join("")}</div>`:emptyBox("No topics yet","Start the first debate in this group.",member?`<button class="btn pri sm" data-act="newTopic" data-group="${esc(gid)}">New topic</button>`:"")}</section>
+     ${best.length?`<section class="sec"><div class="sech"><h2>Best of the group</h2></div><div class="list">${best.map(c=>{ const t=S.topics.get(c.topicId); return `<a href="#t-${t.id}~${c.id}">${avatar(c.authorId)}<div class="txt"><div class="meta"><b style="color:var(--ink)">${esc(nameOf(c.authorId))}</b><span>in ${esc(t.title)}</span><span>${likes(c)} likes</span></div><div class="q">${esc(c.text)}</div></div></a>`; }).join("")}</div></section>`:""}
+   </div><aside class="rail">
+     ${member&&priv||admin?`<div class="panel"><h3>Invite friends</h3><p class="muted" style="margin:0 0 8px;font-size:13.5px">Share this code. They enter it on the Groups page to join.</p><div class="code">${esc(g.invite||"")}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn sm" data-act="copyCode" data-id="${esc(gid)}">Copy invite message</button>${admin?`<button class="btn sm" data-act="newInvite" data-id="${esc(gid)}">New code</button>`:""}</div></div>`:""}
+     <div class="panel"><h3>Leaderboard</h3>${board.length?`<div class="list" style="border:0">${board.map(([u,v],i)=>`<a href="#u-${esc(u)}" style="padding:8px 0;align-items:center"><span class="muted" style="width:16px;font-variant-numeric:tabular-nums">${i+1}</span>${avatar(u,"xs")}<div class="txt"><b style="font-size:14px">${esc(nameOf(u))}</b><div class="meta">${v.calls?`<span>called ${v.called}/${v.calls}</span>`:""}<span>${v.posts} post${v.posts===1?"":"s"}</span></div></div></a>`).join("")}</div>`:`<p class="muted" style="margin:0;font-size:14px">Post and make predictions to get on the board.</p>`}</div>
+     <div class="panel"><h3>Members · ${mem.length}</h3><div class="list" style="border:0">${mem.map(m=>`<div style="padding:7px 0;align-items:center">${avatar(m.userId,"xs")}<div class="txt"><a href="#u-${esc(m.userId)}" style="font-weight:600;font-size:14px">${esc(nameOf(m.userId))}</a>${m.role==="admin"?' <span class="op">ADMIN</span>':""}${isSeed(m.userId)?' <span class="sample">sample</span>':""}</div>${admin&&m.userId!==S.me?`<button class="act" data-act="removeMember" data-id="${esc(m.id)}">Remove</button>`:""}</div>`).join("")}</div>
+       ${member?`<div style="margin-top:10px"><button class="act" data-act="leaveGroup" data-id="${esc(gid)}">Leave group</button></div>`:""}</div>
+   </aside></div>`;
+}
+function vCity(slug){
+  const ts=byTrend().filter(t=>slugCity(t.location)===slug);
+  const name=ts[0]?.location||slug;
+  const bs=[...S.battles.values()].filter(b=>ts.some(t=>t.id===b.topicId)&&b.endsAt>Date.now());
+  return `<div class="meta" style="font-size:13px">City</div><h1 style="font-size:36px;font-weight:800">${esc(name)}</h1>
+   <p class="muted">${ts.length} topic${ts.length===1?"":"s"} · ${L("Tamil, Tanglish or English. All welcome.")}</p>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(name)}">Start a ${esc(name)} topic</button><button class="btn sm" data-act="newBattle" data-loc="${esc(name)}">Start a ${esc(name)} battle</button>${UI.city!==slug?`<button class="btn sm" data-act="pickCity" data-v="${esc(slug)}">Make this my city</button>`:""}</div>
+   ${bs.length?`<section class="sec"><div class="sech"><h2>${L("Live battles")}</h2></div><div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
+   ${ts.length?`<div class="grid">${ts.map(t=>topicCard(t)).join("")}</div>`:emptyBox("Nothing here yet","Be the first to start a local debate.")}`;
+}
+
+function vTag(tag){
+  const ts=[...S.topics.values()].filter(t=>(t.tags||[]).includes(tag)||tagsIn(t.desc||"").includes(tag)).sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id));
+  const cs=[...S.comments.values()].filter(c=>tagsIn(c.text).includes(tag)).sort((a,b)=>b.createdAt-a.createdAt).slice(0,8);
+  return `<div class="meta" style="font-size:13px">Hashtag</div><h1 style="font-size:36px;font-weight:800">#${esc(tag)}</h1>
+  <p class="muted">${ts.length} topic${ts.length===1?"":"s"} · ${cs.length} recent comment${cs.length===1?"":"s"}</p>
+  <section class="sec">${ts.length?`<div class="grid">${ts.map(t=>topicCard(t)).join("")}</div>`:emptyBox("No topics with this tag","Start one and add #"+esc(tag)+" to it.",`<button class="btn pri" data-act="newTopic" data-tag="${esc(tag)}">Start a #${esc(tag)} topic</button>`)}</section>
+  ${cs.length?`<section class="sec"><div class="sech"><h2>Mentioned in comments</h2></div><div class="list">${cs.map(c=>{const t=S.topics.get(c.topicId); return t?`<a href="#t-${t.id}~${c.id}">${avatar(c.authorId)}<div class="txt"><div class="meta"><b style="color:var(--ink)">${esc(nameOf(c.authorId))}</b><span>in ${esc(t.title)}</span></div><div class="q">${esc(c.text)}</div></div></a>`:""}).join("")}</div></section>`:""}`;
+}
+
+function vSearch(){
+  const q=UI.query.trim();
+  if(!q) return emptyBox("Search TopicTalk","Ask a question or type anything: a phone, a dish, a place, a person.");
+  const r=searchAll(q,50);
+  const none=!r.topics.length&&!r.tags.length&&!r.people.length&&!r.cities.length;
+  return `<h1 style="font-size:28px;font-weight:800">${esc(q)}</h1>
+  ${r.topics.length?answerPanel(q,r.topics):`<div class="answer"><div class="ahead">Community answer</div><div class="atext">Nobody has talked about this yet.</div><div class="muted" style="font-size:14px">Ask it, and the answer will come from people who know.</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri sm" data-act="newQuestion" data-title="${esc(q)}">Ask the community</button><button class="btn sm" data-act="newTopic" data-title="${esc(q)}">Start it as a topic</button></div></div>`}
+  ${r.topics.length?`<section class="sec" style="margin-top:22px"><div class="sech"><h2>Conversations</h2></div><div class="grid">${r.topics.map(t=>topicCard(t)).join("")}</div></section>`:""}
+  ${r.cities.length?`<section class="sec"><div class="sech"><h2>Cities</h2></div><div class="tagrow">${r.cities.map(c=>`<a class="chip" href="#city-${enc(c.slug)}">${esc(c.name)}</a>`).join("")}</div></section>`:""}
+  ${r.tags.length?`<section class="sec"><div class="sech"><h2>Hashtags</h2></div><div class="tagrow">${r.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div></section>`:""}
+  ${r.people.length?`<section class="sec"><div class="sech"><h2>People</h2></div><div class="list">${r.people.map(id=>`<a href="#u-${esc(id)}">${avatar(id)}<div class="txt"><b>${esc(nameOf(id))}</b></div></a>`).join("")}</div></section>`:""}`;
+}
+
+const STOP=new Set("a an the is are was were be to of in on for and or vs versus which what who whom how why where when best most good better any do does did should can could would will i my me we our it its this that these with at by from about than near under over into get got".split(" "));
+const qWords = q => String(q).toLowerCase().split(/[^\p{L}\p{M}\p{N}₹]+/u).filter(w=>w&&w.length>1&&!STOP.has(w));
+function topicScore(t, q, words){
+  const title=t.title.toLowerCase(); let s=0;
+  if(title.includes(q)) s+=6;
+  const meta=((t.tags||[]).join(" ")+" "+t.category+" "+(t.location||"")+" "+(t.desc||"")).toLowerCase();
+  const talk=(IX.cByTopic.get(t.id)||[]).map(c=>c.text).join(" ").toLowerCase()+" "+(IX.rByTopic.get(t.id)||[]).map(r=>(r.title||"")+" "+(r.text||"")+" "+(r.pros||"")+" "+(r.cons||"")).join(" ").toLowerCase();
+  let hit=0;
+  for(const w of words){ let h=false; if(title.includes(w)){ s+=3; h=true; } if(meta.includes(w)){ s+=1; h=true; } if(talk.includes(w)){ s+=.6; h=true; } if(h) hit++; }
+  if(words.length) s*= (0.4+0.6*hit/words.length);
+  return s;
+}
+function searchAll(q,n){
+  q=q.trim().toLowerCase(); const words=qWords(q);
+  const tagset=new Set(); for(const t of S.topics.values())(t.tags||[]).forEach(x=>tagset.add(x));
+  const topics=[...S.topics.values()].map(t=>[t,topicScore(t,q,words)]).filter(x=>x[1]>=1.5).sort((a,b)=>b[1]-a[1]||IX.trend.get(b[0].id)-IX.trend.get(a[0].id)).slice(0,n).map(x=>x[0]);
+  const qq=q.replace(/^#/,"");
+  const tags=[...tagset].filter(x=>x.includes(qq)||words.includes(x)).slice(0,10);
+  const people=[...S.handles].filter(([id,d])=>(d.handle||"").toLowerCase().includes(qq.replace(/^@/,""))).map(([id])=>id).slice(0,8);
+  const cs=cities().filter(c=>c.name.toLowerCase().includes(qq)||words.includes(c.slug)).slice(0,6);
+  return {topics,tags,people,cities:cs};
+}
+
+function verdictPanel(t, rs){
+  const s=stat(t.id);
+  if(!rs.length) return `<div class="panel"><h3>${L("Community verdict")}</h3><p class="muted" style="margin:0 0 10px;font-size:14px">No reviews yet. The verdict appears after the first one.</p><button class="btn sm" data-act="openReview">${L("Write a review")}</button></div>`;
+  const dist=[5,4,3,2,1].map(n=>[n,rs.filter(r=>r.rating===n).length]);
+  const rec=Math.round(100*rs.filter(r=>r.rating>=4).length/rs.length);
+  const tally=(list,f)=>{ const m=new Map(); list.forEach(r=>String(r[f]||"").split(/[,;\n]+/).map(x=>x.trim().toLowerCase()).filter(x=>x&&x.length<40).forEach(x=>m.set(x,(m.get(x)||0)+1))); return m; };
+  const top=m=>[...m].sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const P=top(tally(rs,"pros")), C=top(tally(rs,"cons"));
+  // verdict over time
+  const chron=[...rs].sort((a,b)=>a.createdAt-b.createdAt);
+  let trendHTML="";
+  if(chron.length>=2){
+    let sum=0; const pts=chron.map((r,i)=>{ sum+=r.rating; return sum/(i+1); });
+    const W=280,H=56,pad=6, x=i=>pad+(W-2*pad)*(pts.length===1?0:i/(pts.length-1)), y=v=>pad+(H-2*pad)*(5-v)/4;
+    const path=pts.map((v,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+    const area=path+`L${x(pts.length-1).toFixed(1)},${H-pad}L${x(0).toFixed(1)},${H-pad}Z`;
+    const first=chron[0].rating, now=pts[pts.length-1], diff=now-first;
+    const half=Math.floor(chron.length/2), early=tally(chron.slice(0,half),"cons"), late=tally(chron.slice(half),"cons");
+    const rising=[...late].map(([k,v])=>[k,v-(early.get(k)||0)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1])[0];
+    const msg=Math.abs(diff)<.3?"Steady since the first reviews":diff<0?`Down ${Math.abs(diff).toFixed(1)} since the first reviews`:`Up ${diff.toFixed(1)} since the first reviews`;
+    trendHTML=`<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Average rating over time"><line x1="${pad}" x2="${W-pad}" y1="${y(3)}" y2="${y(3)}" stroke="var(--line)" stroke-dasharray="3 4"/><path d="${area}" fill="var(--brand-soft)"/><path d="${path}" fill="none" stroke="var(--brand)" stroke-width="2.2" vector-effect="non-scaling-stroke"/><circle cx="${x(pts.length-1)}" cy="${y(now)}" r="3.5" fill="var(--brand)"/></svg>
+      <div class="trend"><span>${fmtDate(chron[0].createdAt)} · ${first.toFixed(1)}</span><span>Now · ${now.toFixed(1)}</span></div>
+      <div style="font-size:13px;margin-top:6px"><b>${msg}.</b>${rising?` Rising complaint: <span style="color:var(--danger)">${esc(rising[0])}</span>.`:""}</div>`;
+  }
+  // strongest other side
+  let other="";
+  if(rs.length>=3){
+    const positive=s.avg>=3.5;
+    const cand=rs.filter(r=>positive?r.rating<=3:r.rating>=4).sort((a,b)=>likes(b)-likes(a))[0];
+    if(cand) other=`<div class="otherside"><span class="otherchip">Strongest other side</span> <span class="stars">${stars(cand.rating)}</span> · ${who(cand.authorId)}<q>${esc((cand.title?cand.title+". ":"")+(cand.text||"").slice(0,140))}</q></div>`;
+  }
+  return `<div class="panel"><h3>${L("Community verdict")}</h3>
+      <div class="verdict"><div class="big">${s.avg.toFixed(1)}</div><div><div class="stars">${stars(s.avg)}</div><div class="muted" style="font-size:13px">${rs.length} review${rs.length>1?"s":""} · <b style="color:var(--ink)">${rec}% recommend</b></div></div></div>
+      <div class="bars">${dist.map(([n,c])=>`<div><span>${n}★</span><span class="b"><i style="width:${100*c/rs.length}%"></i></span><span>${Math.round(100*c/rs.length)}%</span></div>`).join("")}</div>
+      ${P.length||C.length?`<div class="pc">${P.map(([x])=>`<span class="chip p">✓ ${esc(x)}</span>`).join("")}${C.map(([x])=>`<span class="chip c">✕ ${esc(x)}</span>`).join("")}</div>`:""}
+      ${trendHTML}${other}
+      <div style="margin-top:12px"><button class="btn sm" data-act="shareTopic" data-id="${t.id}">${ICON.share} ${L("Share card")}</button></div>
+    </div>`;
+}
+
+function aiPanel(t, n){
+  const a=UI.ai[t.id], busy=UI.aiBusy[t.id];
+  if(!sampleFn || n<3) return "";
+  if(busy) return `<div class="ai"><h4>${L("Catch me up")}</h4><div class="muted">Reading ${n} comments… this can take up to a minute.</div></div>`;
+  if(!a) return "";
+  if(a.error) return `<div class="ai"><h4>${L("Catch me up")}</h4><div class="muted">${esc(a.error)}</div></div>`;
+  return `<div class="ai"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h4>${L("Catch me up")} · ${n} comments</h4><button class="act" data-act="aiClose" data-id="${t.id}">Hide</button></div>
+    ${a.tldr?`<div style="font-size:15px">${esc(a.tldr)}</div>`:""}
+    ${(a.agree||[]).length?`<div><h4 style="margin-bottom:4px">Most people agree</h4><ul>${a.agree.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}
+    ${(a.debates||[]).map(d=>`<div><h4 style="margin-bottom:2px">Still arguing: ${esc(d.issue||"")}</h4><div class="deb"><div>${esc(d.side_a||"")}</div><div>${esc(d.side_b||"")}</div></div></div>`).join("")}
+    <div class="muted" style="font-size:12px">Summary written by Claude from the comments on this page. It can miss nuance.</div></div>`;
+}
+
+function vTopic(id){
+  const t=S.topics.get(id);
+  if(!t){ const raw=R.topics.get(id), g=raw&&S.groups.get(raw.groupId);
+    if(g) return emptyBox(`${LOCK} Private group topic`,`This is in <b>${esc(g.name)}</b>. Only members can see it.`,`<a class="btn pri" href="#g-${esc(g.id)}">Open the group</a>`);
+    return S.ready.topics ? emptyBox("Topic not found","It may have been removed.",`<a class="btn" href="#home">Go home</a>`) : `<p class="muted">Loading…</p>`; }
+  const s=stat(id), rs=(IX.rByTopic.get(id)||[]).sort((a,b)=>likes(b)-likes(a)||b.createdAt-a.createdAt);
+  const cs=(IX.cByTopic.get(id)||[]);
+  let tops=cs.filter(c=>!c.parentId||!S.comments.has(c.parentId));
+  const otherIds=new Set((UI.ai[id]?.other_side_ids||[]).filter(x=>S.comments.has(x)));
+  if(UI.csort==="new") tops.sort((a,b)=>b.createdAt-a.createdAt);
+  else tops.sort((a,b)=>likes(b)-likes(a)||b.createdAt-a.createdAt);
+  if(UI.csort==="other"&&otherIds.size){ const ord=[...otherIds]; const rank=c=>{ let x=c; while(x){ const i=ord.indexOf(x.id); if(i>=0) return i; x=x.parentId&&S.comments.get(x.parentId); } return 999; }; tops.sort((a,b)=>rank(a)-rank(b)); }
+  const parent=t.parentId&&S.topics.get(t.parentId), oc=t.originCommentId&&S.comments.get(t.originCommentId);
+  const chain=[]; { let p=t, guard=0; while(p.parentId&&S.topics.get(p.parentId)&&guard++<20){ p=S.topics.get(p.parentId); chain.unshift(p); } }
+  const root=rootOf(t), family=1+descCount(root.id), hasTree=family>1;
+  const following=IX.myFollows.has(id);
+  const mine=S.me&&S.reviews.get(id+"__"+S.me);
+  const related=[...S.topics.values()].filter(x=>x.id!==id&&rootOf(x).id!==root.id&&(x.tags||[]).some(g=>(t.tags||[]).includes(g)||x.category===t.category)).sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id)).slice(0,5);
+  const battles=(IX.bByTopic.get(id)||[]).filter(b=>!b.commentId).sort((a,b)=>b.createdAt-a.createdAt);
+  const cbattles=(IX.bByTopic.get(id)||[]).filter(b=>b.commentId&&b.endsAt>Date.now());
+  const ocAuthor=oc&&oc.authorId;
+  const graph = hasTree ? `<div class="panel"><h3>${L("Topic graph")}</h3><p class="muted" style="margin:0 0 8px;font-size:13px">${family} topics in this conversation family${ocAuthor?`. This one was sparked by ${esc(nameOf(ocAuthor))}`:""}.</p><ul class="tree">${treeHTML(root.id,id)}</ul></div>` : `<div class="panel"><h3>${L("Topic graph")}</h3><p class="muted" style="margin:0;font-size:14px">No branches yet. Use <b style="color:var(--brand-deep)">${L("Branch into topic")}</b> on any comment to start one.</p></div>`;
+  const relHTML = related.length ? `<div class="panel"><h3>Related discussions</h3><div class="list" style="border:0">${related.map(x=>`<a href="#t-${x.id}" style="padding:8px 0"><div class="txt"><b style="font-size:14px">${esc(x.title)}</b><div class="meta"><span>${esc(x.category)}</span><span>${stat(x.id).comments} comments</span></div></div></a>`).join("")}</div></div>` : "";
+  const sortBar = tops.length>1 ? `<div class="sortbar"><div class="seg">${[["top",L("Top")],["new",L("New")],["other",L("Other side first")]].map(([k,l])=>`<button class="${UI.csort===k?"on":""}" data-act="csort" data-v="${k}" data-id="${id}">${l}</button>`).join("")}</div>
+    ${sampleFn&&cs.length>=3&&!UI.ai[id]&&!UI.aiBusy[id]?`<button class="btn sm" data-act="catchUp" data-id="${id}">${L("Catch me up")}</button>`:""}</div>` : "";
+  const discussion = `
+    ${aiPanel(t,cs.length)}
+    <div class="composer">${S.me?avatar(S.me):""}<div class="box">
+      <textarea id="newc" rows="2" placeholder="${t.kind==="question"?"Answer the question…":"Add to the discussion…"} @name to tag, #tags to link. ${L("Tamil, Tanglish or English. All welcome.")}"></textarea>
+      <button class="btn pri sm" data-act="postComment" data-topic="${id}">${L("Post")}</button></div></div>
+    ${sortBar}
+    ${UI.csort==="other"&&!otherIds.size&&!UI.aiBusy[id]?`<div class="muted" style="font-size:13.5px;margin-bottom:10px">${sampleFn?"Claude needs to read the thread first to find the pushback.":"Finding the other side needs Claude, which isn’t available in this view."}</div>`:""}
+    ${tops.length?tops.map(c=>commentNode(c,t,0,otherIds)).join(""):emptyBox("No comments yet","Say what you think. Good comments can become topics of their own.")}`;
+  const reviews = `
+    ${UI.rvOpen?reviewForm(t,mine):`<div style="margin-bottom:12px"><button class="btn sm ${mine?"":"pri"}" data-act="openReview">${mine?"Edit your review":L("Write a review")}</button></div>`}
+    ${rs.length?`<div>${rs.map(r=>reviewNode(r)).join("")}</div>`:(UI.rvOpen?"":emptyBox("No reviews yet","Rate it from 1 to 5 and say why."))}`;
+
+  return `<div class="tp"><div>
+    ${chain.length?`<div class="lineage"><span>Branched from</span>${chain.map(p=>`<a href="#t-${p.id}">${esc(p.title)}</a>`).join("<span>›</span>")}</div>`:""}
+    <div class="thead"><div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>
+      <div style="min-width:0"><div class="meta"><span>${esc(t.category)}</span>${t.kind!=="topic"?`<span>${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" style="color:var(--brand-deep);font-weight:600">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}</span></div>
+      <h1>${esc(t.title)}</h1></div></div>
+    ${(()=>{ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private";
+      if(t.madePublic) return `<div class="gbanner">Started in the group <a href="#g-${esc(g.id)}">${esc(g.name)}</a> and made public${t.publicAt?" "+ago(t.publicAt)+" ago":""}.</div>`;
+      const canPub=priv&&(S.me===t.authorId||isAdmin(g.id));
+      return `<div class="gbanner">${priv?LOCK+" Only members of":"Posted in"} <a href="#g-${esc(g.id)}">${esc(g.name)}</a>${priv?" can see this.":"."}${canPub?` <button class="btn sm" data-act="makePublic" data-id="${t.id}" style="margin-left:6px">Make public</button>`:""}</div>`; })()}
+    ${parent&&oc?`<div class="origin">Started from ${who(oc.authorId)}’s comment in <a href="#t-${parent.id}~${oc.id}" style="color:var(--brand-deep);font-weight:600">${esc(parent.title)}</a>: <q>${esc(oc.text.slice(0,180))}${oc.text.length>180?"…":""}</q></div>`:""}
+    ${t.desc?`<p class="desc ctext">${rich(t.desc)}</p>`:""}
+    ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
+    <div style="margin-top:16px">${topicAnswerBox(t)}</div>
+    ${t.kind==="prediction"?`<div style="margin-top:16px">${predCard(t)}</div>`:""}
+    ${battles.map(b=>`<div style="margin-top:16px">${battleCard(b)}</div>`).join("")}
+    <div class="tbar">
+      <button class="btn sm ${following?"":"pri"}" data-act="follow" data-id="${id}">${following?L("Following"):L("Follow")} · ${s.followers}</button>
+      <button class="btn sm" data-act="openReview">${mine?"Edit review":L("Review")}</button>
+      <button class="btn sm" data-act="shareTopic" data-id="${id}">${ICON.share}${L("Share card")}</button>
+    </div>
+    ${(()=>{ const ds=(IX.dByTopic.get(id)||[]).filter(d=>["voting","active","pending"].includes(duelState(d).phase)); return ds.length?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">${ds.map(d=>`<a class="bout" href="#d-${esc(d.id)}">${ICON.duel.replace("<svg",'<svg width="14" height="14"')}Debate: ${esc(nameOf(d.challengerId))} vs ${esc(nameOf(d.opponentId))} · ${duelState(d).phase==="voting"?"vote now":duelState(d).phase==="active"?"in progress":"waiting to start"}</a>`).join("")}</div>`:""; })()}
+    ${cbattles.length?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">${cbattles.map(b=>`<a class="bout" href="#t-${id}~${b.commentId}">${ICON.vs.replace("<svg",'<svg width="14" height="14"')}Live battle: ${esc(b.a)} vs ${esc(b.b)} · ends in ${left(b.endsAt-Date.now())}</a>`).join("")}</div>`:""}
+    <div class="tabs">
+      <button class="${UI.tab==="discussion"?"on":""}" data-act="tab" data-v="discussion">${L("Discussion")} · ${s.comments}</button>
+      <button class="${UI.tab==="reviews"?"on":""}" data-act="tab" data-v="reviews">${L("Reviews")} · ${s.reviews}</button>
+    </div>
+    ${UI.tab==="reviews"?reviews:discussion}
+  </div>
+  <aside class="rail">${verdictPanel(t,rs)}${graph}${relHTML}</aside></div>`;
+}
+function commentNode(c,t,depth,otherIds){
+  const kids=(IX.cKids.get(c.id)||[]).sort((a,b)=>a.createdAt-b.createdAt);
+  const outs=IX.tByOrigin.get(c.id)||[], bts=IX.bByComment.get(c.id)||[];
+  const n=likes(c), on=IX.myLikes.has(c.id);
+  return `<div class="cmt" id="c-${c.id}">${avatar(c.authorId,depth?"xs":"")}<div class="main">
+    <div class="head">${who(c.authorId)}${c.authorId===t.authorId?'<span class="op">OP</span>':""}${otherIds&&otherIds.has(c.id)?'<span class="otherchip">Other side</span>':""}<span class="muted">· ${ago(c.createdAt)}</span>${outs.length?`<span class="op" title="Topics started from this comment">Sparked ${outs.length} topic${outs.length>1?"s":""}</span>`:""}</div>
+    <div class="ctext">${rich(c.text)}</div>
+    ${outs.map(b=>`<a class="bout" href="#t-${b.id}">${ICON.branch.replace("<svg",'<svg width="14" height="14"')}Became a topic: ${esc(b.title)} ↗</a>`).join(" ")}
+    ${bts.map(b=>battleCard(b,{inline:true})).join("")}
+    ${(IX.dByComment.get(c.id)||[]).filter(d=>{ const p=duelState(d).phase; return p!=="declined"&&p!=="expired"; }).map(duelMini).join("")}
+    <div class="actions">
+      <button class="act ${on?"on":""}" data-act="like" data-id="${c.id}" data-kind="comment" aria-pressed="${on}">${ICON.up}${n}</button>
+      <button class="act" data-act="reply" data-id="${c.id}">${ICON.reply}${L("Reply")}</button>
+      <button class="act br" data-act="branch" data-id="${c.id}">${ICON.branch}${L("Branch into topic")} ↗</button>
+      <button class="act br" data-act="settle" data-id="${c.id}">${ICON.vs}${L("Settle it")}</button>
+      ${c.authorId!==S.me?`<button class="act br" data-act="duel" data-id="${c.id}">${ICON.duel}${L("Challenge to a duel")}</button>`:""}
+    </div>
+    ${UI.replyOpen.has(c.id)?`<div class="composer" style="margin:6px 0 4px"><div class="box"><textarea id="r-${c.id}" rows="2" placeholder="Reply to ${esc(nameOf(c.authorId))}…"></textarea><div style="display:flex;gap:6px"><button class="btn sm" data-act="reply" data-id="${c.id}">Cancel</button><button class="btn pri sm" data-act="postReply" data-id="${c.id}">${L("Reply")}</button></div></div></div>`:""}
+    ${kids.length?`<div class="kids">${kids.map(k=>commentNode(k,t,depth+1,otherIds)).join("")}</div>`:""}
+  </div></div>`;
+}
+function reviewNode(r){
+  const n=likes(r), on=IX.myLikes.has(r.id);
+  return `<div class="rv"><div class="head" style="display:flex;gap:8px;align-items:center;font-size:13.5px">${avatar(r.authorId)}<div>${who(r.authorId)}<div class="muted" style="font-size:12px">${ago(r.createdAt)}${r.updatedAt?" · edited":""}</div></div></div>
+    <div class="stars" style="margin-top:8px">${stars(r.rating)}</div>
+    ${r.title?`<h4>${esc(r.title)}</h4>`:""}
+    ${r.text?`<div class="ctext">${rich(r.text)}</div>`:""}
+    ${r.pros||r.cons?`<div class="pros">${r.pros?`<div class="p"><b>Pros</b>${esc(r.pros)}</div>`:""}${r.cons?`<div class="c"><b>Cons</b>${esc(r.cons)}</div>`:""}</div>`:""}
+    <div class="actions"><button class="act ${on?"on":""}" data-act="like" data-id="${r.id}" data-kind="review" aria-pressed="${on}">${ICON.up}Helpful · ${n}</button></div></div>`;
+}
+function reviewForm(t,mine){
+  if (UI.rvRating===0 && mine) UI.rvRating=mine.rating;
+  return `<div class="form"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-family:var(--f-display);font-size:18px">${mine?"Edit your review":"Your review"}</b>
+    <div class="starpick" role="radiogroup" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button class="${n<=UI.rvRating?"on":""}" data-act="star" data-v="${n}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}</div></div>
+    <input class="f" id="rv-title" placeholder="Headline (e.g. Best zoom camera I’ve used)" maxlength="100" value="${esc(mine?.title||"")}">
+    <textarea id="rv-text" rows="4" placeholder="What was it like?">${esc(mine?.text||"")}</textarea>
+    <div class="row2"><input class="f" id="rv-pros" placeholder="Pros, comma separated" value="${esc(mine?.pros||"")}"><input class="f" id="rv-cons" placeholder="Cons, comma separated" value="${esc(mine?.cons||"")}"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn sm" data-act="closeReview">Cancel</button><button class="btn pri sm" data-act="saveReview" data-topic="${t.id}">${mine?"Update review":"Post review"}</button></div></div>`;
+}
+
+function vAlerts(){
+  if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
+  const ns=[...S.notifs].sort((a,b)=>b.createdAt-a.createdAt);
+  const label={reply:"replied to you",mention:"mentioned you",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open"};
+  return `<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read)?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
+  ${ns.length?`<div class="list">${ns.map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); return `<a href="${n.duelId?"#d-"+esc(n.duelId):n.type==="joined"?"#g-"+esc(n.groupId):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}" style="${n.read?"":"background:var(--brand-soft)"}">${avatar(n.from)}<div class="txt"><div><b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div></div></a>`; }).join("")}</div>`
+   :emptyBox("You’re all caught up","Replies, @mentions, branches and battles from your comments, and activity on topics you follow show up here.")}`;
+}
+
+function vProfile(id){
+  if(!id) return emptyBox("Sign in to see your profile","Open this page in claude.ai while signed in.");
+  const h=S.handles.get(id), isMe=id===S.me;
+  const ts=[...S.topics.values()].filter(t=>t.authorId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  const cs=[...S.comments.values()].filter(c=>c.authorId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  const rs=[...S.reviews.values()].filter(r=>r.authorId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  const branchesFrom=cs.reduce((a,c)=>a+(IX.tByOrigin.get(c.id)||[]).length,0);
+  const myPv=[...S.pvotes.values()].filter(v=>v.userId===id);
+  const resolved=myPv.filter(v=>S.topics.get(v.topicId)?.outcome), correct=resolved.filter(v=>S.topics.get(v.topicId).outcome===v.side).length;
+  const rep=cs.reduce((a,c)=>a+likes(c),0)+rs.reduce((a,r)=>a+5*likes(r),0)+2*rs.length+3*ts.length+10*branchesFrom+5*correct;
+  const lvls=[[0,"New member"],[20,"Contributor"],[60,"Reviewer"],[150,"Community expert"],[400,"Topic master"]];
+  const lvl=lvls.filter(l=>rep>=l[0]).pop();
+  const sparks=cs.filter(c=>(IX.tByOrigin.get(c.id)||[]).length);
+  const rec=duelRecord(id), myDuels=[...S.duels.values()].filter(d=>d.challengerId===id||d.opponentId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  const tabs=[["topics","Topics",ts.length],["duels","Debates",myDuels.length],["sparks","Sparked",branchesFrom],["reviews","Reviews",rs.length],["comments","Comments",cs.length]];
+  let body="";
+  if(UI.ptab==="topics") body=ts.length?`<div class="grid">${ts.map(t=>topicCard(t)).join("")}</div>`:emptyBox("No topics yet","");
+  if(UI.ptab==="duels") body=myDuels.length?`<div class="grid b">${myDuels.map(duelMini).join("")}</div>`:emptyBox("No debates yet","Challenge someone from any comment you disagree with.");
+  if(UI.ptab==="sparks") body=sparks.length?`<div class="list">${sparks.map(c=>(IX.tByOrigin.get(c.id)||[]).map(b=>`<a href="#t-${b.id}"><div class="txt"><div class="q muted">“${esc(c.text.slice(0,120))}”</div><b>↳ ${esc(b.title)}</b><div class="meta">${stat(b.id).comments} comments · ${ago(b.createdAt)}</div></div></a>`).join("")).join("")}</div>`:emptyBox("No sparks yet","When someone branches one of your comments into a new topic, it shows up here.");
+  if(UI.ptab==="reviews") body=rs.length?`<div class="list">${rs.map(r=>{const t=S.topics.get(r.topicId);return t?`<a href="#t-${t.id}"><div class="txt"><span class="stars">${stars(r.rating)}</span> <b>${esc(t.title)}</b><div class="q muted">${esc(r.title||r.text)}</div></div></a>`:""}).join("")}</div>`:emptyBox("No reviews yet","");
+  if(UI.ptab==="comments") body=cs.length?`<div class="list">${cs.slice(0,40).map(c=>{const t=S.topics.get(c.topicId);return t?`<a href="#t-${t.id}~${c.id}"><div class="txt"><div class="meta">in ${esc(t.title)} · ${ago(c.createdAt)} · ${likes(c)} likes</div><div class="q">${esc(c.text)}</div></div></a>`:""}).join("")}</div>`:emptyBox("No comments yet","");
+  return `<div class="phead">${avatar(id,"lg")}<div style="min-width:0"><h1>${esc(nameOf(id))}${isSeed(id)?' <span class="sample">sample account</span>':""}</h1>
+     ${h?.bio?`<p style="margin:4px 0 0">${esc(h.bio)}</p>`:""}<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="lvl">${lvl[1]}</span>${isMe?`<button class="btn sm" data-act="editHandle">Edit profile</button>`:""}</div></div></div>
+   <div class="kpis"><div><b>${rec.total?`${rec.w}–${rec.l}${rec.d?"–"+rec.d:""}`:"–"}</b>Debate record${rec.total?` · ${Math.round(100*rec.w/rec.total)}% wins`:""}</div><div><b>${rep}</b>Reputation</div><div><b>${branchesFrom}</b>Topics sparked</div><div><b>${resolved.length?correct+"/"+resolved.length:"–"}</b>Called it</div><div><b>${ts.length}</b>Topics</div><div><b>${rs.length}</b>Reviews</div><div><b>${cs.length}</b>Comments</div></div>
+   <div class="tabs">${tabs.map(([k,l,n])=>`<button class="${UI.ptab===k?"on":""}" data-act="ptab" data-v="${k}">${l} · ${n}</button>`).join("")}</div>${body}
+   ${isMe&&S.isOwner?`<div class="panel" style="margin-top:28px"><h3>Owner tools</h3><p class="muted" style="margin:0 0 10px;font-size:14px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button></div>`:""}`;
+}
+
+/* ---------- render ---------- */
+let rq=0;
+function schedule(){ if(rq) return; rq=requestAnimationFrame(()=>{ rq=0; render(); }); }
+const parseRoute = () => { try{ return decodeURIComponent(location.hash.slice(1)||"home"); }catch{ return "home"; } };
+function render(){
+  buildIndex();
+  const r=parseRoute(), changed=r!==UI.lastRoute;
+  const keep={}; let fid=null, sel=null;
+  if(!changed){ view.querySelectorAll("input[id],textarea[id],select[id]").forEach(el=>keep[el.id]=el.value);
+    const ae=document.activeElement; if(ae&&ae.id&&view.contains(ae)){ fid=ae.id; try{ sel=[ae.selectionStart,ae.selectionEnd]; }catch{} } }
+  else { UI.replyOpen.clear(); UI.rvOpen=false; UI.rvRating=0; UI.csort="top"; }
+  let html="", focusC=null;
+  if(r==="home") html=vHome();
+  else if(r==="explore") html=vExplore();
+  else if(r==="alerts") html=vAlerts();
+  else if(r==="search"){ html=vSearch(); const qq=UI.query.trim(); if(qq&&sampleFn&&!UI.ans[qq.toLowerCase()]&&qWords(qq).length>=2){ const rr=searchAll(qq,5); if(rr.topics.length) setTimeout(()=>askAnswer(qq,rr.topics),0); } }
+  else if(r==="me") html=vProfile(S.me);
+  else if(r.startsWith("u-")) html=vProfile(r.slice(2));
+  else if(r.startsWith("tag-")) html=vTag(r.slice(4).toLowerCase());
+  else if(r.startsWith("city-")) html=vCity(r.slice(5));
+  else if(r==="groups") html=vGroups();
+  else if(r.startsWith("d-")) html=vDuel(r.slice(2));
+  else if(r.startsWith("g-")) html=vGroup(r.slice(2));
+  else if(r.startsWith("t-")){ const [tid,cid]=r.slice(2).split("~"); if(changed){ UI.tab=cid&&S.reviews.has(cid)?"reviews":"discussion"; if(UI.pendingReview===tid){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; } } focusC=cid; html=vTopic(tid); }
+  else html=vHome();
+  view.innerHTML=html;
+  for(const id in keep){ const el=document.getElementById(id); if(el) el.value=keep[id]; }
+  if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
+  if(changed){ UI.lastRoute=r;
+    const el=focusC&&document.getElementById("c-"+focusC);
+    if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); } else window.scrollTo(0,0); }
+  document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="groups"&&r.startsWith("g-"))));
+  document.querySelectorAll("[data-l]").forEach(el=>el.textContent=L(el.dataset.l));
+  $("#langBtn").textContent=UI.lang==="ta"?"EN":"தமிழ்";
+  const unread=S.notifs.filter(n=>!n.read).length;
+  for(const b of [$("#bell"),$("#bell2")]){ b.hidden=!unread; b.textContent=unread>9?"9+":unread; }
+  $("#meLink").innerHTML=S.me?avatar(S.me):`<span class="av" style="--h:150">?</span>`;
+  renderBanner();
+  resolveNames();
+}
+function renderBanner(){
+  let msg="";
+  if(S.dbOk===false) msg="This is the TopicTalk prototype. Open it in claude.ai while signed in to read and post.";
+  else if(S.dbOk===null) msg="Loading discussions…";
+  else if(S.readOnly) msg="You can read everything here. To post, ask the owner to give you Contributor access.";
+  $("#banner").innerHTML=msg?`<div class="banner">${esc(msg)}</div>`:"";
+}
+let resolving=false;
+async function resolveNames(){
+  if(!user||resolving) return;
+  const ids=new Set(); const add=id=>{ if(id&&!isSeed(id)&&!handleOf(id)&&!(id in pcache)) ids.add(id); };
+  S.topics.forEach(t=>add(t.authorId)); S.comments.forEach(c=>add(c.authorId)); S.reviews.forEach(r=>add(r.authorId)); S.battles.forEach(b=>add(b.authorId)); S.duels.forEach(d=>{ add(d.challengerId); add(d.opponentId); }); S.notifs.forEach(n=>add(n.from)); add(S.me);
+  if(!ids.size) return;
+  resolving=true;
+  try{ const ps=await user.profiles([...ids]); for(const id of ids) pcache[id]={name:ps[id]?.name||"",avatarUrl:ps[id]?.avatarUrl||""}; } catch{ for(const id of ids) pcache[id]={name:"",avatarUrl:""}; }
+  resolving=false; schedule();
+}
+
+/* ---------- writes ---------- */
+async function W(fn){
+  try{ await fn(); return true; }
+  catch(e){
+    if(e&&e.code==="invalid_argument"){ S.readOnly=true; renderBanner(); toast("You can’t post here yet. Ask the owner for Contributor access."); }
+    else if(e&&e.code==="quota_exceeded") toast("Storage is full. The owner needs to remove old content.");
+    else if(e&&e.code==="resource_exhausted") toast("Slow down a little, then try again.");
+    else toast("Couldn’t save. Check your connection and try again.");
+    return false;
+  }
+}
+async function gate(){
+  if(!db||!S.me){ toast("Open this page in claude.ai while signed in to post."); return false; }
+  if(S.readOnly){ toast("You can read here, but not post. Ask the owner for Contributor access."); return false; }
+  if(!handleOf(S.me)) return await askHandle();
+  return true;
+}
+function rateOk(text){
+  const now=Date.now();
+  if(now-UI.lastPost<4000){ toast("Wait a few seconds before posting again."); return false; }
+  if(text){ const dup=[...S.comments.values()].some(c=>c.authorId===S.me&&c.text.trim()===text.trim()&&now-c.createdAt<600000); if(dup){ toast("You just posted that."); return false; } }
+  UI.lastPost=now; return true;
+}
+async function notify(list, base){
+  const seen=new Set();
+  for(const [to,type] of list){
+    if(!to||to===S.me||isSeed(to)||seen.has(to)) continue; seen.add(to);
+    try{ await db.collection("notifs").add({...base,to,type,from:S.me,createdAt:Date.now(),read:false}); }catch{}
+  }
+}
+function notifyGroup(gid,tid,text){ if(!gid) return; notify((IX.gMem.get(gid)||[]).map(m=>[m.userId,"grouppost"]),{topicId:tid,text,groupId:gid}); }
+const followersOf = tid => (IX.fByTopic.get(tid)||[]);
+async function ensureFollow(tid){ if(!IX.myFollows.has(tid)){ try{ await db.doc(`follows/${tid}__${S.me}`).set({topicId:tid,userId:S.me,createdAt:Date.now()}); }catch{} } }
+async function postComment(topicId, parentId, text){
+  text=text.trim(); if(!text) { toast("Write something first."); return false; }
+  if(text.length>3000){ toast("Keep it under 3,000 characters."); return false; }
+  if(!(await gate())||!rateOk(text)) return false;
+  const id=rid("c");
+  const ok=await W(()=>db.doc("comments/"+id).set({topicId,parentId:parentId||null,authorId:S.me,text,createdAt:Date.now()}));
+  if(!ok) return false;
+  const parent=parentId&&S.comments.get(parentId);
+  const list=[]; if(parent) list.push([parent.authorId,"reply"]);
+  mentionsIn(text).forEach(u=>list.push([u,"mention"]));
+  followersOf(topicId).forEach(u=>list.push([u,"comment"]));
+  ensureFollow(topicId);
+  notify(list,{topicId,commentId:id,text:text.slice(0,140)});
+  return true;
+}
+
+/* ---------- Catch me up / other side (Claude) ---------- */
+async function analyze(tid){
+  if(!sampleFn||UI.aiBusy[tid]) return;
+  const t=S.topics.get(tid); const cs=(IX.cByTopic.get(tid)||[]).sort((a,b)=>likes(b)-likes(a)).slice(0,120);
+  const rs=(IX.rByTopic.get(tid)||[]).slice(0,30);
+  const prompt=`You summarize a discussion thread from TopicTalk, an Indian social discussion site. Comments may be in English, Tamil or Tanglish. Write your answer in simple, plain English.
+
+Topic: ${t.title}
+Description: ${(t.desc||"").slice(0,500)}
+${rs.length?`Reviews (rating out of 5):\n${rs.map(r=>`- ${r.rating}/5: ${(r.title||"")} ${(r.text||"").slice(0,200)} Pros: ${r.pros||"-"} Cons: ${r.cons||"-"}`).join("\n")}\n`:""}
+Comments (id | likes | text):
+${cs.map(c=>`${c.id} | ${likes(c)} | ${c.text.replace(/\s+/g," ").slice(0,300)}`).join("\n")}
+
+Reply with only a JSON object in this shape:
+{"tldr":"one or two sentences on where the conversation stands","agree":["up to 3 short points most people agree on"],"debates":[{"issue":"what people disagree about","side_a":"the strongest point for one side","side_b":"the strongest point for the other side"}],"other_side_ids":["ids of comments that push back on the most popular view, strongest first"]}
+Use at most 3 debates and at most 6 ids. Only use ids from the list above.`;
+  UI.aiBusy[tid]=true; schedule();
+  try{
+    const a=await sampleFn.json(prompt,{modelTier:"quick"});
+    UI.ai[tid]={ tldr:String(a?.tldr||""), agree:Array.isArray(a?.agree)?a.agree.map(String).slice(0,3):[], debates:Array.isArray(a?.debates)?a.debates.slice(0,3):[], other_side_ids:Array.isArray(a?.other_side_ids)?a.other_side_ids.map(String):[] };
+  }catch(e){
+    const msg={not_granted:"Claude wasn’t allowed for this page, so summaries are off.",sampling_disabled:"Claude isn’t available on this account.",rate_limited:"Too many requests right now. Try again in a minute.",invalid_json:"The summary came back garbled. Try again.",refused:"Claude couldn’t summarize this thread.",cancelled:null}[e?.code];
+    if(e?.code==="not_granted"||e?.code==="sampling_disabled") sampleFn=null;
+    UI.ai[tid]= msg===null ? undefined : {error: msg||"Couldn’t summarize right now. Try again."};
+  }
+  UI.aiBusy[tid]=false; schedule();
+}
+
+/* ---------- community answers ---------- */
+function topicDigest(t, maxC){
+  const st=stat(t.id), rs=IX.rByTopic.get(t.id)||[];
+  const lines=[`TOPIC ${t.id}: ${t.title} (${t.category}${t.location?", "+t.location:""})`];
+  if(t.desc) lines.push(`Description: ${t.desc.slice(0,300)}`);
+  if(rs.length){ const rec=Math.round(100*rs.filter(r=>r.rating>=4).length/rs.length); lines.push(`Reviews: ${st.avg.toFixed(1)}/5 from ${rs.length} reviews, ${rec}% recommend.`); rs.slice(0,8).forEach(r=>lines.push(`- review ${r.rating}/5: ${(r.title||"")} ${(r.text||"").slice(0,160)} Pros: ${r.pros||"-"} Cons: ${r.cons||"-"}`)); }
+  for(const b of IX.bByTopic.get(t.id)||[]){ const s=battleState(b); lines.push(`Battle "${b.question}": ${b.a} ${s.pa}% vs ${b.b} ${s.pb}% (${s.n} votes, ${s.ended?(s.winner==="tie"?"ended in a tie":"ended, winner "+(s.winner==="a"?b.a:b.b)):"still open"})`); }
+  if(t.kind==="prediction"){ const p=IX.pv.get(t.id), n=p.yes+p.no; lines.push(`Prediction: ${n?Math.round(100*p.yes/n):0}% say yes (${n} votes)${t.outcome?", resolved "+t.outcome.toUpperCase():", unresolved"}.`); }
+  if(t.answer?.text) lines.push(`Previously written community answer: ${t.answer.text}`);
+  const cs=(IX.cByTopic.get(t.id)||[]).sort((a,b)=>likes(b)-likes(a)).slice(0,maxC);
+  if(cs.length){ lines.push("Comments (id | likes | text):"); cs.forEach(c=>lines.push(`${c.id} | ${likes(c)} | ${c.text.replace(/\s+/g," ").slice(0,280)}`)); }
+  return lines.join("\n");
+}
+function answerPrompt(question, topics){
+  return `Someone asked TopicTalk, an Indian community discussion site: "${question}"
+
+Answer using ONLY the community content below. Comments may be in English, Tamil or Tanglish. Write in simple, plain English. Be direct: lead with the answer, then why. Mention vote percentages or ratings when they help. If people disagree, say so briefly. If the content does not actually answer the question, set "answered" to false.
+
+${topics.map(t=>topicDigest(t, topics.length>2?15:30)).join("\n\n")}
+
+Reply with only a JSON object:
+{"answered":true,"answer":"2-3 sentences that directly answer the question","points":["up to 3 short supporting points from the community"],"source_ids":["up to 5 comment ids or topic ids you relied on, most important first"]}`;
+}
+function cleanAnswer(a){ return { answered:a?.answered!==false, text:String(a?.answer||"").slice(0,900), points:Array.isArray(a?.points)?a.points.map(x=>String(x).slice(0,240)).slice(0,3):[], sources:Array.isArray(a?.source_ids)?a.source_ids.map(String).filter(x=>S.comments.has(x)||S.topics.has(x)).slice(0,5):[] }; }
+async function askAnswer(q, topics){
+  const key=q.toLowerCase(); if(!sampleFn||UI.ans[key]) return;
+  UI.ans[key]={busy:true}; schedule();
+  try{ UI.ans[key]={data:cleanAnswer(await sampleFn.json(answerPrompt(q,topics.slice(0,5)),{modelTier:"quick"})), n:topics.slice(0,5).reduce((a,t)=>a+stat(t.id).comments,0), topics:topics.slice(0,5).length}; }
+  catch(e){ if(e?.code==="not_granted"||e?.code==="sampling_disabled") sampleFn=null; UI.ans[key]= e?.code==="cancelled"?undefined:{error:e?.code==="rate_limited"?"Too many requests right now. Showing the top community post instead.":"Showing the top community post instead."}; }
+  schedule();
+}
+function sourceLinks(ids){
+  return ids.map(id=>{ const c=S.comments.get(id); if(c){ const t=S.topics.get(c.topicId); return t?`<a class="src" href="#t-${t.id}~${c.id}"><b>${esc(nameOf(c.authorId))}</b> in ${esc(t.title)}: “${esc(c.text.slice(0,90))}${c.text.length>90?"…":""}”</a>`:""; }
+    const t=S.topics.get(id); return t?`<a class="src" href="#t-${t.id}"><b>Topic</b>: ${esc(t.title)}</a>`:""; }).join("");
+}
+function fallbackAnswer(t){
+  // no Claude: the strongest single signal from the best-matching topic
+  if(t.answer?.text) return {text:t.answer.text, points:t.answer.points||[], sources:t.answer.sources||[], label:"Saved community answer"};
+  const st=stat(t.id), bs=(IX.bByTopic.get(t.id)||[]), top=(IX.cByTopic.get(t.id)||[]).sort((a,b)=>likes(b)-likes(a))[0];
+  const pts=[];
+  if(st.reviews) pts.push(`Rated ${st.avg.toFixed(1)}/5 by ${st.reviews} reviewer${st.reviews>1?"s":""}.`);
+  for(const b of bs){ const s=battleState(b); pts.push(s.ended?(s.winner==="tie"?`Battle “${b.question}” ended in a tie.`:`Battle “${b.question}”: ${s.winner==="a"?b.a:b.b} won with ${Math.max(s.pa,s.pb)}%.`):`Live battle: ${b.a} ${s.pa}% vs ${b.b} ${s.pb}%.`); }
+  return {text: top?`Top answer from ${nameOf(top.authorId)}: “${top.text}”`:`See the discussion in “${t.title}”.`, points:pts.slice(0,3), sources: top?[top.id]:[t.id], label:"Top community answer"};
+}
+function answerPanel(q, topics){
+  const key=q.toLowerCase(), A=UI.ans[key];
+  const best=topics[0];
+  if(A?.busy) return `<div class="answer"><div class="ahead">Community answer</div><div class="muted">Reading ${topics.slice(0,5).reduce((a,t)=>a+stat(t.id).comments,0)} comments across ${Math.min(5,topics.length)} conversation${topics.length>1?"s":""}…</div></div>`;
+  if(A?.data){
+    const d=A.data;
+    if(!d.answered) return `<div class="answer"><div class="ahead">Community answer</div><div class="atext">The community hasn’t answered this exactly yet.</div><div class="muted" style="font-size:14px">The closest conversations are below. Ask it directly and people can answer.</div><div><button class="btn pri sm" data-act="newQuestion" data-title="${esc(q)}">Ask the community</button></div></div>`;
+    return `<div class="answer"><div class="ahead">Community answer</div><div class="atext">${esc(d.text)}</div>
+      ${d.points.length?`<ul>${d.points.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+      ${d.sources.length?`<div class="srcs"><div class="ahead" style="margin-bottom:2px">From these posts</div>${sourceLinks(d.sources)}</div>`:""}
+      <div class="afoot">Based on ${A.n} comments in ${A.topics} conversation${A.topics>1?"s":""}. Written by Claude from what people said here. Check the posts before you rely on it. <button class="act" data-act="newQuestion" data-title="${esc(q)}">Not answered? Ask it</button></div></div>`;
+  }
+  const f=fallbackAnswer(best);
+  return `<div class="answer"><div class="ahead">${f.label}</div><div class="atext">${esc(f.text)}</div>
+    ${f.points.length?`<ul>${f.points.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+    ${f.sources.length?`<div class="srcs">${sourceLinks(f.sources)}</div>`:""}
+    ${A?.error?`<div class="afoot">${esc(A.error)}</div>`:sampleFn?`<div><button class="btn sm" data-act="askAnswer">Get a full answer from all ${topics.length>5?5:topics.length} conversations</button></div>`:""}</div>`;
+}
+function topicAnswerBox(t){
+  const a=t.answer, n=stat(t.id).comments;
+  if(!a?.text){
+    if(sampleFn&&n>=3) return `<div class="answer slim"><div class="ahead">Community answer</div><div class="muted" style="font-size:14px">Sum up what this conversation has concluded, so people searching get the answer straight away.</div><div><button class="btn sm" data-act="writeAnswer" data-id="${t.id}" ${UI.ansBusy===t.id?"disabled":""}>${UI.ansBusy===t.id?"Writing…":"Write the community answer"}</button></div></div>`;
+    return "";
+  }
+  const stale=n-(a.commentCount||0);
+  return `<div class="answer"><div class="ahead">Community answer</div><div class="atext">${esc(a.text)}</div>
+    ${(a.points||[]).length?`<ul>${a.points.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}
+    ${(a.sources||[]).length?`<details class="srcs"><summary>From these posts</summary>${sourceLinks(a.sources)}</details>`:""}
+    <div class="afoot">Summed up from ${a.commentCount||0} comments · updated ${ago(a.at)}${stale>0?` · ${stale} new comment${stale>1?"s":""} since`:""}${sampleFn&&stale>0?` <button class="act" data-act="writeAnswer" data-id="${t.id}" ${UI.ansBusy===t.id?"disabled":""}>${UI.ansBusy===t.id?"Updating…":"Update"}</button>`:""}</div></div>`;
+}
+async function writeAnswer(tid){
+  const t=S.topics.get(tid); if(!t||!sampleFn) return;
+  if(!(await gate())) return;
+  UI.ansBusy=tid; schedule();
+  try{
+    const d=cleanAnswer(await sampleFn.json(answerPrompt(t.kind==="question"?t.title:`What does the community think about: ${t.title}`,[t]),{modelTier:"quick",cache:false}));
+    if(!d.answered||!d.text){ toast("There isn’t enough in this conversation to sum up yet."); }
+    else if(await W(()=>db.doc("topics/"+tid).update({answer:{text:d.text,points:d.points,sources:d.sources,at:Date.now(),commentCount:stat(tid).comments,by:S.me}}))) toast("Community answer saved. Everyone sees it now.");
+  }catch(e){ if(e?.code==="not_granted"||e?.code==="sampling_disabled"){ sampleFn=null; toast("Claude isn’t allowed on this page, so answers can’t be written."); } else if(e?.code!=="cancelled") toast("Couldn’t write the answer. Try again."); }
+  UI.ansBusy=null; schedule();
+}
+
+/* ---------- share cards ---------- */
+function wrap(x, text, maxW, maxLines){
+  const words=String(text).split(/\s+/), lines=[]; let line="";
+  for(const w of words){ const tryL=line?line+" "+w:w; if(x.measureText(tryL).width>maxW&&line){ lines.push(line); line=w; } else line=tryL; }
+  if(line) lines.push(line);
+  if(lines.length>maxLines){ lines.length=maxLines; lines[maxLines-1]=lines[maxLines-1].replace(/\s*\S*$/,"")+"…"; }
+  return lines;
+}
+async function makeCard(kind, id){
+  try{ await document.fonts.ready; }catch{}
+  const W=1080,H=1350, c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+  const D='"Bricolage Grotesque","Noto Sans Tamil",system-ui,sans-serif', B='"Schibsted Grotesk","Noto Sans Tamil",system-ui,sans-serif';
+  const bg="#0C2A1E", ink="#F2F7F4", mut="#9DB8AC", acc="#5BD69A", star="#F2B544", soft="#14402E";
+  x.fillStyle=bg; x.fillRect(0,0,W,H);
+  x.fillStyle=soft; x.beginPath(); x.arc(W+60,-60,420,0,Math.PI*2); x.fill();
+  x.fillStyle=acc; x.font=`800 54px ${D}`; x.textBaseline="alphabetic";
+  x.fillStyle=ink; x.fillText("Topic",80,130); const tw=x.measureText("Topic").width; x.fillStyle=acc; x.fillText("Talk",80+tw,130);
+  let t, eyebrow="", title="";
+  if(kind==="battle"){ const b=S.battles.get(id); t=S.topics.get(b.topicId); eyebrow="BATTLE"+(t?.location?" · "+t.location.toUpperCase():""); title=b.question; }
+  else { t=S.topics.get(id); eyebrow=(kind==="pred"?"PREDICTION":(t.category||"").toUpperCase())+(t.location?" · "+t.location.toUpperCase():""); title=t.title; }
+  x.fillStyle=mut; x.font=`700 30px ${B}`; x.fillText(eyebrow,80,240);
+  x.fillStyle=ink; x.font=`800 82px ${D}`;
+  const tl=wrap(x,title,W-160,4); tl.forEach((l,i)=>x.fillText(l,80,340+i*92));
+  let yy=340+tl.length*92+60;
+  const bar=(label,pct,y,win,color)=>{ x.fillStyle=soft; x.beginPath(); x.roundRect(80,y,W-160,120,24); x.fill();
+    x.fillStyle=color; x.beginPath(); x.roundRect(80,y,Math.max(48,(W-160)*pct/100),120,24); x.fill();
+    x.fillStyle=win?bg:ink; x.font=`700 40px ${B}`; const ll=wrap(x,(win?"🏆 ":"")+label,W-420,1)[0]; x.fillText(ll,112,y+75);
+    x.fillStyle=win?bg:ink; x.font=`800 54px ${D}`; const p=pct+"%"; x.fillText(p,W-112-x.measureText(p).width,y+80); };
+  if(kind==="battle"){
+    const b=S.battles.get(id), s=battleState(b);
+    bar(b.a,s.pa,yy,s.winner==="a",s.winner==="a"?acc:"#2C6B4E"); bar(b.b,s.pb,yy+144,s.winner==="b",s.winner==="b"?acc:"#2C6B4E");
+    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} votes`:`Live · ${s.n.toLocaleString("en-IN")} votes · ends in ${left(b.endsAt-Date.now())}`,80,yy+330);
+  } else if(kind==="pred"){
+    const p=IX.pv.get(id), n=p.yes+p.no, py=n?Math.round(100*p.yes/n):50;
+    bar("Yes",py,yy,t.outcome==="yes",t.outcome==="yes"?acc:"#2C6B4E"); bar("No",100-py,yy+144,t.outcome==="no",t.outcome==="no"?acc:"#2C6B4E");
+    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(t.outcome?`Resolved: ${t.outcome.toUpperCase()} · ${n.toLocaleString("en-IN")} predictions`:`${n.toLocaleString("en-IN")} predictions · resolves ${fmtDate(t.resolveBy)}`,80,yy+330);
+  } else {
+    const s=stat(id), rs=IX.rByTopic.get(id)||[];
+    if(rs.length){
+      x.fillStyle=ink; x.font=`800 210px ${D}`; const a=s.avg.toFixed(1); x.fillText(a,72,yy+170); const aw=x.measureText(a).width;
+      x.fillStyle=star; x.font=`700 56px ${B}`; x.fillText(stars(s.avg),72+aw+36,yy+90);
+      const rec=Math.round(100*rs.filter(r=>r.rating>=4).length/rs.length);
+      x.fillStyle=ink; x.font=`700 40px ${B}`; x.fillText(`${rec}% recommend`,72+aw+36,yy+150);
+      x.fillStyle=mut; x.font=`500 32px ${B}`; x.fillText(`${rs.length} reviews · ${s.comments} comments`,80,yy+250);
+    } else {
+      x.fillStyle=ink; x.font=`800 120px ${D}`; x.fillText(String(s.comments),80,yy+110);
+      x.fillStyle=mut; x.font=`600 40px ${B}`; x.fillText("people talking about this",80,yy+170);
+    }
+  }
+  x.fillStyle=acc; x.fillRect(80,H-210,120,6);
+  x.fillStyle=ink; x.font=`700 46px ${D}`; x.fillText(kind==="battle"&&!battleState(S.battles.get(id)).ended?"Pick a side on TopicTalk":"Join the discussion on TopicTalk",80,H-130);
+  const tags=(t?.tags||[]).slice(0,3).map(g=>"#"+g).join("  ");
+  x.fillStyle=mut; x.font=`500 32px ${B}`; if(tags) x.fillText(tags,80,H-78);
+  return c;
+}
+async function openCard(kind,id){
+  const c=await makeCard(kind,id); const url=c.toDataURL("image/png");
+  const t=kind==="battle"?S.topics.get(S.battles.get(id).topicId):S.topics.get(id);
+  const s=t&&stat(t.id);
+  const txt=kind==="battle"?`${S.battles.get(id).question} ${S.battles.get(id).a} or ${S.battles.get(id).b}? Pick a side on TopicTalk.`:`${t.title}${s.reviews?` (★ ${s.avg.toFixed(1)} from ${s.reviews} reviews)`:""} · ${s.comments} comments. Join the discussion on TopicTalk.`;
+  openModal(`<h2>${L("Share card")}</h2><img class="cardimg" src="${url}" alt="Share card for ${esc(t?.title||"")}">
+    <p class="muted" style="margin:0;font-size:13px">Sized for WhatsApp status and Instagram. ${downloads?"":"On a phone, press and hold the image to save it."}</p>
+    <textarea id="sh" rows="2" readonly>${esc(txt)}</textarea>
+    <div class="acts"><button class="btn" data-act="copyShare">Copy text</button>${downloads?`<button class="btn pri" data-act="saveCard">Save image</button>`:""}<button class="btn" data-act="closeModal">Done</button></div>`);
+  openCard.canvas=c; openCard.name=`topictalk-${(t?.title||"card").toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)}.png`;
+}
+
+/* ---------- modals ---------- */
+let modalResolve=null;
+function openModal(html){ $("#modal").innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`; const f=$("#modal").querySelector("input:not([readonly]),textarea:not([readonly]),select"); f&&f.focus(); }
+function closeModal(v){ $("#modal").innerHTML=""; if(modalResolve){ const r=modalResolve; modalResolve=null; r(v); } }
+function askHandle(edit){
+  const cur=S.handles.get(S.me);
+  openModal(`<h2>${edit?"Edit profile":"Pick a username"}</h2>
+    <p class="muted" style="margin:0">${edit?"":"People will see this on your topics and comments, and can tag you with it."}</p>
+    <label class="l">Username<input class="f" id="h-name" maxlength="24" placeholder="e.g. surya_k" value="${esc(cur?.handle||"")}"></label>
+    <label class="l">Short bio (optional)<input class="f" id="h-bio" maxlength="140" placeholder="What do you like talking about?" value="${esc(cur?.bio||"")}"></label>
+    <div class="hint" id="h-err"></div>
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveHandle">Save</button></div>`);
+  return new Promise(r=>modalResolve=r);
+}
+const catSelect=(id,cat)=>`<select class="f" id="${id}">${CATS.map(c=>`<option ${c===cat?"selected":""}>${c}</option>`).join("")}</select>`;
+function topicModal(o={}){
+  const b=o.branchFrom&&S.comments.get(o.branchFrom), bt=b&&S.topics.get(b.topicId);
+  const cat=o.category||(bt?bt.category:"Tech");
+  const tags=o.tags||(bt?(bt.tags||[]).slice(0,3).join(" "):"");
+  UI.newKind=o.kind||"topic";
+  openModal(`<h2>${b?"Turn this comment into a new topic":o.kind==="question"?"Ask the community":"Start a topic"}</h2>
+    ${b?`<div class="origin" style="margin:0">From ${esc(nameOf(b.authorId))} in <b>${esc(bt?.title||"")}</b>: <q>${esc(b.text.slice(0,200))}</q></div>`:""}
+    ${b?"":`<div><div class="seg" role="tablist"><button class="${UI.newKind==="topic"?"on":""}" data-act="kind" data-v="topic">Topic</button><button class="${UI.newKind==="question"?"on":""}" data-act="kind" data-v="question">Question</button></div></div>`}
+    <label class="l">${o.kind==="question"?"Your question":"Title"}<input class="f" id="n-title" maxlength="120" placeholder="${b?"e.g. iPhone 17 Pro Max vs Samsung S26 Ultra camera":o.kind==="question"?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"}" value="${esc(o.title||"")}"></label>
+    <label class="l">Description (optional)<textarea id="n-desc" rows="3" placeholder="Give people some context. ${L("Tamil, Tanglish or English. All welcome.")}">${esc(o.desc||"")}</textarea></label>
+    <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
+      <label class="l">City or place (optional)<input class="f" id="n-loc" maxlength="60" placeholder="e.g. Chennai" value="${esc(o.loc||bt?.location||"")}"></label></div>
+    <label class="l">Hashtags<input class="f" id="n-tags" placeholder="iphone17 camera smartphones" value="${esc(tags)}"></label>
+    ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
+    <div class="hint" id="n-err"></div>
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">${b?"Create branch topic":"Create"}</button></div>`);
+}
+function durSeg(){ return `<div class="seg" id="dur">${[["1","1 hour"],["24","24 hours"],["72","3 days"]].map(([v,l])=>`<button class="${v==="24"?"on":""}" data-act="dur" data-v="${v}">${l}</button>`).join("")}</div>`; }
+function battleModal(o={}){
+  const c=o.commentId&&S.comments.get(o.commentId), ct=c&&S.topics.get(c.topicId);
+  UI.dur=24;
+  openModal(`<h2>${c?"Settle it with a battle":"Start an A/B battle"}</h2>
+    ${c?`<div class="origin" style="margin:0">${esc(nameOf(c.authorId))} in <b>${esc(ct?.title||"")}</b>: <q>${esc(c.text.slice(0,180))}</q></div><p class="muted" style="margin:0;font-size:13px">Everyone votes. When time runs out, the result is posted right under this comment.</p>`:""}
+    <label class="l">Question<input class="f" id="bt-q" maxlength="100" placeholder="${c?"Who’s right?":"e.g. Which is better?"}" value="${esc(c?"Who’s right?":"")}"></label>
+    <div class="row2"><label class="l">Side A<input class="f" id="bt-a" maxlength="40" placeholder="e.g. Ambur biryani"></label><label class="l">Side B<input class="f" id="bt-b" maxlength="40" placeholder="e.g. Chennai biryani"></label></div>
+    ${c?"":`<div class="row2"><label class="l">Category${catSelect("bt-cat","Food")}</label><label class="l">City (optional)<input class="f" id="bt-loc" maxlength="60" placeholder="e.g. Arakkonam" value="${esc(o.loc||"")}"></label></div>
+    <label class="l">Hashtags<input class="f" id="bt-tags" placeholder="biryani chennaifood"></label>
+    <label class="l">Post to<select class="f" id="bt-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
+    <label class="l">Voting stays open for${durSeg()}</label>
+    <div class="hint" id="bt-err"></div>
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveBattle" data-comment="${esc(o.commentId||"")}">Start battle</button></div>`);
+}
+function predModal(o={}){
+  const min=new Date(Date.now()+86400000).toISOString().slice(0,10);
+  openModal(`<h2>Make a prediction</h2><p class="muted" style="margin:0;font-size:13px">People vote Yes or No now. When the date passes, you mark what happened and everyone’s “called it” record updates. No money involved.</p>
+    <label class="l">Question (must have a clear yes/no answer)<input class="f" id="pr-q" maxlength="120" placeholder="e.g. Will CSK make the playoffs next season?"></label>
+    <label class="l">Details (optional)<textarea id="pr-desc" rows="2" placeholder="How will we know the answer?"></textarea></label>
+    <div class="row2"><label class="l">Category${catSelect("pr-cat","Sports")}</label><label class="l">Resolves on<input class="f" type="date" id="pr-date" min="${min}"></label></div>
+    <label class="l">Hashtags<input class="f" id="pr-tags" placeholder="ipl csk"></label>
+    <label class="l">Post to<select class="f" id="pr-group">${groupOptions(o.groupId??curGroup())}</select></label>
+    <div class="hint" id="pr-err"></div>
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="savePred">Post prediction</button></div>`);
+}
+function duelModal(cid){
+  const c=S.comments.get(cid), t=c&&S.topics.get(c.topicId); if(!c) return;
+  openModal(`<h2>Challenge ${esc(nameOf(c.authorId))} to a debate</h2>
+    <div class="origin" style="margin:0">${esc(nameOf(c.authorId))} said: <q>${esc(c.text.slice(0,220))}</q></div>
+    <p class="muted" style="margin:0;font-size:13.5px">They argue <b>for</b> the motion, you argue <b>against</b>. Three rounds each (opening, rebuttal, final word), up to ${MAX_WORDS} words per round, 24 hours per turn. Then the community votes on who argued better.</p>
+    <label class="l">Motion (what you’re debating)<input class="f" id="du-motion" maxlength="140" value="${esc(c.text.replace(/\s+/g," ").replace(/@\w+/g,"").trim().slice(0,140))}"></label>
+    <label class="l">Your opening argument<textarea id="du-open" rows="5" data-wc="du-wc" placeholder="Make your case against the motion."></textarea></label>
+    <div class="hint" id="du-wc">0 / ${MAX_WORDS} words</div>
+    <div class="hint" id="du-err"></div>
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveDuel" data-id="${esc(cid)}">Send challenge</button></div>`);
+}
+function groupModal(){
+  UI.gvis="private";
+  openModal(`<h2>Create a group</h2>
+    <label class="l">Group name<input class="f" id="g-name" maxlength="50" placeholder="e.g. Arakkonam Turf Gang"></label>
+    <label class="l">What’s it about? (optional)<input class="f" id="g-desc" maxlength="160" placeholder="Sunday football, match debates, post-match biryani"></label>
+    <div><div class="seg"><button class="on" data-act="gvis" data-v="private">${LOCK} Private</button><button data-act="gvis" data-v="public">Public</button></div>
+      <p class="hint" id="g-vis-hint" style="margin:6px 0 0">Only members can see topics. People join with an invite code.</p></div>
+    <label class="l">City (optional)<input class="f" id="g-city" maxlength="40" placeholder="e.g. Arakkonam"></label>
+    <div class="hint" id="g-err"></div>
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveGroup">Create group</button></div>`);
+}
+function createMenu(){
+  openModal(`<h2>What do you want to start?</h2>
+   <div class="choices">
+    <button class="choice" data-act="newTopic"><b>Topic</b><span>Anything people can talk about</span></button>
+    <button class="choice" data-act="newQuestion"><b>Question</b><span>Ask the community</span></button>
+    <button class="choice" data-act="newBattle"><b>A/B battle</b><span>Two sides, one winner</span></button>
+    <button class="choice" data-act="newPred"><b>Prediction</b><span>Vote now, see who called it</span></button>
+    <button class="choice" data-act="reviewPick"><b>Review</b><span>Rate something on TopicTalk</span></button>
+    <button class="choice" data-act="newGroup"><b>Group</b><span>Debate with friends</span></button>
+   </div><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`);
+}
+function reviewPicker(){
+  const ts=byTrend().slice(0,8);
+  openModal(`<h2>What are you reviewing?</h2><p class="muted" style="margin:0">Pick a topic, or start a new one and review it there.</p>
+   <div class="list">${ts.map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>${stat(t.id).reviews} reviews</span></div></div></a>`).join("")}</div>
+   <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="newTopic">New topic</button></div>`);
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", async e=>{
+  const el=e.target.closest("[data-act]"); if(!el) return;
+  const a=el.dataset.act, id=el.dataset.id;
+  if(a==="scrim"){ if(e.target===el) closeModal(false); return; }
+  if(el.tagName==="BUTTON") e.preventDefault();
+  switch(a){
+    case "create": createMenu(); break;
+    case "closeModal": closeModal(false); break;
+    case "newTopic": topicModal({tags:el.dataset.tag||"",title:el.dataset.title||"",loc:el.dataset.loc||"",groupId:el.dataset.group}); break;
+    case "newQuestion": topicModal({kind:"question",category:"Other",title:el.dataset.title||""}); break;
+    case "askAnswer": { const r=searchAll(UI.query,5); askAnswer(UI.query.trim(),r.topics); break; }
+    case "writeAnswer": writeAnswer(id); break;
+    case "newBattle": if(!(await gate())) break; battleModal({loc:el.dataset.loc||"",groupId:el.dataset.group}); break;
+    case "newPred": if(!(await gate())) break; predModal({groupId:el.dataset.group}); break;
+    case "reviewPick": reviewPicker(); break;
+    case "pickReview": e.preventDefault(); closeModal(false); UI.pendingReview=id; if(location.hash==="#t-"+id){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; schedule(); } else location.hash="t-"+id; break;
+    case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
+    case "dur": UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); break;
+    case "exSort": UI.exSort=el.dataset.v; schedule(); break;
+    case "exGo": UI.exSort=el.dataset.v; break;
+    case "exCat": UI.exCat=el.dataset.v; schedule(); break;
+    case "ptab": UI.ptab=el.dataset.v; schedule(); break;
+    case "tab": UI.tab=el.dataset.v; schedule(); break;
+    case "csort": UI.csort=el.dataset.v; if(UI.csort==="other"&&!UI.ai[id]&&sampleFn) analyze(id); schedule(); break;
+    case "catchUp": analyze(id); break;
+    case "aiClose": delete UI.ai[id]; if(UI.csort==="other") UI.csort="top"; schedule(); break;
+    case "pickCity": UI.city=el.dataset.v; try{ localStorage.setItem("tt-city",UI.city); }catch{} schedule(); break;
+    case "lang": UI.lang=UI.lang==="ta"?"en":"ta"; try{ localStorage.setItem("tt-lang",UI.lang); }catch{} render(); break;
+    case "reply": UI.replyOpen.has(id)?UI.replyOpen.delete(id):UI.replyOpen.add(id); render(); { const t=document.getElementById("r-"+id); t&&t.focus(); } break;
+    case "postComment": { const ta=$("#newc"); el.disabled=true; if(await postComment(el.dataset.topic,null,ta.value)){ ta.value=""; } el.disabled=false; break; }
+    case "postReply": { const ta=document.getElementById("r-"+id); const c=S.comments.get(id); el.disabled=true; if(c&&await postComment(c.topicId,id,ta.value)){ UI.replyOpen.delete(id); ta.value=""; schedule(); } el.disabled=false; break; }
+    case "like": {
+      if(!(await gate())) break;
+      const key=`${id}__${S.me}`, ref=db.doc("likes/"+key);
+      if(S.likes.has(key)) await W(()=>ref.delete());
+      else { const tgt=el.dataset.kind==="review"?S.reviews.get(id):S.comments.get(id);
+        if(await W(()=>ref.set({targetId:id,kind:el.dataset.kind,userId:S.me,topicId:tgt?.topicId||"",createdAt:Date.now()}))&&tgt)
+          notify([[tgt.authorId,"like"]],{topicId:tgt.topicId,commentId:el.dataset.kind==="comment"?id:null,text:(tgt.text||tgt.title||"").slice(0,120)}); }
+      break; }
+    case "follow": {
+      if(!(await gate())) break;
+      const key=`${id}__${S.me}`, ref=db.doc("follows/"+key);
+      if(S.follows.has(key)) await W(()=>ref.delete()); else { if(await W(()=>ref.set({topicId:id,userId:S.me,createdAt:Date.now()}))) toast("Following. You’ll get notified about new comments, reviews, battles and branches."); }
+      break; }
+    case "bvote": {
+      const b=S.battles.get(id); if(!b||Date.now()>=b.endsAt) break;
+      if(!(await gate())) break;
+      if(IX.myB.get(id)===el.dataset.v) break;
+      await W(()=>db.doc(`bvotes/${id}__${S.me}`).set({battleId:id,side:el.dataset.v,userId:S.me,createdAt:Date.now()}));
+      break; }
+    case "pvote": {
+      const t=S.topics.get(id); if(!t||t.outcome||Date.now()>=t.resolveBy) break;
+      if(!(await gate())) break;
+      if(IX.myP.get(id)===el.dataset.v) break;
+      await W(()=>db.doc(`pvotes/${id}__${S.me}`).set({topicId:id,side:el.dataset.v,userId:S.me,createdAt:Date.now()}));
+      break; }
+    case "resolve": {
+      if(!(await gate())) break;
+      if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Click again to confirm "+(el.dataset.v==="yes"?"YES":"NO"); el.classList.add("pri"); break; }
+      if(await W(()=>db.doc("topics/"+id).update({outcome:el.dataset.v,resolvedAt:Date.now()}))){
+        toast("Resolved. Everyone’s record is updated.");
+        notify((IX.pVoters.get(id)||[]).map(v=>[v.userId,"resolved"]),{topicId:id,text:"Result: "+el.dataset.v.toUpperCase()}); }
+      break; }
+    case "settle": { if(!(await gate())) break; battleModal({commentId:id}); break; }
+    case "saveBattle": {
+      const q=$("#bt-q").value.trim()||"Who’s right?", A=$("#bt-a").value.trim(), Bv=$("#bt-b").value.trim(), err=$("#bt-err");
+      if(!A||!Bv){ err.textContent="Name both sides."; break; }
+      if(A.toLowerCase()===Bv.toLowerCase()){ err.textContent="The two sides need to be different."; break; }
+      if(!(await gate())) break;
+      const cid=el.dataset.comment, c=cid&&S.comments.get(cid);
+      const now=Date.now(), bid=rid("b"); let tid=c?c.topicId:null;
+      el.disabled=true;
+      if(!c){
+        tid=rid("t");
+        const t={title:q.slice(0,120),desc:"",category:$("#bt-cat").value,kind:"battle",tags:parseTags($("#bt-tags").value),location:$("#bt-loc").value.trim().slice(0,60),authorId:S.me,parentId:null,originCommentId:null,createdAt:now,groupId:$("#bt-group")?.value||null};
+        if(!(await W(()=>db.doc("topics/"+tid).set(t)))){ el.disabled=false; break; }
+        ensureFollow(tid); notifyGroup(t.groupId,tid,t.title);
+      }
+      const b={topicId:tid,commentId:c?c.id:null,question:q.slice(0,100),a:A.slice(0,40),b:Bv.slice(0,40),authorId:S.me,createdAt:now,endsAt:now+(UI.dur||24)*3.6e6,seedA:0,seedB:0};
+      if(await W(()=>db.doc("battles/"+bid).set(b))){
+        closeModal(true); toast("Battle is live. Share it so people vote.");
+        if(c) notify([[c.authorId,"battle"],...followersOf(tid).map(u=>[u,"newbattle"])],{topicId:tid,commentId:c.id,text:`${b.a} vs ${b.b}`});
+        if(!c) location.hash="t-"+tid; else schedule();
+      } else el.disabled=false;
+      break; }
+    case "savePred": {
+      const q=$("#pr-q").value.trim(), d=$("#pr-date").value, err=$("#pr-err");
+      if(q.length<8){ err.textContent="Write the question in full."; break; }
+      if(!d){ err.textContent="Pick the date when we’ll know the answer."; break; }
+      const when=new Date(d+"T23:59:00").getTime(); if(when<=Date.now()){ err.textContent="Pick a date in the future."; break; }
+      if(!(await gate())) break;
+      const tid=rid("t"); el.disabled=true;
+      const desc=$("#pr-desc").value.trim().slice(0,1000);
+      const t={title:q.slice(0,120),desc,category:$("#pr-cat").value,kind:"prediction",tags:[...new Set([...parseTags($("#pr-tags").value),...tagsIn(desc)])].slice(0,8),location:"",authorId:S.me,parentId:null,originCommentId:null,createdAt:Date.now(),resolveBy:when,outcome:null,seedYes:0,seedNo:0,groupId:$("#pr-group")?.value||null};
+      if(await W(()=>db.doc("topics/"+tid).set(t))){ closeModal(true); ensureFollow(tid); notifyGroup(t.groupId,tid,t.title); location.hash="t-"+tid; } else el.disabled=false;
+      break; }
+    case "duel": {
+      const c=S.comments.get(id); if(!c) break;
+      if(isSeed(c.authorId)){ toast("Sample accounts can’t accept duels. Challenge a real person."); break; }
+      if(!(await gate())) break;
+      if(c.authorId===S.me) break;
+      const open=[...S.duels.values()].find(d=>d.commentId===id&&d.challengerId===S.me&&["pending","active","voting"].includes(duelState(d).phase));
+      if(open){ location.hash="d-"+open.id; break; }
+      duelModal(id); break; }
+    case "saveDuel": {
+      const c=S.comments.get(id), motion=$("#du-motion").value.trim(), text=$("#du-open").value.trim(), err=$("#du-err"), n=wordCount(text);
+      if(motion.length<8){ err.textContent="Write the motion as a full statement."; break; }
+      if(n<MIN_WORDS){ err.textContent=`Your opening needs at least ${MIN_WORDS} words.`; break; }
+      if(n>MAX_WORDS){ err.textContent=`Keep it to ${MAX_WORDS} words. You have ${n}.`; break; }
+      if(!(await gate())) break;
+      const did=rid("d"), now=Date.now(); el.disabled=true;
+      const d={topicId:c.topicId,commentId:c.id,challengerId:S.me,opponentId:c.authorId,motion:motion.slice(0,140),rounds:[{by:"c",text,at:now}],createdAt:now,acceptedAt:null,declined:false,votingEndsAt:null,seedC:0,seedO:0};
+      if(await W(()=>db.doc("duels/"+did).set(d))){ closeModal(true); notify([[c.authorId,"duel_challenge"]],{topicId:c.topicId,duelId:did,text:d.motion}); toast("Challenge sent. They have 48 hours to accept."); location.hash="d-"+did; }
+      else el.disabled=false;
+      break; }
+    case "duelAccept": {
+      const d=S.duels.get(id); if(!d||d.opponentId!==S.me||duelState(d).phase!=="pending") break;
+      if(!(await gate())) break;
+      if(await W(()=>db.doc("duels/"+id).update({acceptedAt:Date.now()}))){ notify([[d.challengerId,"duel_accept"]],{topicId:d.topicId,duelId:id,text:d.motion}); toast("Accepted. Your opening round is next: you have 24 hours."); }
+      break; }
+    case "duelDecline": {
+      const d=S.duels.get(id); if(!d||d.opponentId!==S.me) break;
+      if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Click again to decline"; break; }
+      if(await W(()=>db.doc("duels/"+id).update({declined:true}))) notify([[d.challengerId,"duel_decline"]],{topicId:d.topicId,duelId:id,text:d.motion});
+      break; }
+    case "duelPost": {
+      const d=S.duels.get(id); if(!d) break; const st=duelState(d);
+      const meSide=S.me===d.challengerId?"c":S.me===d.opponentId?"o":null;
+      if(st.phase!=="active"||st.turn!==meSide){ toast("It’s not your turn."); break; }
+      const text=$("#duel-text").value.trim(), n=wordCount(text);
+      if(n<MIN_WORDS){ toast(`Write at least ${MIN_WORDS} words.`); break; }
+      if(n>MAX_WORDS){ toast(`Keep it to ${MAX_WORDS} words. You have ${n}.`); break; }
+      if(!(await gate())) break;
+      const now=Date.now(), rounds=[...(d.rounds||[]).map(x=>({...x})),{by:meSide,text,at:now}];
+      const upd={rounds}; if(rounds.length===6) upd.votingEndsAt=now+VOTE_MS;
+      el.disabled=true;
+      if(await W(()=>db.doc("duels/"+id).update(upd))){
+        $("#duel-text").value="";
+        const other=meSide==="c"?d.opponentId:d.challengerId;
+        if(rounds.length===6){ toast("Final round posted. Voting is open for 48 hours."); notify([[other,"duel_vote"],...followersOf(d.topicId).map(u=>[u,"duel_vote"])],{topicId:d.topicId,duelId:id,text:d.motion}); }
+        else { toast("Posted. Now it’s their turn."); notify([[other,"duel_turn"]],{topicId:d.topicId,duelId:id,text:d.motion}); }
+      }
+      el.disabled=false; break; }
+    case "duelReady": UI.dReady[id]=true; schedule(); break;
+    case "duelVote": {
+      const d=S.duels.get(id); if(!d||duelState(d).phase!=="voting") break;
+      if(S.me===d.challengerId||S.me===d.opponentId){ toast("You can’t vote in your own duel."); break; }
+      if(!(await gate())) break;
+      if(IX.myDV.get(id)===el.dataset.v) break;
+      await W(()=>db.doc(`dvotes/${id}__${S.me}`).set({duelId:id,side:el.dataset.v,userId:S.me,createdAt:Date.now()}));
+      break; }
+    case "newGroup": if(!(await gate())) break; groupModal(); break;
+    case "gvis": UI.gvis=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); $("#g-vis-hint").textContent=UI.gvis==="private"?"Only members can see topics. People join with an invite code.":"Anyone can see and join. Topics show up on the public site."; break;
+    case "saveGroup": {
+      const name=$("#g-name").value.trim(), err=$("#g-err");
+      if(name.length<3){ err.textContent="Give the group a name of at least 3 characters."; break; }
+      if([...S.groups.values()].some(g=>g.name.toLowerCase()===name.toLowerCase())){ err.textContent="A group with that name already exists."; break; }
+      if(!(await gate())) break;
+      const gid=rid("g"), now=Date.now(); el.disabled=true;
+      const g={name,desc:$("#g-desc").value.trim().slice(0,160),visibility:UI.gvis||"private",city:$("#g-city").value.trim().slice(0,40),ownerId:S.me,createdAt:now,invite:newCode()};
+      if(await W(()=>db.doc("groups/"+gid).set(g)) && await W(()=>db.doc(`gmembers/${gid}__${S.me}`).set({groupId:gid,userId:S.me,role:"admin",joinedAt:now}))){ closeModal(true); toast("Group created. Share the invite code with friends."); location.hash="g-"+gid; }
+      else el.disabled=false;
+      break; }
+    case "joinCode": {
+      const code=($("#join-code").value||"").trim().toUpperCase(), err=$("#join-err");
+      const g=[...S.groups.values()].find(x=>(x.invite||"").toUpperCase()===code);
+      if(!code){ err.textContent="Enter the code your friend sent."; break; }
+      if(!g){ err.textContent="No group has that code. Check it and try again."; break; }
+      if(memberOf(g.id)){ location.hash="g-"+g.id; break; }
+      if(!(await gate())) break;
+      if(await W(()=>db.doc(`gmembers/${g.id}__${S.me}`).set({groupId:g.id,userId:S.me,role:"member",joinedAt:Date.now()}))){
+        toast(`You joined ${g.name}`); notify((IX.gMem.get(g.id)||[]).filter(m=>m.role==="admin").map(m=>[m.userId,"joined"]),{topicId:"",groupId:g.id,text:g.name}); location.hash="g-"+g.id; }
+      break; }
+    case "joinGroup": {
+      const g=S.groups.get(id); if(!g||g.visibility!=="public") break;
+      if(!(await gate())) break;
+      if(await W(()=>db.doc(`gmembers/${id}__${S.me}`).set({groupId:id,userId:S.me,role:"member",joinedAt:Date.now()}))) toast(`You joined ${g.name}`);
+      break; }
+    case "leaveGroup": {
+      if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Click again to leave"; break; }
+      const admins=(IX.gMem.get(id)||[]).filter(m=>m.role==="admin");
+      if(isAdmin(id)&&admins.length===1&&(IX.gMem.get(id)||[]).length>1){ toast("You’re the only admin. Remove the others first, or keep the group."); break; }
+      if(await W(()=>db.doc(`gmembers/${id}__${S.me}`).delete())){ toast("You left the group"); location.hash="groups"; }
+      break; }
+    case "removeMember": {
+      if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Confirm remove"; break; }
+      await W(()=>db.doc("gmembers/"+id).delete()); break; }
+    case "newInvite": {
+      const g=S.groups.get(id); if(!g||!isAdmin(id)) break;
+      if(await W(()=>db.doc("groups/"+id).update({invite:newCode()}))) toast("New code made. The old one no longer works.");
+      break; }
+    case "copyCode": {
+      const g=S.groups.get(id); const msg=`Join my group “${g.name}” on TopicTalk. Open TopicTalk, go to Groups and enter the code ${g.invite}.`;
+      try{ await navigator.clipboard.writeText(msg); toast("Invite message copied. Paste it in WhatsApp."); }catch{ openModal(`<h2>Invite message</h2><textarea id="sh" rows="3" readonly>${esc(msg)}</textarea><div class="acts"><button class="btn" data-act="closeModal">Done</button></div>`); $("#sh").select(); }
+      break; }
+    case "makePublic": {
+      if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Click again: everyone will see it"; el.classList.add("pri"); break; }
+      if(!(await gate())) break;
+      if(await W(()=>db.doc("topics/"+id).update({madePublic:true,publicAt:Date.now()}))) toast("It’s public now, with credit to the group.");
+      break; }
+    case "shareTopic": openCard("topic",id); break;
+    case "shareBattle": openCard("battle",id); break;
+    case "sharePred": openCard("pred",id); break;
+    case "copyShare": { const ta=$("#sh"); try{ await navigator.clipboard.writeText(ta.value); toast("Copied"); }catch{ ta.select(); toast("Select and copy the text"); } break; }
+    case "saveCard": {
+      const c=openCard.canvas; if(!c||!downloads) break;
+      c.toBlob(async blob=>{ try{ await downloads.save({filename:openCard.name,data:blob}); toast("Saved"); }catch(err){ if(err?.code==="unavailable"||err?.code==="not_granted"){ downloads=null; toast("Saving isn’t available here. Press and hold the image instead."); } else if(err?.code!=="declined") toast("Couldn’t save the image."); } },"image/png");
+      break; }
+    case "branch": { if(!(await gate())) break; topicModal({branchFrom:id}); break; }
+    case "openReview": if(!(await gate())) break; UI.tab="reviews"; UI.rvOpen=true; UI.rvRating=0; schedule(); break;
+    case "closeReview": UI.rvOpen=false; schedule(); break;
+    case "star": UI.rvRating=+el.dataset.v; render(); break;
+    case "saveReview": {
+      const tid=el.dataset.topic; if(!UI.rvRating){ toast("Pick a star rating first."); break; }
+      if(!(await gate())) break;
+      const key=`${tid}__${S.me}`, prev=S.reviews.get(key);
+      const body={topicId:tid,authorId:S.me,rating:UI.rvRating,title:$("#rv-title").value.trim().slice(0,100),text:$("#rv-text").value.trim().slice(0,4000),pros:$("#rv-pros").value.trim().slice(0,300),cons:$("#rv-cons").value.trim().slice(0,300),createdAt:prev?.createdAt||Date.now()};
+      if(prev) body.updatedAt=Date.now();
+      el.disabled=true;
+      if(await W(()=>db.doc("reviews/"+key).set(body))){ UI.rvOpen=false; UI.rvRating=0; toast(prev?"Review updated":"Review posted"); ensureFollow(tid);
+        if(!prev) notify(followersOf(tid).map(u=>[u,"review"]),{topicId:tid,text:(body.title||body.text).slice(0,120)}); schedule(); }
+      el.disabled=false; break; }
+    case "saveTopic": {
+      const title=$("#n-title").value.trim(), err=$("#n-err");
+      if(title.length<3){ err.textContent="Give it a title of at least 3 characters."; break; }
+      const dupe=[...S.topics.values()].find(t=>t.title.toLowerCase()===title.toLowerCase());
+      if(dupe){ err.innerHTML=`That topic already exists: <a href="#t-${dupe.id}" style="color:var(--brand-deep);font-weight:600" data-act="closeModal">open it</a>.`; break; }
+      if(!(await gate())) break;
+      const bf=el.dataset.branch, oc=bf&&S.comments.get(bf);
+      const desc=$("#n-desc").value.trim().slice(0,2000);
+      const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:$("#n-loc").value.trim().slice(0,60),authorId:S.me,parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
+        groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null)};
+      const tid=rid("t"); el.disabled=true;
+      if(await W(()=>db.doc("topics/"+tid).set(t))){
+        closeModal(true); ensureFollow(tid);
+        if(oc){ notify([[oc.authorId,"branch"],...followersOf(oc.topicId).map(u=>[u,"newbranch"])],{topicId:tid,text:t.title}); toast("Branch created. It’s linked back to the original comment."); }
+        mentionsIn(desc).length&&notify(mentionsIn(desc).map(u=>[u,"mention"]),{topicId:tid,text:t.title});
+        notifyGroup(t.groupId,tid,t.title);
+        location.hash="t-"+tid;
+      } else el.disabled=false;
+      break; }
+    case "saveHandle": {
+      const h=$("#h-name").value.trim(), err=$("#h-err");
+      if(!/^[A-Za-z0-9_]{3,24}$/.test(h)){ err.textContent="Use 3–24 English letters, numbers or underscores."; break; }
+      const owner=handleToId(h); if(owner&&owner!==S.me){ err.textContent="That username is taken."; break; }
+      if(!db||!S.me){ err.textContent="Sign in to claude.ai first."; break; }
+      el.disabled=true;
+      const prev=S.handles.get(S.me);
+      if(await W(()=>db.doc("handles/"+S.me).set({handle:h,bio:$("#h-bio").value.trim().slice(0,140),createdAt:prev?.createdAt||Date.now()}))){ S.handles.set(S.me,{handle:h,bio:$("#h-bio").value.trim()}); closeModal(true); toast("Saved"); schedule(); }
+      else { el.disabled=false; }
+      break; }
+    case "editHandle": askHandle(true); break;
+    case "readAll": for(const n of S.notifs.filter(n=>!n.read)){ try{ await db.doc("notifs/"+n.id).update({read:true}); }catch{} } break;
+    case "clearSample": {
+      if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Click again to delete all sample content"; el.classList.add("pri"); break; }
+      el.disabled=true; el.textContent="Removing…"; let n=0;
+      const groups=[["topics",R.topics],["comments",R.comments],["reviews",R.reviews],["battles",R.battles],["duels",R.duels],["gmembers",S.gmembers],["groups",S.groups],["handles",S.handles]];
+      for(const [col,m] of groups) for(const [k,d] of [...m]) if(d.seed){ try{ await db.doc(col+"/"+k).delete(); n++; }catch{} }
+      toast(`Removed ${n} sample items`); break; }
+  }
+});
+document.addEventListener("input", e=>{
+  const id=e.target?.dataset?.wc; if(!id) return; const n=wordCount(e.target.value), el=document.getElementById(id);
+  if(el){ el.textContent=`${n} / ${MAX_WORDS} words`; el.style.color=n>MAX_WORDS?"var(--danger)":""; }
+});
+document.addEventListener("keydown", e=>{
+  if(e.key==="Escape"&&$("#modal").innerHTML) closeModal(false);
+  if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)&&e.target.tagName==="TEXTAREA"){
+    const b=e.target.closest(".composer,.form")?.querySelector(".btn.pri"); b&&b.click(); }
+});
+/* search */
+const q=$("#q"), dd=$("#dd");
+q.addEventListener("input",()=>{
+  const v=q.value.trim().toLowerCase(); if(!v||!IX){ dd.hidden=true; return; }
+  const r=searchAll(v,6);
+  let h="";
+  if(qWords(v).length>=2&&r.topics.length) h+=`<a href="#search" data-act="fullSearch" class="hl"><span style="color:var(--brand-deep);font-weight:700">Get the community answer</span><span class="muted">for “${esc(q.value.trim())}”</span></a>`;
+  if(r.topics.length) h+=`<div class="grp">Topics</div>`+r.topics.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:30px;height:30px;font-size:11px;border-radius:8px">${esc(abbr(t))}</div><span>${esc(t.title)}</span></a>`).join("");
+  if(r.cities.length) h+=`<div class="grp">Cities</div>`+r.cities.slice(0,3).map(c=>`<a href="#city-${enc(c.slug)}">📍 ${esc(c.name)}</a>`).join("");
+  if(r.tags.length) h+=`<div class="grp">Hashtags</div>`+r.tags.slice(0,4).map(x=>`<a href="#tag-${enc(x)}">#${esc(x)}</a>`).join("");
+  if(r.people.length) h+=`<div class="grp">People</div>`+r.people.slice(0,4).map(id=>`<a href="#u-${esc(id)}">${avatar(id,"xs")}<span>${esc(nameOf(id))}</span></a>`).join("");
+  h+=`<a href="#search" data-act="fullSearch"><b>See all results for “${esc(q.value.trim())}”</b></a>`;
+  dd.innerHTML=h; dd.hidden=false;
+});
+q.addEventListener("keydown",e=>{ if(e.key==="Enter"){ UI.query=q.value; dd.hidden=true; if(location.hash==="#search") schedule(); else location.hash="search"; q.blur(); } if(e.key==="Escape"){ dd.hidden=true; } });
+document.addEventListener("click",e=>{ if(!e.target.closest(".search")) dd.hidden=true; else if(e.target.closest("#dd a")){ UI.query=q.value; dd.hidden=true; if(e.target.closest("[data-act=fullSearch]")&&location.hash==="#search") schedule(); } });
+window.addEventListener("hashchange", ()=>{ dd.hidden=true; if($("#modal").innerHTML&&!modalResolve) $("#modal").innerHTML=""; render(); });
+setInterval(()=>{ if(!document.hidden && !$("#modal").innerHTML) schedule(); }, 60000);
+
+/* ---------- boot ---------- */
+render();
+(async()=>{
+  const c=window.claude;
+  [db,user,sampleFn,downloads]= c ? await Promise.all([c.use("db"),c.use("user"),c.use("sample"),c.use("downloads")]) : [null,null,null,null];
+  if(!db){ S.dbOk=false; render(); return; }
+  S.dbOk=true;
+  if(user){ S.me=await user.id(); S.isOwner=await user.isOwner(); const cw=await user.can("data.write"); if(cw===false) S.readOnly=true; }
+  const sub=(col,map)=>db.collection(col).onSnapshot(snap=>{ map.clear(); snap.docs.forEach(d=>map.set(d.id,{id:d.id,...d.data()})); S.ready[col]=true; schedule(); }, err=>{ console.warn(col,err); });
+  sub("topics",R.topics); sub("comments",R.comments); sub("reviews",R.reviews); sub("likes",S.likes); sub("follows",S.follows); sub("handles",S.handles);
+  sub("battles",R.battles); sub("groups",S.groups); sub("gmembers",S.gmembers); sub("duels",R.duels); sub("dvotes",S.dvotes); sub("bvotes",S.bvotes); sub("pvotes",S.pvotes);
+  if(S.me) db.collection("notifs").where("to","==",S.me).onSnapshot(snap=>{ S.notifs=snap.docs.map(d=>({id:d.id,...d.data()})); schedule(); },()=>{});
+  render();
+})();
+})();
+
+</script>

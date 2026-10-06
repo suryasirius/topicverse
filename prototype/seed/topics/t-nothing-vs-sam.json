@@ -1,0 +1,18 @@
+{
+ "authorId": "seed-meena",
+ "category": "Tech",
+ "createdAt": 1791177540692,
+ "desc": "Clean software and design vs service network and display.",
+ "kind": "topic",
+ "location": "",
+ "originCommentId": "c-50b",
+ "parentId": "t-phone-50k",
+ "seed": true,
+ "seedFollowers": 8,
+ "tags": [
+  "nothingphone",
+  "samsung",
+  "budget"
+ ],
+ "title": "Nothing Phone vs Samsung under ₹50k"
+}

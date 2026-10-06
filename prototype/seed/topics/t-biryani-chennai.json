@@ -1,0 +1,34 @@
+{
+ "answer": {
+  "at": 1791315800000,
+  "by": "seed-priya",
+  "commentCount": 5,
+  "points": [
+   "Ambur style uses chilli paste instead of whole spices: more heat, less ghee",
+   "Late-night biryani after a second show is a Chennai favourite",
+   "See the Ambur vs Chennai battle for the current vote"
+  ],
+  "sources": [
+   "c-b1",
+   "c-b2",
+   "c-b2b",
+   "t-ambur-vs-chennai"
+  ],
+  "text": "The community's top pick is seeraga samba mutton biryani from the older places around Triplicane. Many say Ambur biryani is better, which started its own topic and a live battle."
+ },
+ "authorId": "seed-priya",
+ "category": "Food",
+ "createdAt": 1791062340692,
+ "desc": "Name your spot and what to order. Dum, seeraga samba, Hyderabadi, all welcome. #chennaifood",
+ "kind": "topic",
+ "location": "Chennai",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 52,
+ "tags": [
+  "biryani",
+  "chennaifood"
+ ],
+ "title": "Best biryani in Chennai"
+}

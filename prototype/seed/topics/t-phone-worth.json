@@ -1,0 +1,17 @@
+{
+ "authorId": "seed-priya",
+ "category": "Finance",
+ "createdAt": 1791091140692,
+ "desc": "Flagships keep getting pricier. At what point does it stop making sense?",
+ "kind": "topic",
+ "location": "",
+ "originCommentId": "c-ip4",
+ "parentId": "t-iphone17pm",
+ "seed": true,
+ "seedFollowers": 12,
+ "tags": [
+  "smartphones",
+  "money"
+ ],
+ "title": "Is any phone worth ₹1.5 lakh?"
+}

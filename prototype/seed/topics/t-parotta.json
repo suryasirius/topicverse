@@ -1,0 +1,34 @@
+{
+ "answer": {
+  "at": 1791315800000,
+  "by": "seed-lakshmi",
+  "commentCount": 4,
+  "points": [
+   "Arakkonam: more layered",
+   "Vellore: softer, better kurma",
+   "Someone wants kothu parotta judged separately"
+  ],
+  "sources": [
+   "c-pa1",
+   "c-pa2",
+   "c-pa3"
+  ],
+  "text": "Opinion is split: Arakkonam fans point to the layered night parotta with salna near the bus stand, while Vellore fans say their parotta is softer and the kurma is better. Arakkonam is narrowly ahead in the live battle."
+ },
+ "authorId": "seed-lakshmi",
+ "category": "Food",
+ "createdAt": 1791286470305,
+ "desc": "Layered or soft, salna or kurma. Which town makes the better parotta?",
+ "kind": "battle",
+ "location": "Arakkonam",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 18,
+ "tags": [
+  "parotta",
+  "vellore",
+  "arakkonam"
+ ],
+ "title": "Vellore vs Arakkonam: best parotta?"
+}

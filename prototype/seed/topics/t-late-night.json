@@ -1,0 +1,18 @@
+{
+ "authorId": "seed-karthik",
+ "category": "Food",
+ "createdAt": 1791244144556,
+ "desc": "Second show is over and you're hungry. Where do you go?",
+ "groupId": "g-chennai-foodies",
+ "kind": "question",
+ "location": "Chennai",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 9,
+ "tags": [
+  "chennaifood",
+  "latenight"
+ ],
+ "title": "Where do you eat after midnight in Chennai?"
+}

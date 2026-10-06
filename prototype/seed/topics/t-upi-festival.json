@@ -1,0 +1,17 @@
+{
+ "authorId": "seed-rahul",
+ "category": "Apps",
+ "createdAt": 1791155940692,
+ "desc": "Payments stuck, money debited but order failed. What actually works on big sale days?",
+ "kind": "topic",
+ "location": "",
+ "originCommentId": "c-u2",
+ "parentId": "t-upi",
+ "seed": true,
+ "seedFollowers": 17,
+ "tags": [
+  "upi",
+  "festivalsale"
+ ],
+ "title": "UPI failures during festival sales"
+}

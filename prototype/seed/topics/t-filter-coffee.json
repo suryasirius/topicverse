@@ -1,0 +1,33 @@
+{
+ "answer": {
+  "at": 1791315800000,
+  "by": "seed-meena",
+  "commentCount": 3,
+  "points": [
+   "Order with less milk and no sugar to judge the decoction"
+  ],
+  "sources": [
+   "c-fc1",
+   "c-fc2",
+   "c-fc3"
+  ],
+  "text": "The community points to the older hotels around Mylapore, where the decoction is stronger. Newer cafes are said to use too much milk."
+ },
+ "authorId": "seed-meena",
+ "category": "Food",
+ "createdAt": 1791261270305,
+ "desc": "Where is the best filter coffee in Chennai? டிகாக்‌ஷன், பால், டபரா — எல்லாம் முக்கியம். #filtercoffee",
+ "groupId": "g-chennai-foodies",
+ "kind": "topic",
+ "location": "Chennai",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 22,
+ "tags": [
+  "filtercoffee",
+  "சென்னை",
+  "chennaifood"
+ ],
+ "title": "சென்னையில் சிறந்த ஃபில்டர் காபி எங்கே?"
+}

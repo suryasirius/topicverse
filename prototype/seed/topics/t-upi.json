@@ -1,0 +1,34 @@
+{
+ "answer": {
+  "at": 1791315800000,
+  "by": "seed-vikram",
+  "commentCount": 4,
+  "points": [
+   "Festival sale days are the worst time for failures",
+   "BHIM is basic but some users say it has never failed them",
+   "Linking two bank accounts lets you switch when one bank is down"
+  ],
+  "sources": [
+   "c-u2",
+   "c-u1",
+   "c-u3",
+   "t-upi-festival"
+  ],
+  "text": "Most people here say reliability depends more on your bank than on the app: when your bank's servers are busy, every UPI app fails. Between the apps, PhonePe and Google Pay are close, with Google Pay slightly ahead in the live battle."
+ },
+ "authorId": "seed-vikram",
+ "category": "Apps",
+ "createdAt": 1791105540692,
+ "desc": "Google Pay, PhonePe, Paytm, BHIM. Which one fails least when you actually need it? #upi",
+ "kind": "question",
+ "location": "",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 34,
+ "tags": [
+  "upi",
+  "payments"
+ ],
+ "title": "Which UPI app is most reliable?"
+}

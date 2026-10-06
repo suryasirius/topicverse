@@ -1,0 +1,21 @@
+{
+ "authorId": "seed-priya",
+ "category": "Local",
+ "createdAt": 1791300870305,
+ "desc": "Counts only if regular passenger service starts, not trial runs.",
+ "kind": "prediction",
+ "location": "Chennai",
+ "originCommentId": null,
+ "outcome": null,
+ "parentId": null,
+ "resolveBy": 1798761600000,
+ "seed": true,
+ "seedFollowers": 12,
+ "seedNo": 174,
+ "seedYes": 96,
+ "tags": [
+  "chennaimetro",
+  "chennai"
+ ],
+ "title": "Will any new Chennai Metro Phase 2 stretch open for passengers before 1 January 2027?"
+}

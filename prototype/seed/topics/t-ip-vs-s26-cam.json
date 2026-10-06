@@ -1,0 +1,35 @@
+{
+ "answer": {
+  "at": 1791315800000,
+  "by": "seed-arjun",
+  "commentCount": 5,
+  "points": [
+   "Main camera and 3x zoom are close to a tie",
+   "iPhone handles hair edges better in portrait mode",
+   "Night photography got its own topic"
+  ],
+  "sources": [
+   "c-cam1",
+   "c-cam2",
+   "c-cam4",
+   "t-night-cam"
+  ],
+  "text": "Samsung S26 Ultra wins on 10x zoom (it won the community battle), while the iPhone 17 Pro Max is preferred for portraits and especially video. Several people say a Pixel beats both at night."
+ },
+ "authorId": "seed-arjun",
+ "category": "Tech",
+ "createdAt": 1791040740692,
+ "desc": "Side-by-side comparison of the two flagship cameras: zoom, night, portrait and video.",
+ "kind": "topic",
+ "location": "",
+ "originCommentId": "c-ip2",
+ "parentId": "t-iphone17pm",
+ "seed": true,
+ "seedFollowers": 23,
+ "tags": [
+  "iphone17",
+  "galaxys26",
+  "camera"
+ ],
+ "title": "iPhone 17 Pro Max vs Samsung S26 Ultra camera"
+}

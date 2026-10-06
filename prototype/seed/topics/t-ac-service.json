@@ -1,0 +1,17 @@
+{
+ "authorId": "seed-meena",
+ "category": "Services",
+ "createdAt": 1791242340692,
+ "desc": "Brand AMC vs calling a local technician twice a year.",
+ "kind": "topic",
+ "location": "Chennai",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 9,
+ "tags": [
+  "homeservices",
+  "chennaisummer"
+ ],
+ "title": "Are annual AC service plans worth it?"
+}

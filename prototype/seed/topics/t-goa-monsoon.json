@@ -1,0 +1,18 @@
+{
+ "authorId": "seed-divya",
+ "category": "Travel",
+ "createdAt": 1791220740692,
+ "desc": "Off-season prices, green everywhere, but beaches are rough and many shacks close.",
+ "kind": "topic",
+ "location": "Goa",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 28,
+ "tags": [
+  "goatrip",
+  "monsoon",
+  "travel"
+ ],
+ "title": "Goa in the monsoon: worth it?"
+}

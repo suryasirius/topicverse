@@ -1,0 +1,33 @@
+{
+ "answer": {
+  "at": 1791315800000,
+  "by": "seed-meena",
+  "commentCount": 3,
+  "points": [
+   "Nothing vs Samsung became its own topic",
+   "Service network matters more than specs in smaller towns"
+  ],
+  "sources": [
+   "c-50a",
+   "c-50b",
+   "c-50c",
+   "t-nothing-vs-sam"
+  ],
+  "text": "There's no single winner: Pixel's 'a' series for camera and long software updates, Samsung's A-series for display, and Nothing Phone for clean software and design. One practical tip got a lot of agreement: check for a service centre in your town before buying."
+ },
+ "authorId": "seed-meena",
+ "category": "Tech",
+ "createdAt": 1791134340692,
+ "desc": "Looking for the best all-rounder: camera, battery and at least 4 years of updates.",
+ "kind": "question",
+ "location": "",
+ "originCommentId": null,
+ "parentId": null,
+ "seed": true,
+ "seedFollowers": 19,
+ "tags": [
+  "smartphones",
+  "budget"
+ ],
+ "title": "Best phone under ₹50,000"
+}

@@ -1,0 +1,18 @@
+{
+ "authorId": "seed-vikram",
+ "category": "Food",
+ "createdAt": 1791112740692,
+ "desc": "Seeraga samba vs short grain, chilli paste vs whole spices. Settle it.",
+ "kind": "topic",
+ "location": "",
+ "originCommentId": "c-b2",
+ "parentId": "t-biryani-chennai",
+ "seed": true,
+ "seedFollowers": 30,
+ "tags": [
+  "biryani",
+  "ambur",
+  "chennaifood"
+ ],
+ "title": "Ambur biryani vs Chennai biryani"
+}

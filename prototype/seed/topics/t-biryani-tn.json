@@ -1,0 +1,17 @@
+{
+ "authorId": "seed-divya",
+ "category": "Food",
+ "createdAt": 1791191940692,
+ "desc": "Ambur, Dindigul, Salem, Chennai, Vaniyambadi. Which town does it best?",
+ "kind": "topic",
+ "location": "Tamil Nadu",
+ "originCommentId": "c-a3",
+ "parentId": "t-ambur-vs-chennai",
+ "seed": true,
+ "seedFollowers": 26,
+ "tags": [
+  "biryani",
+  "tamilnadu"
+ ],
+ "title": "Best biryani in Tamil Nadu"
+}

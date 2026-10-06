@@ -1,0 +1,20 @@
+{
+ "authorId": "seed-anand",
+ "category": "Sports",
+ "createdAt": 1791100144556,
+ "desc": "Started as our group argument. What do other local players think?",
+ "groupId": "g-sunday-cricket",
+ "kind": "topic",
+ "location": "Arakkonam",
+ "madePublic": true,
+ "originCommentId": null,
+ "parentId": null,
+ "publicAt": 1791172144556,
+ "seed": true,
+ "seedFollowers": 6,
+ "tags": [
+  "cricket",
+  "arakkonam"
+ ],
+ "title": "Is the Arakkonam ground pitch too slow for T20?"
+}

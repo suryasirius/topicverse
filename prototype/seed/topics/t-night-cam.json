@@ -1,0 +1,18 @@
+{
+ "authorId": "seed-sneha",
+ "category": "Tech",
+ "createdAt": 1791152340692,
+ "desc": "Concerts, street food stalls, city lights. Which phone actually gets usable night shots?",
+ "kind": "topic",
+ "location": "",
+ "originCommentId": "c-cam3",
+ "parentId": "t-ip-vs-s26-cam",
+ "seed": true,
+ "seedFollowers": 15,
+ "tags": [
+  "camera",
+  "nightphotography",
+  "smartphones"
+ ],
+ "title": "Best camera phone for night photography"
+}

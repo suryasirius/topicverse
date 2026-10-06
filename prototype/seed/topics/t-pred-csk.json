@@ -1,0 +1,22 @@
+{
+ "authorId": "seed-vikram",
+ "category": "Sports",
+ "createdAt": 1791282870305,
+ "desc": "Vote now. We'll mark the result when the league stage ends. #ipl",
+ "kind": "prediction",
+ "location": "",
+ "originCommentId": null,
+ "outcome": null,
+ "parentId": null,
+ "resolveBy": 1811786400000,
+ "seed": true,
+ "seedFollowers": 30,
+ "seedNo": 380,
+ "seedYes": 410,
+ "tags": [
+  "csk",
+  "ipl",
+  "cricket"
+ ],
+ "title": "Will CSK make the playoffs next IPL season?"
+}

@@ -1,0 +1,21 @@
+{
+ "authorId": "seed-anand",
+ "category": "Sports",
+ "createdAt": 1791294544556,
+ "desc": "He's been saying it for 6 weeks.",
+ "groupId": "g-sunday-cricket",
+ "kind": "prediction",
+ "location": "",
+ "originCommentId": null,
+ "outcome": null,
+ "parentId": null,
+ "resolveBy": 1791748144556,
+ "seed": true,
+ "seedFollowers": 0,
+ "seedNo": 2,
+ "seedYes": 1,
+ "tags": [
+  "sundaycricket"
+ ],
+ "title": "Will Rahul score a fifty this Sunday?"
+}
