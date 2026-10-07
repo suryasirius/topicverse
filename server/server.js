@@ -49,7 +49,7 @@ const q = {
 };
 
 // ---------- documents in memory ----------
-const COLS = ["topics", "comments", "reviews", "likes", "follows", "handles", "battles", "bvotes", "pvotes", "groups", "gmembers", "duels", "dvotes", "media", "notifs"];
+const COLS = ["topics", "comments", "reviews", "likes", "follows", "handles", "battles", "bvotes", "pvotes", "groups", "gmembers", "duels", "dvotes", "media", "notifs", "friends", "ufollows", "tmembers", "joinreqs"];
 const DOCS = Object.fromEntries(COLS.map(c => [c, new Map()]));
 function seedIfEmpty() {
   if (q.count.get().n > 0 || !fs.existsSync(SEED_DIR)) return;
@@ -77,7 +77,7 @@ function seedIfEmpty() {
   console.log(`Seeded ${items.length} sample documents`);
 }
 seedIfEmpty();
-for (const r of q.all.all()) if (DOCS[r.col]) DOCS[r.col].set(r.id, JSON.parse(r.data));
+for (const r of q.all.all()) if (DOCS[r.col]) { const d = JSON.parse(r.data); if (r.col === "topics") d.id = r.id; DOCS[r.col].set(r.id, d); }
 
 // ---------- accounts ----------
 const hashPw = (pw, salt) => crypto.scryptSync(pw, salt, 64).toString("hex");
@@ -112,26 +112,47 @@ const ipOf = req => (TRUST_PROXY && req.headers["x-forwarded-for"]?.split(",")[0
 
 // ---------- visibility ----------
 const role = (gid, uid) => (uid && DOCS.gmembers.get(`${gid}__${uid}`)?.role) || null;
-function topicVisible(t, uid) {
+const areFriends = (a, b) => !!a && !!b && (DOCS.friends.get(`${a}__${b}`)?.status === "accepted" || DOCS.friends.get(`${b}__${a}`)?.status === "accepted");
+const tRole = (tid, uid) => (uid && DOCS.tmembers.get(`${tid}__${uid}`)?.role) || null;
+const OPEN = a => !a || a === "open";
+function groupOK(t, uid) {
   if (!t || !t.groupId || t.madePublic) return true;
   const g = DOCS.groups.get(t.groupId);
   if (!g || g.visibility !== "private") return true;
   return !!role(t.groupId, uid) || isAdmin(uid);
 }
+// who may read a topic's content: open topics, its author, its members, (friends-only) the author's friends, site admins
+function accessOK(t, uid) {
+  if (!t || OPEN(t.access)) return true;
+  if (!uid) return false;
+  if (isAdmin(uid) || t.authorId === uid) return true;
+  if (t.access === "private") return false;   // only me: members are kept on file but can’t see it
+  if (tRole(t.id, uid)) return true;
+  return t.access === "friends" && areFriends(t.authorId, uid);
+}
+function topicVisible(t, uid) { return !t || (groupOK(t, uid) && accessOK(t, uid)); }
+// request / invite-only topics show outsiders a stub: title, category and member count only
+const stubOK = (t, uid) => !!t && (t.access === "request" || t.access === "invite") && groupOK(t, uid) && !accessOK(t, uid);
+const tAdmin = (t, uid) => !!uid && (isAdmin(uid) || t.authorId === uid || tRole(t.id, uid) === "admin");
+const memberCount = tid => 1 + [...DOCS.tmembers.values()].filter(m => m.topicId === tid).length;
 function visible(col, id, d, uid) {
   switch (col) {
-    case "topics": return topicVisible(d, uid);
+    case "topics": return topicVisible(d, uid) || stubOK(d, uid);
     case "comments": case "reviews": case "battles": case "duels": return topicVisible(DOCS.topics.get(d.topicId), uid);
     case "pvotes": return topicVisible(DOCS.topics.get(d.topicId), uid);
     case "bvotes": { const b = DOCS.battles.get(d.battleId); return !b || visible("battles", d.battleId, b, uid); }
     case "dvotes": { const x = DOCS.duels.get(d.duelId); return !x || visible("duels", d.duelId, x, uid); }
     case "media": { const c = DOCS.comments.get(d.commentId); return c ? visible("comments", d.commentId, c, uid) : d.by === uid; }
     case "notifs": return !!uid && d.to === uid;
+    case "friends": return !!uid && (d.fromId === uid || d.toId === uid);
+    case "tmembers": { const t = DOCS.topics.get(d.topicId); return !!t && !!uid && (isAdmin(uid) || t.authorId === uid || !!tRole(t.id, uid)); }
+    case "joinreqs": { const t = DOCS.topics.get(d.topicId); return !!uid && (d.userId === uid || (!!t && tAdmin(t, uid))); }
     case "gmembers": { const g = DOCS.groups.get(d.groupId); return !g || g.visibility !== "private" || !!role(d.groupId, uid) || isAdmin(uid); }
     default: return true;
   }
 }
 function outDoc(col, id, d, uid) {
+  if (col === "topics" && !topicVisible(d, uid)) return { id, title: d.title, category: d.category, authorId: d.authorId, createdAt: d.createdAt, access: d.access, stub: true, mcount: memberCount(id) };
   // a group's invite code is only for its members
   if (col === "groups" && d.invite && !role(id, uid) && !isAdmin(uid)) { const { invite, ...rest } = d; return rest; }
   return d;
@@ -165,6 +186,10 @@ function check(op, col, id, prev, next, patch, uid) {
   const same = (field) => !prev || !next || prev[field] === next[field];
   switch (col) {
     case "topics":
+      if (next && next.banner && String(next.banner).length > 52000) bad("That banner is too large.");
+      if (next && !OPEN(next.access) && !["request", "invite", "friends", "selected", "private"].includes(next.access)) bad();
+      if (next && !OPEN(next.access) && next.groupId) bad("A topic can be in a group or private, not both.");
+      if (!prev && next.parentId) { const par = DOCS.topics.get(next.parentId); if (par && !topicVisible(par, uid)) deny("You can’t branch from a topic you can’t see."); }
       if (!prev) { if (next.authorId !== uid) deny(); if (next.groupId && !role(next.groupId, uid) && !admin) deny("Join the group first."); return; }
       if (admin || prev.authorId === uid) { if (!same("authorId")) deny(); return; }
       if (op === "update" && prev.groupId && role(prev.groupId, uid) === "admin" && onlyKeys(patch, ["madePublic", "publicAt"])) return;
@@ -175,9 +200,45 @@ function check(op, col, id, prev, next, patch, uid) {
       if (prev.authorId !== uid && !admin) deny(); if (!same("authorId")) deny(); return;
     case "reviews":
       if ((next || prev).authorId !== uid && !admin) deny();
+      if (!prev && !topicVisible(DOCS.topics.get(next.topicId), uid)) deny("You can’t see that topic.");
       if (!prev && id !== `${next.topicId}__${uid}`) bad(); if (!prev && DOCS.topics.get(next.topicId)?.deletedAt) deny("This topic was deleted."); if (!same("authorId")) deny(); return;
     case "likes": case "follows":
-      if (!suffixUid(id, uid) || (next && next.userId !== uid)) deny(); return;
+      if (!suffixUid(id, uid) || (next && next.userId !== uid)) deny();
+      if (col === "follows" && !prev && !topicVisible(DOCS.topics.get(next.topicId), uid)) deny("You can’t see that topic."); return;
+    case "friends": {
+      const [a, b] = id.split("__"); if (!a || !b || a === b) bad();
+      if (op === "delete") { if (uid !== a && uid !== b) deny(); return; }
+      if (!prev) {
+        if (a !== uid || next.fromId !== uid || next.toId !== b || next.status !== "pending") deny();
+        if (!DOCS.handles.has(b)) bad("That person doesn’t exist.");
+        if (DOCS.friends.has(`${b}__${a}`)) deny("They already sent you a request. Accept it instead."); return;
+      }
+      if (uid !== b || !onlyKeys(patch, ["status", "acceptedAt"]) || next.status !== "accepted") deny(); return;
+    }
+    case "ufollows": {
+      const [a, b] = id.split("__"); if (!a || !b || a === b) bad();
+      if (a !== uid) deny(); if (next && (next.followerId !== uid || next.followingId !== b)) deny();
+      if (next && !DOCS.handles.has(b)) bad("That person doesn’t exist."); return;
+    }
+    case "tmembers": {
+      const cut = id.lastIndexOf("__"), tid = id.slice(0, cut), mu = id.slice(cut + 2); const t = DOCS.topics.get(tid);
+      if (!t) bad("That topic doesn’t exist.");
+      if (op === "delete") { if (mu === uid || tAdmin(t, uid)) return; deny(); }
+      if (!DOCS.handles.has(mu)) bad("That person doesn’t exist.");
+      if (next.userId !== mu || next.topicId !== tid) deny();
+      if (prev) { if (t.authorId !== uid && !admin) deny("Only the creator can change roles."); if (!onlyKeys(patch, ["role"]) || !["member", "admin"].includes(next.role)) deny(); return; }
+      if (next.role === "admin") { if (t.authorId !== uid && !admin) deny(); return; }
+      if (next.role !== "member") bad();
+      if (tAdmin(t, uid) || (t.membersCanAdd && tRole(tid, uid))) return; deny("You can’t add people to this topic.");
+    }
+    case "joinreqs": {
+      const cut = id.lastIndexOf("__"), tid = id.slice(0, cut), ru = id.slice(cut + 2); const t = DOCS.topics.get(tid);
+      if (!t) bad("That topic doesn’t exist.");
+      if (op === "delete") { if (ru === uid || tAdmin(t, uid)) return; deny(); }
+      if (prev) deny();
+      if (ru !== uid || next.userId !== uid || next.topicId !== tid || next.status !== "pending") deny();
+      if (t.access !== "request") deny("This topic isn’t taking requests."); if (accessOK(t, uid)) deny("You already have access."); return;
+    }
     case "bvotes": {
       if (!suffixUid(id, uid) || (next && next.userId !== uid)) deny();
       const b = DOCS.battles.get((next || prev).battleId); if (!b || Date.now() >= b.endsAt) deny("Voting has ended."); return;
@@ -242,6 +303,7 @@ function reloadFor(pred) { for (const c of clients) if (pred(c)) send(c, { t: "r
 setInterval(() => { for (const c of clients) { try { c.res.write(": ping\n\n"); } catch { } } }, 25000).unref();
 
 function apply(col, id, next) {
+  if (next && col === "topics") next.id = id;
   if (next) { q.upsert.run(col, id, JSON.stringify(next), Date.now()); DOCS[col].set(id, next); }
   else { q.del.run(col, id); DOCS[col].delete(id); }
 }
@@ -251,12 +313,40 @@ function validate(col, v, key = "", depth = 0) {
   if (depth > 12) bad("That’s nested too deeply.");
   if (typeof v === "string") {
     if ((key === "id" || /Id$/.test(key)) && v !== "" && !ID_RE.test(v)) bad("Bad id in " + key + ".");
-    if (((col === "media" && key === "data") || (col === "handles" && key === "avatar" && v !== "")) && !DATA_URL.test(v)) bad("Only GIF, PNG, JPG or WebP images can be saved.");
+    if (((col === "media" && key === "data") || (col === "handles" && key === "avatar" && v !== "") || (col === "topics" && key === "banner" && v !== "")) && !DATA_URL.test(v)) bad("Only GIF, PNG, JPG or WebP images can be saved.");
     if (v.length > 300 * 1024) bad("That’s too large to save.");
     return;
   }
   if (Array.isArray(v)) { for (const x of v) { if (["media", "sources", "tagged", "taggedGroups"].includes(key) && typeof x === "string" && !ID_RE.test(x)) bad("Bad id in " + key + "."); validate(col, x, key, depth + 1); } return; }
   if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) validate(col, x, k, depth + 1);
+}
+// server-side follow-ups: new members when a topic goes private, and branches inherit their parent's privacy
+function addMember(tid, mu, by) {
+  const k = `${tid}__${mu}`; const t = DOCS.topics.get(tid);
+  if (!t || t.authorId === mu || DOCS.tmembers.has(k) || !DOCS.handles.has(mu)) return;
+  apply("tmembers", k, { topicId: tid, userId: mu, role: "member", addedBy: by || t.authorId, createdAt: Date.now() });
+}
+function afterWrite(col, id, prev, next) {
+  if (col === "topics" && next) {
+    if (prev && OPEN(prev.access) && !OPEN(next.access)) {
+      for (const c of DOCS.comments.values()) if (c.topicId === id) addMember(id, c.authorId);
+      for (const r of DOCS.reviews.values()) if (r.topicId === id) addMember(id, r.authorId);
+      for (const f of DOCS.follows.values()) if (f.topicId === id) addMember(id, f.userId);
+      for (const v of DOCS.pvotes.values()) if (v.topicId === id) addMember(id, v.userId);
+    }
+    if (!prev && next.parentId) {
+      const par = DOCS.topics.get(next.parentId);
+      if (par && !OPEN(par.access) && OPEN(next.access)) {
+        next.access = par.access === "friends" ? "friends" : par.access === "private" ? "selected" : par.access;
+        apply("topics", id, next);
+        addMember(id, par.authorId);
+        for (const m of [...DOCS.tmembers.values()]) if (m.topicId === par.id) addMember(id, m.userId);
+      }
+    }
+    if (prev && prev.access !== next.access) reloadFor(() => true);
+  }
+  if (col === "tmembers") { const mu = id.slice(id.lastIndexOf("__") + 2); reloadFor(c => c.uid === mu); }
+  if (col === "friends") { const d = next || prev; if (!prev || !next || next.status !== prev.status) reloadFor(c => c.uid === d.fromId || c.uid === d.toId); }
 }
 function write(uid, { op, col, id, data }) {
   if (!COLS.includes(col)) bad("Unknown collection.");
@@ -274,6 +364,7 @@ function write(uid, { op, col, id, data }) {
   check(op, col, id, prev, next, op === "update" ? data : next || {}, uid);
   if (prev && next && "seed" in prev && !("seed" in next)) next.seed = prev.seed;
   apply(col, id, next);
+  afterWrite(col, id, prev, next);
   broadcast(col, id, next, prev);
   // membership or visibility changes: affected viewers refetch everything
   if (col === "gmembers") { const mu = id.slice(id.lastIndexOf("__") + 2); reloadFor(c => c.uid === mu); }
