@@ -39,7 +39,9 @@ docs/
 
 ## Run it on your own server (DigitalOcean)
 
-1. Create a droplet: **Ubuntu 24.04**, the smallest Basic size (1 GB RAM) is enough to start.
+1. Use a droplet you already have, or create one: **Ubuntu 24.04**, the smallest Basic size (1 GB RAM) is enough.
+   On a droplet that already runs another site, the installer leaves it alone: TopicTalk gets its own Node.js,
+   takes port 80 only if it is free (otherwise 3000 or the next free port), and never switches a firewall on.
 2. Open the droplet's **Console** in DigitalOcean and paste:
 
    ```
@@ -52,7 +54,7 @@ docs/
    export GITHUB_TOKEN=<token>; curl -fsSL -H "Authorization: token $GITHUB_TOKEN" https://raw.githubusercontent.com/suryasirius/topicverse/main/deploy/install.sh | bash
    ```
 
-3. Open the address it prints (`http://<droplet IP>`) and create your account first: **the first account becomes the owner**
+3. Open the address it prints (`http://<droplet IP>` or `http://<droplet IP>:3000`) and create your account first: **the first account becomes the owner**
    (or set `ADMIN_USERNAME=<name>` before `bash`).
 
 Update to the newest code any time with `bash /opt/topictalk/deploy/install.sh`. Your data stays in `/var/lib/topictalk`,
