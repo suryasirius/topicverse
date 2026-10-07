@@ -67,6 +67,7 @@ h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balanc
 /* avatars & tiles */
 .av{flex-shrink:0;width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;font-size:12px;font-weight:700;background:hsl(var(--h,150) 40% var(--tile-l));color:hsl(var(--h,150) 50% var(--tile-ink));object-fit:cover}
 .av.lg{width:72px;height:72px;font-size:24px}
+.uid{display:inline-block;font:600 12px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em;color:var(--muted);background:var(--brand-soft);border-radius:6px;padding:3px 6px}
 .dprow{display:flex;gap:14px;align-items:center;margin-top:6px}
 .av.xs{width:22px;height:22px;font-size:10px}
 .tile{flex-shrink:0;width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:15px;background:hsl(var(--h) 42% var(--tile-l));color:hsl(var(--h) 55% var(--tile-ink))}
@@ -479,6 +480,12 @@ function left(ms){ const s=ms/1000; if(s<3600) return Math.max(1,Math.ceil(s/60)
 const fmtDate = t => new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
 const isSeed = id => String(id).startsWith("seed-");
 const handleOf = id => S.handles.get(id)?.handle;
+// short public ID, e.g. K7Q2M9: derived from the account id so it never changes and needs no storage
+const TT_AL="23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+function ttCode(id){ let h=2166136261; for(const ch of String(id)){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619)>>>0; } let n=h%887503681, o=""; for(let i=0;i<6;i++){ o=TT_AL[n%31]+o; n=Math.floor(n/31); } return o; }
+const idNorm = q => String(q||"").toUpperCase().trim().replace(/^#/,"").replace(/^TT-/,"").replace(/[\s-]/g,"");
+const idHit = (id,q) => { const n=idNorm(q); return n.length>=4 && /^[A-Z0-9]+$/.test(n) && ttCode(id).includes(n); };
+const idTag = id => `<span class="uid">ID ${ttCode(id)}</span>`;
 function nameOf(id){ return handleOf(id) || pcache[id]?.name || (id===S.me ? "you" : "someone"); }
 function handleToId(h){ h=h.toLowerCase(); for (const [id,d] of S.handles) if ((d.handle||"").toLowerCase()===h) return id; return null; }
 function avatar(id, cls=""){ const n=nameOf(id); const p=pcache[id];
@@ -866,7 +873,7 @@ function vSearch(){
   ${r.topics.length?`<section class="sec" style="margin-top:22px"><div class="sech"><h2>Conversations</h2></div><div class="grid">${r.topics.map(t=>topicCard(t)).join("")}</div></section>`:""}
   ${r.cities.length?`<section class="sec"><div class="sech"><h2>Cities</h2></div><div class="tagrow">${r.cities.map(c=>`<a class="chip" href="#city-${enc(c.slug)}">${esc(c.name)}</a>`).join("")}</div></section>`:""}
   ${r.tags.length?`<section class="sec"><div class="sech"><h2>Hashtags</h2></div><div class="tagrow">${r.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div></section>`:""}
-  ${r.people.length?`<section class="sec"><div class="sech"><h2>People</h2></div><div class="list">${r.people.map(id=>`<a href="#u-${esc(id)}">${avatar(id)}<div class="txt"><b>${esc(nameOf(id))}</b></div></a>`).join("")}</div></section>`:""}`;
+  ${r.people.length?`<section class="sec"><div class="sech"><h2>People</h2></div><div class="list">${r.people.map(id=>`<a href="#u-${esc(id)}">${avatar(id)}<div class="txt"><b>${esc(nameOf(id))}</b> ${idTag(id)}</div></a>`).join("")}</div></section>`:""}`;
 }
 
 const STOP=new Set("a an the is are was were be to of in on for and or vs versus which what who whom how why where when best most good better any do does did should can could would will i my me we our it its this that these with at by from about than near under over into get got".split(" "));
@@ -887,7 +894,7 @@ function searchAll(q,n){
   const topics=[...S.topics.values()].map(t=>[t,topicScore(t,q,words)]).filter(x=>x[1]>=1.5).sort((a,b)=>b[1]-a[1]||IX.trend.get(b[0].id)-IX.trend.get(a[0].id)).slice(0,n).map(x=>x[0]);
   const qq=q.replace(/^#/,"");
   const tags=[...tagset].filter(x=>x.includes(qq)||words.includes(x)).slice(0,10);
-  const people=[...S.handles].filter(([id,d])=>(d.handle||"").toLowerCase().includes(qq.replace(/^@/,""))).map(([id])=>id).slice(0,8);
+  const people=[...S.handles].filter(([id,d])=>(d.handle||"").toLowerCase().includes(qq.replace(/^@/,""))||idHit(id,qq)).map(([id])=>id).slice(0,8);
   const cs=cities().filter(c=>c.name.toLowerCase().includes(qq)||words.includes(c.slug)).slice(0,6);
   return {topics,tags,people,cities:cs};
 }
@@ -1087,6 +1094,7 @@ function vProfile(id){
   if(UI.ptab==="reviews") body=rs.length?`<div class="list">${rs.map(r=>{const t=S.topics.get(r.topicId);return t?`<a href="#t-${t.id}"><div class="txt"><span class="stars">${stars(r.rating)}</span> <b>${esc(t.title)}</b><div class="q muted">${esc(r.title||r.text)}</div></div></a>`:""}).join("")}</div>`:emptyBox("No reviews yet","");
   if(UI.ptab==="comments") body=cs.length?`<div class="list">${cs.slice(0,40).map(c=>{const t=S.topics.get(c.topicId);return t?`<a href="#t-${t.id}~${c.id}"><div class="txt"><div class="meta">in ${esc(t.title)} · ${ago(c.createdAt)} · ${likes(c)} likes</div><div class="q">${esc(c.text)}</div></div></a>`:""}).join("")}</div>`:emptyBox("No comments yet","");
   return `<div class="phead">${avatar(id,"lg")}<div style="min-width:0"><h1>${esc(nameOf(id))}${isSeed(id)?' <span class="sample">sample account</span>':""}</h1>
+     <div style="margin-top:2px">${idTag(id)}${isMe?` <button class="act" data-act="copyId" data-id="${ttCode(id)}">Copy ID</button> <span class="muted" style="font-size:12px">Share it so friends can search for you</span>`:""}</div>
      ${h?.bio?`<p style="margin:4px 0 0">${esc(h.bio)}</p>`:""}<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="lvl">${lvl[1]}</span>${isMe?`<button class="btn sm" data-act="editHandle">Edit profile</button>`:""}</div></div></div>
    <div class="kpis"><div><b>${rec.total?`${rec.w}–${rec.l}${rec.d?"–"+rec.d:""}`:"–"}</b>Debate record${rec.total?` · ${Math.round(100*rec.w/rec.total)}% wins`:""}</div><div><b>${rep}</b>Reputation</div><div><b>${branchesFrom}</b>Topics sparked</div><div><b>${resolved.length?correct+"/"+resolved.length:"–"}</b>Called it</div><div><b>${ts.length}</b>Topics</div><div><b>${rs.length}</b>Reviews</div><div><b>${cs.length}</b>Comments</div></div>
    <div class="tabs">${tabs.map(([k,l,n])=>`<button class="${UI.ptab===k?"on":""}" data-act="ptab" data-v="${k}">${l} · ${n}</button>`).join("")}</div>${body}
@@ -1658,7 +1666,7 @@ function topicModal(o={}){
     <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
       <label class="l">City or place (optional)<input class="f" id="n-loc" maxlength="60" placeholder="e.g. Chennai" value="${esc(o.loc||bt?.location||"")}"></label></div>
     <label class="l">Hashtags<input class="f" id="n-tags" placeholder="iphone17 camera smartphones" value="${esc(tags)}"></label>
-    <div class="l">Tag friends (optional)<div class="tagbox" id="n-tagged"></div><input class="f" id="n-tagin" autocomplete="off" maxlength="30" placeholder="Type a friend’s name or a group name"><div class="tagsug" id="n-tagsug" hidden></div><span class="hint" style="margin:0">Tag friends or a whole group you belong to. They get a notification and are shown on the topic. Up to 10 friends.</span></div>
+    <div class="l">Tag friends (optional)<div class="tagbox" id="n-tagged"></div><input class="f" id="n-tagin" autocomplete="off" maxlength="30" placeholder="Type a friend’s name, their ID, or a group name"><div class="tagsug" id="n-tagsug" hidden></div><span class="hint" style="margin:0">Tag friends or a whole group you belong to. They get a notification and are shown on the topic. Up to 10 friends.</span></div>
     ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
     <div class="hint" id="n-err"></div>
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">${b?"Create branch topic":"Create"}</button></div>`);
@@ -1671,10 +1679,10 @@ function tagSuggest(){
   const inp=$("#n-tagin"), sug=$("#n-tagsug"); if(!inp||!sug) return;
   const qq=inp.value.trim().replace(/^@/,"").toLowerCase();
   const gid=$("#n-group")?.value||null, g=gid&&S.groups.get(gid), mem=g&&g.visibility==="private"?new Set((IX.gMem.get(gid)||[]).map(m=>m.userId)):null;
-  const items=qq?[...S.handles].filter(([id,d])=>d.handle&&id!==S.me&&!UI.tagged.includes(id)&&(!mem||mem.has(id))&&d.handle.toLowerCase().includes(qq)).sort((a,b)=>(!a[1].handle.toLowerCase().startsWith(qq))-(!b[1].handle.toLowerCase().startsWith(qq))||a[1].handle.localeCompare(b[1].handle)).slice(0,6):[];
+  const items=qq?[...S.handles].filter(([id,d])=>d.handle&&id!==S.me&&!UI.tagged.includes(id)&&(!mem||mem.has(id))&&(d.handle.toLowerCase().includes(qq)||idHit(id,qq))).sort((a,b)=>(!a[1].handle.toLowerCase().startsWith(qq))-(!b[1].handle.toLowerCase().startsWith(qq))||a[1].handle.localeCompare(b[1].handle)).slice(0,6):[];
   const gitems=qq?[...S.groups.values()].filter(g=>memberOf(g.id)&&!UI.taggedG.includes(g.id)&&g.name.toLowerCase().includes(qq)).slice(0,3):[];
   sug.hidden=!items.length&&!gitems.length;
-  sug.innerHTML=gitems.map(g=>`<button type="button" class="aci" data-act="tagPickG" data-id="${esc(g.id)}"><span>👥</span><span><b>${esc(g.name)}</b> <span class="muted">tag all ${(IX.gMem.get(g.id)||[]).length} members</span></span></button>`).join("")+items.map(([id,d])=>`<button type="button" class="aci" data-act="tagPick" data-id="${esc(id)}">${avatar(id,"xs")}<span><b>@${esc(d.handle)}</b>${isSeed(id)?' <span class="sample">sample</span>':""}</span></button>`).join("");
+  sug.innerHTML=gitems.map(g=>`<button type="button" class="aci" data-act="tagPickG" data-id="${esc(g.id)}"><span>👥</span><span><b>${esc(g.name)}</b> <span class="muted">tag all ${(IX.gMem.get(g.id)||[]).length} members</span></span></button>`).join("")+items.map(([id,d])=>`<button type="button" class="aci" data-act="tagPick" data-id="${esc(id)}">${avatar(id,"xs")}<span><b>@${esc(d.handle)}</b> ${idTag(id)}${isSeed(id)?' <span class="sample">sample</span>':""}</span></button>`).join("");
 }
 function durSeg(){ return `<div class="seg" id="dur">${[["1","1 hour"],["24","24 hours"],["72","3 days"]].map(([v,l])=>`<button class="${v==="24"?"on":""}" data-act="dur" data-v="${v}">${l}</button>`).join("")}</div>`; }
 function battleModal(o={}){
@@ -2006,6 +2014,7 @@ document.addEventListener("click", async e=>{
       else { el.disabled=false; }
       break; }
     case "editHandle": askHandle(true); break;
+    case "copyId": try{ await navigator.clipboard.writeText(el.dataset.id); toast("ID copied: "+el.dataset.id); }catch{ toast("Your ID is "+el.dataset.id); } break;
     case "dpRemove": UI.dp=""; { const o=S.handles.get(S.me); const w=$("#h-dp"); if(w){ const keep=o?.avatar; if(o) o.avatar=""; w.innerHTML=avatar(S.me,"lg"); if(o) o.avatar=keep; } } break;
     case "readAll": for(const n of S.notifs.filter(n=>!n.read)){ try{ await db.doc("notifs/"+n.id).update({read:true}); }catch{} } break;
     case "clearSample": {
@@ -2049,7 +2058,7 @@ q.addEventListener("input",()=>{
   if(r.topics.length) h+=`<div class="grp">Topics</div>`+r.topics.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:30px;height:30px;font-size:11px;border-radius:8px">${esc(abbr(t))}</div><span>${markq(t.title,v)}</span></a>`).join("");
   if(r.cities.length) h+=`<div class="grp">Cities</div>`+r.cities.slice(0,3).map(c=>`<a href="#city-${enc(c.slug)}">📍 ${esc(c.name)}</a>`).join("");
   if(r.tags.length) h+=`<div class="grp">Hashtags</div>`+r.tags.slice(0,4).map(x=>`<a href="#tag-${enc(x)}">#${markq(x,v.replace(/^#/,""))}</a>`).join("");
-  if(r.people.length) h+=`<div class="grp">People</div>`+r.people.slice(0,4).map(id=>`<a href="#u-${esc(id)}">${avatar(id,"xs")}<span>${markq(nameOf(id),v.replace(/^@/,""))}</span></a>`).join("");
+  if(r.people.length) h+=`<div class="grp">People</div>`+r.people.slice(0,4).map(id=>`<a href="#u-${esc(id)}">${avatar(id,"xs")}<span>${markq(nameOf(id),v.replace(/^@/,""))}</span>${idTag(id)}</a>`).join("");
   h+=`<a href="#search" data-act="fullSearch"><b>See all results for “${esc(q.value.trim())}”</b></a>`;
   dd.innerHTML=h; dd.hidden=false;
 });
