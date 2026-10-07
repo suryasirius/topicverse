@@ -1,0 +1,12 @@
+{
+  "name": "topictalk-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted TopicTalk: serves the site with accounts, a SQLite document store and live updates.",
+  "main": "server.js",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "build": "node build.js"
+  }
+}

@@ -2,7 +2,7 @@
 
 **Anything can become a topic.** A social discussion platform where people review anything, talk about it, and turn any comment into a new linked topic. The links form a *Topic Graph*.
 
-This repository holds the working prototype and the product specification. The production web app (Next.js + PostgreSQL) is the next step.
+This repository holds the site, a small self-hosted server that runs it anywhere, and the product specification. A Next.js + PostgreSQL rewrite comes later.
 
 ## What's in the prototype
 
@@ -25,15 +25,52 @@ This repository holds the working prototype and the product specification. The p
 
 ```
 prototype/
-  topictalk.html     Single-file prototype (HTML + CSS + JS)
+  topictalk.html     The whole site: one file of HTML, CSS and JS
   seed/              Sample data, one JSON file per document, grouped by collection
+server/
+  server.js          Self-hosted server: accounts, SQLite document store, live updates
+  shim.js            Gives the page the same data API it had on claude.ai, backed by the server
+  build.js           Builds the served page from prototype/topictalk.html
+deploy/
+  install.sh         One-command install or update on an Ubuntu server
 docs/
   SPEC.md            Full product specification
 ```
 
-## How the prototype runs
+## Run it on your own server (DigitalOcean)
 
-`prototype/topictalk.html` is built as a **Claude artifact**. It uses the claude.ai artifact runtime (`window.claude`) for:
+1. Create a droplet: **Ubuntu 24.04**, the smallest Basic size (1 GB RAM) is enough to start.
+2. Open the droplet's **Console** in DigitalOcean and paste:
+
+   ```
+   curl -fsSL https://raw.githubusercontent.com/suryasirius/topicverse/main/deploy/install.sh | bash
+   ```
+
+   If the repo is private, use a GitHub token with read access to it:
+
+   ```
+   export GITHUB_TOKEN=<token>; curl -fsSL -H "Authorization: token $GITHUB_TOKEN" https://raw.githubusercontent.com/suryasirius/topicverse/main/deploy/install.sh | bash
+   ```
+
+3. Open the address it prints (`http://<droplet IP>`) and create your account first: **the first account becomes the owner**
+   (or set `ADMIN_USERNAME=<name>` before `bash`).
+
+Update to the newest code any time with `bash /opt/topictalk/deploy/install.sh`. Your data stays in `/var/lib/topictalk`,
+with a daily backup kept for 7 days in `/var/lib/topictalk/backups`. Logs: `journalctl -u topictalk -f`.
+
+Run it on your own computer instead: `cd server && npm start` (Node.js 22.13 or newer), then open http://localhost:3000.
+
+### What the server does
+
+- **Accounts:** username and password (scrypt-hashed), 60-day login cookie. Guests can read everything public.
+- **Data:** every collection the page uses, stored in SQLite (`node:sqlite`, no npm packages), sent to each browser on load and kept live with Server-Sent Events.
+- **Rules on every write:** people can only write as themselves; votes are one per person and only while voting is open; only authors, group admins or the owner change things; usernames are unique; ids and images are validated.
+- **Real private groups:** private-group topics, comments, battles and duels are only sent to members; invite codes only to members; joining checks the code on the server.
+- **Off for now:** the Claude features (community answers fall back to the top post; no thread summaries).
+
+## How the prototype runs on claude.ai
+
+`prototype/topictalk.html` is also published as a **Claude artifact**. It uses the claude.ai artifact runtime (`window.claude`) for:
 
 - `db`: the shared document store (topics, comments, reviews, likes, follows, battles, votes, groups, duels, notifications)
 - `user`: who is viewing
@@ -44,7 +81,7 @@ Opened outside claude.ai, the page loads but shows a notice and no data, because
 
 ### Data model (collections)
 
-`topics`, `comments`, `reviews`, `likes`, `follows`, `handles`, `battles`, `bvotes`, `pvotes`, `groups`, `gmembers`, `duels`, `dvotes`, `notifs`
+`topics`, `comments`, `reviews`, `likes`, `follows`, `handles`, `battles`, `bvotes`, `pvotes`, `groups`, `gmembers`, `duels`, `dvotes`, `media`, `notifs`
 
 Key fields for the Topic Graph: `topics.parentId` (the topic it branched from) and `topics.originCommentId` (the comment it grew out of). Private groups use `topics.groupId`; `madePublic` publishes a group topic with credit.
 
@@ -52,12 +89,13 @@ Key fields for the Topic Graph: `topics.parentId` (the topic it branched from) a
 
 `prototype/seed/<collection>/<id>.json`. Every sample document has `"seed": true`, and sample accounts have ids starting with `seed-`. The page owner can remove all sample content from **Profile → Owner tools**.
 
-## Known limits of the prototype
+## Known limits
 
-- **Privacy is on screen only.** Anyone who can open the page could technically read all data, including private group topics and invite codes. Real privacy needs a server that checks membership.
-- **Not indexed by Google.** The page is private to claude.ai. Public, search-friendly topic pages (e.g. `/topic/best-biryani-in-chennai`) come with the production app.
-- Vote and counter integrity relies on one document per user per vote; a real backend should enforce it.
+- **On claude.ai,** privacy is on screen only and the page is private; the self-hosted server fixes both.
+- **Not indexed by Google yet.** Topics live at `/#t-<id>` links; search-friendly pages (`/topic/best-biryani-in-chennai`) come with the Next.js version.
+- **HTTP only on a bare IP.** Add a domain to get HTTPS.
+- **GIFs under 190 KB,** no GIF search yet.
 
-## Next: production app
+## Later: production app
 
-Next.js + TypeScript + Tailwind, PostgreSQL + Prisma, email/password auth, deployed on Vercel. See `docs/SPEC.md` sections 47–53 and 66–68 for the data model, stack and security requirements.
+Next.js + TypeScript + Tailwind, PostgreSQL + Prisma. The collections above map one-to-one to tables, so the SQLite data can be migrated. See `docs/SPEC.md` sections 47–53 and 66–68.
