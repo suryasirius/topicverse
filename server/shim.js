@@ -126,6 +126,7 @@
         .tt-auth label{display:grid;gap:5px;font-size:12px;font-weight:600;color:var(--muted,#66756F);letter-spacing:.04em}
         .tt-auth input{height:44px;border-radius:12px;border:1px solid var(--line,#E1E8E4);background:var(--surface,#fff);color:inherit;padding:0 14px;font-size:16px;outline:none}
         .tt-auth input:focus{border-color:var(--brand,#1F9D63);box-shadow:0 0 0 4px rgba(31,157,99,.14)}
+        .tt-auth [hidden]{display:none!important}
         .tt-auth .row{display:flex;gap:8px;justify-content:flex-end;align-items:center}
         .tt-auth .err{color:var(--danger,#B4412F);font-size:13px;min-height:18px}
         .tt-auth .switch{background:none;border:0;color:var(--brand-deep,#0E7045);font-weight:600;cursor:pointer;padding:0;font-size:14px}
@@ -133,8 +134,10 @@
       <form novalidate>
         <h2 id="tt-title">Log in</h2>
         <p id="tt-sub">Welcome back to TopicTalk.</p>
-        <label>Username<input id="tt-user" autocomplete="username" maxlength="24" spellcheck="false" autocapitalize="off"></label>
-        <label>Password<input id="tt-pass" type="password" autocomplete="current-password" maxlength="200"></label>
+        <label id="tt-emw" hidden>Email<input id="tt-email" type="email" autocomplete="email" maxlength="120" spellcheck="false" autocapitalize="off" placeholder="you@gmail.com"></label>
+        <label id="tt-cdw" hidden>6-digit code from your email<input id="tt-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"></label>
+        <label id="tt-unw">Username<input id="tt-user" autocomplete="username" maxlength="24" spellcheck="false" autocapitalize="off"></label>
+        <label id="tt-pww">Password<input id="tt-pass" type="password" autocomplete="current-password" maxlength="200"></label>
         <div class="err" id="tt-err" role="alert"></div>
         <div class="row"><button type="button" class="btn" data-tt="close">Cancel</button><button type="submit" class="btn pri" id="tt-go">Log in</button></div>
         <p id="tt-alt">New here? <button type="button" class="switch" data-tt="swap">Create an account</button></p>
@@ -146,23 +149,43 @@
         const err = box.querySelector("#tt-err"), go = box.querySelector("#tt-go");
         err.textContent = ""; go.disabled = true;
         try {
-          await api(box.dataset.mode === "signup" ? "/api/signup" : "/api/login", { username: box.querySelector("#tt-user").value.trim(), password: box.querySelector("#tt-pass").value });
+          const g = id => box.querySelector(id).value.trim();
+          if (box.dataset.mode === "signup" && EMAIL_ON && box.dataset.step !== "code") {
+            await api("/api/signup/code", { email: g("#tt-email") });
+            setStep("code"); go.disabled = false; return;
+          }
+          const body = { username: g("#tt-user"), password: box.querySelector("#tt-pass").value };
+          if (box.dataset.mode === "signup" && EMAIL_ON) { body.email = g("#tt-email"); body.code = g("#tt-code"); }
+          await api(box.dataset.mode === "signup" ? "/api/signup" : "/api/login", body);
           location.reload();
         } catch (ex) { err.textContent = ex.message || "Couldn’t log in. Try again."; go.disabled = false; }
       });
       document.addEventListener("keydown", e => { if (e.key === "Escape" && box && !box.hidden) box.hidden = true; });
     }
     setMode(mode || "login"); box.hidden = false;
-    setTimeout(() => box.querySelector("#tt-user").focus(), 30);
+    setTimeout(() => box.querySelector(EMAIL_ON && box.dataset.mode === "signup" ? "#tt-email" : "#tt-user").focus(), 30);
+  }
+  let EMAIL_ON = false;
+  fetch("/api/config").then(r => r.json()).then(j => { EMAIL_ON = !!j.emailSignup; if (box && !box.hidden) setMode(box.dataset.mode); }).catch(() => { });
+  function setStep(st) {
+    box.dataset.step = st; const s = box.dataset.mode === "signup" && EMAIL_ON, code = s && st === "code";
+    const q = id => box.querySelector(id);
+    q("#tt-emw").hidden = !s || code; q("#tt-cdw").hidden = !code;
+    q("#tt-unw").hidden = s && !code; q("#tt-pww").hidden = s && !code;
+    q("#tt-go").textContent = box.dataset.mode !== "signup" ? "Log in" : !s ? "Create account" : code ? "Create account" : "Send code";
+    if (s) q("#tt-sub").textContent = code ? "We emailed a 6-digit code to " + q("#tt-email").value.trim() + ". It works for 10 minutes. Then pick a username and password (8+ characters)." : "Enter your email and we’ll send you a code to confirm it.";
+    if (code) setTimeout(() => q("#tt-code").focus(), 30);
   }
   function setMode(m) {
     box.dataset.mode = m; const s = m === "signup";
     box.querySelector("#tt-title").textContent = s ? "Create your account" : "Log in";
     box.querySelector("#tt-sub").textContent = s ? "Pick a username people will see on your posts. Passwords need 8 or more characters." : "Welcome back to TopicTalk.";
-    box.querySelector("#tt-go").textContent = s ? "Create account" : "Log in";
+    box.querySelector("#tt-user").placeholder = s ? "" : (EMAIL_ON ? "Username or email" : "");
+    box.querySelector("#tt-user").maxLength = s ? 24 : 120;
     box.querySelector("#tt-pass").autocomplete = s ? "new-password" : "current-password";
     box.querySelector("#tt-alt").innerHTML = s ? `Have an account? <button type="button" class="switch" data-tt="swap">Log in</button>` : `New here? <button type="button" class="switch" data-tt="swap">Create an account</button>`;
     box.querySelector("#tt-err").textContent = "";
+    setStep("email");
   }
   window.ttLogin = () => openLogin();
   window.ttLogout = async () => { try { await api("/api/logout", {}); } catch { } location.reload(); };

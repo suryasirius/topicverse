@@ -8,6 +8,7 @@ const path = require("node:path");
 const crypto = require("node:crypto");
 const { DatabaseSync } = require("node:sqlite");
 const { buildPage } = require("./build");
+const mail = require("./mail");
 
 const PORT = +process.env.PORT || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
@@ -27,6 +28,8 @@ sql.exec(`
   CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, uid TEXT NOT NULL, created INTEGER NOT NULL);
   CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT);
 `);
+try { sql.exec("ALTER TABLE users ADD COLUMN email TEXT"); } catch { }
+sql.exec("CREATE UNIQUE INDEX IF NOT EXISTS users_email ON users (email)");
 const q = {
   upsert: sql.prepare("INSERT INTO docs (col, id, data, updated) VALUES (?, ?, ?, ?) ON CONFLICT (col, id) DO UPDATE SET data = excluded.data, updated = excluded.updated"),
   del: sql.prepare("DELETE FROM docs WHERE col = ? AND id = ?"),
@@ -35,7 +38,8 @@ const q = {
   userByName: sql.prepare("SELECT * FROM users WHERE username = ?"),
   userById: sql.prepare("SELECT * FROM users WHERE id = ?"),
   userCount: sql.prepare("SELECT COUNT(*) AS n FROM users"),
-  addUser: sql.prepare("INSERT INTO users (id, username, salt, hash, created) VALUES (?, ?, ?, ?, ?)"),
+  addUser: sql.prepare("INSERT INTO users (id, username, salt, hash, created, email) VALUES (?, ?, ?, ?, ?, ?)"),
+  userByEmail: sql.prepare("SELECT * FROM users WHERE email = ?"),
   addSession: sql.prepare("INSERT INTO sessions (token, uid, created) VALUES (?, ?, ?)"),
   session: sql.prepare("SELECT uid, created FROM sessions WHERE token = ?"),
   dropSession: sql.prepare("DELETE FROM sessions WHERE token = ?"),
@@ -249,7 +253,7 @@ function validate(col, v, key = "", depth = 0) {
     if (v.length > 300 * 1024) bad("That’s too large to save.");
     return;
   }
-  if (Array.isArray(v)) { for (const x of v) { if (["media", "sources"].includes(key) && typeof x === "string" && !ID_RE.test(x)) bad("Bad id in " + key + "."); validate(col, x, key, depth + 1); } return; }
+  if (Array.isArray(v)) { for (const x of v) { if (["media", "sources", "tagged", "taggedGroups"].includes(key) && typeof x === "string" && !ID_RE.test(x)) bad("Bad id in " + key + "."); validate(col, x, key, depth + 1); } return; }
   if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) validate(col, x, k, depth + 1);
 }
 function write(uid, { op, col, id, data }) {
@@ -272,6 +276,20 @@ function write(uid, { op, col, id, data }) {
   // membership or visibility changes: affected viewers refetch everything
   if (col === "gmembers") { const mu = id.slice(id.lastIndexOf("__") + 2); reloadFor(c => c.uid === mu); }
   if (col === "topics" && prev && next && (prev.madePublic !== next.madePublic || prev.groupId !== next.groupId)) reloadFor(() => true);
+}
+
+// ---------- email codes ----------
+const CODES = new Map();   // email -> { hash, exp, tries, sent }
+setInterval(() => { for (const [k, v] of CODES) if (v.exp < Date.now()) CODES.delete(k); }, 6e4).unref();
+const codeHash = (email, code) => crypto.createHmac("sha256", "tt-code:" + (process.env.SMTP_USER || "")).update(email + ":" + code).digest("hex");
+// one canonical form per mailbox: lower case; for Gmail also ignore dots and +tags
+function normEmail(raw) {
+  const e = String(raw || "").trim().toLowerCase();
+  if (e.length > 120 || !/^[a-z0-9._%+\-]+@[a-z0-9\-]+(\.[a-z0-9\-]+)+$/.test(e)) return null;
+  let [l, d] = e.split("@");
+  if (d === "googlemail.com") d = "gmail.com";
+  if (d === "gmail.com") l = l.split("+")[0].replace(/\./g, "");
+  return l ? l + "@" + d : null;
 }
 
 // ---------- http ----------
@@ -308,6 +326,7 @@ const server = http.createServer(async (req, res) => {
     if (!p.startsWith("/api/")) { res.writeHead(404, { "Content-Type": "text/plain" }); return res.end("Not found"); }
 
     const uid = currentUser(req);
+    if (req.method === "GET" && p === "/api/config") return json(res, 200, { emailSignup: mail.enabled() });
     if (req.method === "GET" && p === "/api/all") return json(res, 200, { me: meFor(uid), cols: snapshotFor(uid) });
     if (req.method === "GET" && p === "/api/stream") {
       res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive", "X-Accel-Buffering": "no" });
@@ -321,15 +340,43 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req, 400 * 1024);
     const ip = ipOf(req);
 
+    if (p === "/api/signup/code") {
+      if (!mail.enabled()) return json(res, 400, { error: { code: "bad_request", message: "Email sign-up isn’t switched on for this site." } });
+      const email = normEmail(body.email);
+      if (!email) return json(res, 400, { error: { code: "bad_request", message: "Enter a valid email address." } });
+      if (limited("code-ip:" + ip, 10, 36e5) || limited("code:" + email, 5, 36e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many codes requested. Try again in an hour." } });
+      if (q.userByEmail.get(email)) return json(res, 409, { error: { code: "permission_denied", message: "That email already has an account. Log in instead." } });
+      const prev = CODES.get(email);
+      if (prev && Date.now() - prev.sent < 45e3) return json(res, 429, { error: { code: "resource_exhausted", message: "A code was just sent. Wait a few seconds before asking again." } });
+      const code = String(crypto.randomInt(0, 1e6)).padStart(6, "0");
+      CODES.set(email, { hash: codeHash(email, code), exp: Date.now() + 10 * 6e4, tries: 0, sent: Date.now() });
+      try { await mail.send(String(body.email).trim(), "Your TopicTalk code: " + code, `Your TopicTalk verification code is ${code}\n\nIt works for 10 minutes. If you didn’t ask for it, ignore this email.`); }
+      catch (e) { CODES.delete(email); console.error("mail:", e.message); return json(res, 502, { error: { code: "unavailable", message: "Couldn’t send the email. Check the address and try again." } }); }
+      return json(res, 200, { ok: true });
+    }
     if (p === "/api/signup") {
       if (limited("signup:" + ip, 8, 36e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many new accounts from here. Try again later." } });
       const username = String(body.username || "").trim(), password = String(body.password || "");
+      let email = null;
+      if (mail.enabled()) {
+        email = normEmail(body.email);
+        if (!email) return json(res, 400, { error: { code: "bad_request", message: "Enter a valid email address." } });
+      }
       if (!HANDLE_RE.test(username)) return json(res, 400, { error: { code: "bad_request", message: "Usernames are 3–24 letters, numbers or underscores." } });
       if (password.length < 8) return json(res, 400, { error: { code: "bad_request", message: "Use a password of at least 8 characters." } });
       const taken = q.userByName.get(username) || [...DOCS.handles.values()].some(h => (h.handle || "").toLowerCase() === username.toLowerCase());
       if (taken) return json(res, 409, { error: { code: "permission_denied", message: "That username is taken." } });
+      if (email) {
+        if (q.userByEmail.get(email)) return json(res, 409, { error: { code: "permission_denied", message: "That email already has an account. Log in instead." } });
+        const c = CODES.get(email), given = String(body.code || "").replace(/\D/g, "");
+        if (!c || c.exp < Date.now()) return json(res, 400, { error: { code: "bad_request", message: "That code has expired. Ask for a new one." } });
+        if (++c.tries > 5) { CODES.delete(email); return json(res, 429, { error: { code: "resource_exhausted", message: "Too many wrong codes. Ask for a new one." } }); }
+        const a = Buffer.from(codeHash(email, given), "hex"), b = Buffer.from(c.hash, "hex");
+        if (!crypto.timingSafeEqual(a, b)) return json(res, 400, { error: { code: "bad_request", message: "That code isn’t right. Check your email and try again." } });
+        CODES.delete(email);
+      }
       const id = newId("u_"), salt = crypto.randomBytes(16).toString("hex");
-      q.addUser.run(id, username, salt, hashPw(password, salt), Date.now());
+      q.addUser.run(id, username, salt, hashPw(password, salt), Date.now(), email);
       if (!adminUid() && (!ADMIN_USERNAME || ADMIN_USERNAME === username.toLowerCase())) q.setMeta.run("admin", id);
       if (ADMIN_USERNAME && ADMIN_USERNAME === username.toLowerCase()) q.setMeta.run("admin", id);
       apply("handles", id, { handle: username, bio: "", createdAt: Date.now() });
@@ -339,7 +386,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === "/api/login") {
       if (limited("login:" + ip, 12, 6e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many tries. Wait 10 minutes and try again." } });
-      const u = q.userByName.get(String(body.username || "").trim());
+      const who = String(body.username || "").trim(), u = (who.includes("@") ? q.userByEmail.get(normEmail(who) || "") : null) || q.userByName.get(who);
       const ok = u && crypto.timingSafeEqual(Buffer.from(hashPw(String(body.password || ""), u.salt), "hex"), Buffer.from(u.hash, "hex"));
       if (!ok) return json(res, 401, { error: { code: "unauthenticated", message: "That username and password don’t match." } });
       setSession(res, u.id);

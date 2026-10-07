@@ -97,6 +97,11 @@ main{padding-block:22px 110px}
 .rating{color:var(--star);font-weight:700}
 .hot{color:var(--brand-deep);font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
 .tagrow{display:flex;flex-wrap:wrap;gap:6px}
+.tagbox{display:flex;flex-wrap:wrap;gap:6px}.tagbox:empty{display:none}
+.chip.tg{background:var(--brand-soft,#E3F5EC);color:var(--brand-deep);font-weight:600}.chip.tg button{border:0;background:none;color:inherit;font-size:15px;line-height:1;cursor:pointer;padding:0 0 0 2px}
+.tagsug{display:grid;gap:2px;border:1px solid var(--line);border-radius:12px;padding:4px;background:var(--surface)}.tagsug[hidden]{display:none!important}
+.tagsug .aci{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;padding:8px;border-radius:8px;cursor:pointer;color:inherit;font:inherit}.tagsug .aci:hover{background:var(--chip)}
+.withrow{margin-top:10px;font-size:14px;color:var(--muted)}.withrow a{color:var(--brand-deep);font-weight:600}
 .chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:var(--chip);font-size:12.5px;font-weight:500;color:var(--muted);border:0}
 a.chip:hover,button.chip:hover{color:var(--ink)}
 .chip.on{background:var(--ink);color:var(--bg)}
@@ -985,6 +990,8 @@ function vTopic(id){
       const canPub=priv&&(S.me===t.authorId||isAdmin(g.id));
       return `<div class="gbanner">${priv?LOCK+" Only members of":"Posted in"} <a href="#g-${esc(g.id)}">${esc(g.name)}</a>${priv?" can see this.":"."}${canPub?` <button class="btn sm" data-act="makePublic" data-id="${t.id}" style="margin-left:6px">Make public</button>`:""}</div>`; })()}
     ${parent&&oc?`<div class="origin">Started from ${who(oc.authorId)}’s comment in <a href="#t-${parent.id}~${oc.id}" style="color:var(--brand-deep);font-weight:600">${esc(parent.title)}</a>: <q>${esc(oc.text.slice(0,180))}${oc.text.length>180?"…":""}</q></div>`:""}
+    ${(()=>{ const gs=(t.taggedGroups||[]).map(g=>S.groups.get(g)).filter(Boolean), us=t.tagged||[]; if(!gs.length&&!us.length) return "";
+      return `<div class="withrow">With ${[...gs.map(g=>`<a href="#g-${esc(g.id)}">👥 ${esc(g.name)}</a>`),...us.map(who)].join(", ")}</div>`; })()}
     ${t.desc?`<p class="desc ctext">${rich(t.desc)}</p>`:""}
     ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
@@ -1050,7 +1057,7 @@ function reviewForm(t,mine){
 function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
   const ns=[...S.notifs].sort((a,b)=>b.createdAt-a.createdAt);
-  const label={reply:"replied to you",mention:"mentioned you",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open"};
+  const label={reply:"replied to you",mention:"mentioned you",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open"};
   return `<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read)?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
   ${ns.length?`<div class="list">${ns.map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); return `<a href="${n.duelId?"#d-"+esc(n.duelId):n.type==="joined"?"#g-"+esc(n.groupId):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}" style="${n.read?"":"background:var(--brand-soft)"}">${avatar(n.from)}<div class="txt"><div><b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div></div></a>`; }).join("")}</div>`
    :emptyBox("You’re all caught up","Replies, @mentions, branches and battles from your comments, and activity on topics you follow show up here.")}`;
@@ -1639,7 +1646,7 @@ function topicModal(o={}){
   const b=o.branchFrom&&S.comments.get(o.branchFrom), bt=b&&S.topics.get(b.topicId);
   const cat=o.category||(bt?bt.category:"Tech");
   const tags=o.tags||(bt?(bt.tags||[]).slice(0,3).join(" "):"");
-  UI.newKind=o.kind||"topic";
+  UI.newKind=o.kind||"topic"; UI.tagged=[]; UI.taggedG=[];
   openModal(`<h2>${b?"Turn this comment into a new topic":o.kind==="question"?"Ask the community":"Start a topic"}</h2>
     ${b?`<div class="origin" style="margin:0">From ${esc(nameOf(b.authorId))} in <b>${esc(bt?.title||"")}</b>: <q>${esc(b.text.slice(0,200))}</q></div>`:""}
     ${b?"":`<div><div class="seg" role="tablist"><button class="${UI.newKind==="topic"?"on":""}" data-act="kind" data-v="topic">Topic</button><button class="${UI.newKind==="question"?"on":""}" data-act="kind" data-v="question">Question</button></div></div>`}
@@ -1648,9 +1655,23 @@ function topicModal(o={}){
     <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
       <label class="l">City or place (optional)<input class="f" id="n-loc" maxlength="60" placeholder="e.g. Chennai" value="${esc(o.loc||bt?.location||"")}"></label></div>
     <label class="l">Hashtags<input class="f" id="n-tags" placeholder="iphone17 camera smartphones" value="${esc(tags)}"></label>
+    <div class="l">Tag friends (optional)<div class="tagbox" id="n-tagged"></div><input class="f" id="n-tagin" autocomplete="off" maxlength="30" placeholder="Type a friend’s name or a group name"><div class="tagsug" id="n-tagsug" hidden></div><span class="hint" style="margin:0">Tag friends or a whole group you belong to. They get a notification and are shown on the topic. Up to 10 friends.</span></div>
     ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
     <div class="hint" id="n-err"></div>
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">${b?"Create branch topic":"Create"}</button></div>`);
+}
+function tagRender(){
+  const box=$("#n-tagged"); if(!box) return;
+  box.innerHTML=UI.taggedG.map(id=>`<span class="chip tg grp">👥 ${esc(S.groups.get(id)?.name||"Group")}<button type="button" data-act="tagDropG" data-id="${esc(id)}" aria-label="Remove group">×</button></span>`).join("")+UI.tagged.map(id=>`<span class="chip tg">@${esc(nameOf(id))}<button type="button" data-act="tagDrop" data-id="${esc(id)}" aria-label="Remove ${esc(nameOf(id))}">×</button></span>`).join("");
+}
+function tagSuggest(){
+  const inp=$("#n-tagin"), sug=$("#n-tagsug"); if(!inp||!sug) return;
+  const qq=inp.value.trim().replace(/^@/,"").toLowerCase();
+  const gid=$("#n-group")?.value||null, g=gid&&S.groups.get(gid), mem=g&&g.visibility==="private"?new Set((IX.gMem.get(gid)||[]).map(m=>m.userId)):null;
+  const items=qq?[...S.handles].filter(([id,d])=>d.handle&&id!==S.me&&!UI.tagged.includes(id)&&(!mem||mem.has(id))&&d.handle.toLowerCase().includes(qq)).sort((a,b)=>(!a[1].handle.toLowerCase().startsWith(qq))-(!b[1].handle.toLowerCase().startsWith(qq))||a[1].handle.localeCompare(b[1].handle)).slice(0,6):[];
+  const gitems=qq?[...S.groups.values()].filter(g=>memberOf(g.id)&&!UI.taggedG.includes(g.id)&&g.name.toLowerCase().includes(qq)).slice(0,3):[];
+  sug.hidden=!items.length&&!gitems.length;
+  sug.innerHTML=gitems.map(g=>`<button type="button" class="aci" data-act="tagPickG" data-id="${esc(g.id)}"><span>👥</span><span><b>${esc(g.name)}</b> <span class="muted">tag all ${(IX.gMem.get(g.id)||[]).length} members</span></span></button>`).join("")+items.map(([id,d])=>`<button type="button" class="aci" data-act="tagPick" data-id="${esc(id)}">${avatar(id,"xs")}<span><b>@${esc(d.handle)}</b>${isSeed(id)?' <span class="sample">sample</span>':""}</span></button>`).join("");
 }
 function durSeg(){ return `<div class="seg" id="dur">${[["1","1 hour"],["24","24 hours"],["72","3 days"]].map(([v,l])=>`<button class="${v==="24"?"on":""}" data-act="dur" data-v="${v}">${l}</button>`).join("")}</div>`; }
 function battleModal(o={}){
@@ -1944,6 +1965,10 @@ document.addEventListener("click", async e=>{
       if(await W(()=>db.doc("reviews/"+key).set(body))){ clearField($("#rv-text")); UI.rvOpen=false; UI.rvRating=0; toast(prev?"Review updated":"Review posted"); ensureFollow(tid);
         if(!prev) notify(followersOf(tid).map(u=>[u,"review"]),{topicId:tid,text:(body.title||body.text).slice(0,120)}); schedule(); }
       el.disabled=false; break; }
+    case "tagPick": { if(UI.tagged.length>=10){ toast("You can tag up to 10 friends."); break; } if(!UI.tagged.includes(el.dataset.id)) UI.tagged.push(el.dataset.id); const i=$("#n-tagin"); i.value=""; tagRender(); tagSuggest(); i.focus(); break; }
+    case "tagPickG": { if(!UI.taggedG.includes(el.dataset.id)) UI.taggedG.push(el.dataset.id); const i=$("#n-tagin"); i.value=""; tagRender(); tagSuggest(); i.focus(); break; }
+    case "tagDropG": UI.taggedG=UI.taggedG.filter(x=>x!==el.dataset.id); tagRender(); break;
+    case "tagDrop": UI.tagged=UI.tagged.filter(x=>x!==el.dataset.id); tagRender(); break;
     case "saveTopic": {
       const title=$("#n-title").value.trim(), err=$("#n-err");
       if(title.length<3){ err.textContent="Give it a title of at least 3 characters."; break; }
@@ -1952,13 +1977,16 @@ document.addEventListener("click", async e=>{
       if(!(await gate())) break;
       const bf=el.dataset.branch, oc=bf&&S.comments.get(bf);
       const desc=$("#n-desc").value.trim().slice(0,2000);
-      const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:$("#n-loc").value.trim().slice(0,60),authorId:S.me,parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
+      const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:$("#n-loc").value.trim().slice(0,60),authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
         groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null)};
       const tid=rid("t"); el.disabled=true;
       if(await W(()=>db.doc("topics/"+tid).set(t))){
         closeModal(true); ensureFollow(tid);
         if(oc){ notify([[oc.authorId,"branch"],...followersOf(oc.topicId).map(u=>[u,"newbranch"])],{topicId:tid,text:t.title}); toast("Branch created. It’s linked back to the original comment."); }
-        mentionsIn(desc).length&&notify(mentionsIn(desc).map(u=>[u,"mention"]),{topicId:tid,text:t.title});
+        { const tg=new Set(t.tagged);
+          for(const g of t.taggedGroups) for(const m of (IX.gMem.get(g)||[])) if(m.userId!==S.me) tg.add(m.userId); const mu=mentionsIn(desc).filter(u=>!tg.has(u));
+          mu.length&&notify(mu.map(u=>[u,"mention"]),{topicId:tid,text:t.title});
+          tg.size&&notify([...tg].map(u=>[u,"tagged"]),{topicId:tid,text:t.title}); }
         notifyGroup(t.groupId,tid,t.title);
         location.hash="t-"+tid;
       } else el.disabled=false;
@@ -1983,7 +2011,7 @@ document.addEventListener("click", async e=>{
       toast(`Removed ${n} sample items`); break; }
   }
 });
-document.addEventListener("input", e=>{
+document.addEventListener("input", e=>{ if(e.target.id==="n-tagin"||e.target.id==="n-group") tagSuggest();
   const id=e.target?.dataset?.wc; if(!id) return; const n=wordCount(e.target.value), el=document.getElementById(id);
   if(el){ el.textContent=`${n} / ${MAX_WORDS} words`; el.style.color=n>MAX_WORDS?"var(--danger)":""; }
 });
