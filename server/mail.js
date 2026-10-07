@@ -9,10 +9,30 @@ const cfg = () => ({
   user: process.env.SMTP_USER || "", pass: (process.env.SMTP_PASS || "").replace(/\s+/g, ""),
   from: process.env.SMTP_FROM || process.env.SMTP_USER || "",
 });
-const enabled = () => { const c = cfg(); return !!(c.host && c.user && c.pass && c.from.includes("@")); };
+// HTTPS mail APIs (work where the host blocks SMTP ports, e.g. DigitalOcean): Brevo or Resend
+const api = () => {
+  const from = process.env.MAIL_FROM || process.env.SMTP_FROM || "";
+  if (process.env.BREVO_API_KEY) return { kind: "brevo", key: process.env.BREVO_API_KEY.trim(), from };
+  if (process.env.RESEND_API_KEY) return { kind: "resend", key: process.env.RESEND_API_KEY.trim(), from };
+  return null;
+};
+const enabled = () => { const a = api(); if (a) return a.from.includes("@"); const c = cfg(); return !!(c.host && c.user && c.pass && c.from.includes("@")); };
 const clean = s => String(s).replace(/[\r\n]+/g, " ").trim();
 
+async function sendApi(a, to, subject, text) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 20000);
+  try {
+    const r = a.kind === "brevo"
+      ? await fetch("https://api.brevo.com/v3/smtp/email", { method: "POST", signal: ctl.signal, headers: { "api-key": a.key, "content-type": "application/json", accept: "application/json" },
+          body: JSON.stringify({ sender: { name: "TopicTalk", email: clean(a.from) }, to: [{ email: clean(to) }], subject: clean(subject), textContent: text }) })
+      : await fetch("https://api.resend.com/emails", { method: "POST", signal: ctl.signal, headers: { authorization: "Bearer " + a.key, "content-type": "application/json" },
+          body: JSON.stringify({ from: a.from.includes("<") ? a.from : `TopicTalk <${clean(a.from)}>`, to: [clean(to)], subject: clean(subject), text }) });
+    if (!r.ok) throw new Error(`Mail API ${r.status}: ${(await r.text().catch(() => "")).slice(0, 160)}`);
+  } finally { clearTimeout(t); }
+}
+
 function send(to, subject, text) {
+  const a = api(); if (a) return sendApi(a, to, subject, text);
   const c = cfg();
   return new Promise((resolve, reject) => {
     let sock = c.port === 465 ? tls.connect({ host: c.host, port: c.port, servername: c.host }) : net.connect({ host: c.host, port: c.port });

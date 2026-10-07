@@ -64,7 +64,7 @@ Run it on your own computer instead: `cd server && npm start` (Node.js 22.13 or 
 
 ### What the server does
 
-- **Accounts:** username and password (scrypt-hashed), 60-day login cookie. Guests can read everything public. Optional **email sign-up**: people enter their email (Gmail or any), get a 6-digit code (10 minutes, 5 tries), then choose a username and password; they can log in with username or email. Turn it on with `bash /opt/topictalk/deploy/set-mail.sh` (works with Brevo, Gmail or any SMTP service); until then sign-up is username and password only.
+- **Accounts:** username and password (scrypt-hashed), 60-day login cookie. Guests can read everything public. Optional **email sign-up**: people enter their email (Gmail or any), get a 6-digit code (10 minutes, 5 tries), then choose a username and password; they can log in with username or email. Turn it on with `bash /opt/topictalk/deploy/set-mail.sh` (Brevo API key recommended, since DigitalOcean blocks SMTP ports; Resend, Gmail or any SMTP also work); until then sign-up is username and password only.
 - **Data:** every collection the page uses, stored in SQLite (`node:sqlite`, no npm packages), sent to each browser on load and kept live with Server-Sent Events.
 - **Rules on every write:** people can only write as themselves; votes are one per person and only while voting is open; only authors, group admins or the owner change things; usernames are unique; ids and images are validated.
 - **Real private groups:** private-group topics, comments, battles and duels are only sent to members; invite codes only to members; joining checks the code on the server.
