@@ -67,6 +67,7 @@ h1,h2,h3{font-family:var(--f-display);line-height:1.15;margin:0;text-wrap:balanc
 /* avatars & tiles */
 .av{flex-shrink:0;width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;font-size:12px;font-weight:700;background:hsl(var(--h,150) 40% var(--tile-l));color:hsl(var(--h,150) 50% var(--tile-ink));object-fit:cover}
 .av.lg{width:72px;height:72px;font-size:24px}
+.dprow{display:flex;gap:14px;align-items:center;margin-top:6px}
 .av.xs{width:22px;height:22px;font-size:10px}
 .tile{flex-shrink:0;width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:15px;background:hsl(var(--h) 42% var(--tile-l));color:hsl(var(--h) 55% var(--tile-ink))}
 
@@ -481,6 +482,7 @@ const handleOf = id => S.handles.get(id)?.handle;
 function nameOf(id){ return handleOf(id) || pcache[id]?.name || (id===S.me ? "you" : "someone"); }
 function handleToId(h){ h=h.toLowerCase(); for (const [id,d] of S.handles) if ((d.handle||"").toLowerCase()===h) return id; return null; }
 function avatar(id, cls=""){ const n=nameOf(id); const p=pcache[id];
+  const dp=S.handles.get(id)?.avatar; if(dp) return `<img class="av ${cls}" src="${esc(dp)}" alt="">`;
   if (!isSeed(id) && p?.avatarUrl && !handleOf(id)) return `<img class="av ${cls}" src="${esc(p.avatarUrl)}" alt="">`;
   return `<span class="av ${cls}" style="--h:${hueOf(id)}" aria-hidden="true">${esc(n.replace(/[^A-Za-z0-9]/g,"").slice(0,2).toUpperCase()||"?")}</span>`; }
 function who(id){ return `<a href="#u-${esc(id)}">${esc(nameOf(id))}</a>${isSeed(id)?' <span class="sample" title="Sample account">sample</span>':''}`; }
@@ -1632,9 +1634,10 @@ let modalResolve=null;
 function openModal(html){ $("#modal").innerHTML=`<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`; enhance($("#modal")); const f=$("#modal").querySelector("input:not([readonly]),textarea:not([readonly]),select"); f&&f.focus(); }
 function closeModal(v){ $("#modal").innerHTML=""; if(modalResolve){ const r=modalResolve; modalResolve=null; r(v); } }
 function askHandle(edit){
-  const cur=S.handles.get(S.me);
+  const cur=S.handles.get(S.me); UI.dp=undefined;
   openModal(`<h2>${edit?"Edit profile":"Pick a username"}</h2>
     <p class="muted" style="margin:0">${edit?"":"People will see this on your topics and comments, and can tag you with it."}</p>
+    ${edit?`<div class="l">Profile photo<div class="dprow"><span id="h-dp">${avatar(S.me,"lg")}</span><div><label class="btn sm" style="cursor:pointer">Choose photo<input type="file" id="h-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label> <button type="button" class="btn sm" data-act="dpRemove">Remove</button><div class="muted" style="font-size:12px;margin-top:4px">Square works best. We shrink it for you.</div></div></div></div>`:""}
     <label class="l">Username<input class="f" id="h-name" maxlength="24" placeholder="e.g. surya_k" value="${esc(cur?.handle||"")}"></label>
     <label class="l">Short bio (optional)<input class="f" id="h-bio" maxlength="140" placeholder="What do you like talking about?" value="${esc(cur?.bio||"")}"></label>
     <div class="hint" id="h-err"></div>
@@ -1998,10 +2001,12 @@ document.addEventListener("click", async e=>{
       if(!db||!S.me){ err.textContent="Sign in to claude.ai first."; break; }
       el.disabled=true;
       const prev=S.handles.get(S.me);
-      if(await W(()=>db.doc("handles/"+S.me).set({handle:h,bio:$("#h-bio").value.trim().slice(0,140),createdAt:prev?.createdAt||Date.now()}))){ S.handles.set(S.me,{handle:h,bio:$("#h-bio").value.trim()}); closeModal(true); toast("Saved"); schedule(); }
+      const av=UI.dp===undefined?(prev?.avatar||""):UI.dp; const doc={handle:h,bio:$("#h-bio").value.trim().slice(0,140),createdAt:prev?.createdAt||Date.now()}; if(av) doc.avatar=av;
+      if(await W(()=>db.doc("handles/"+S.me).set(doc))){ S.handles.set(S.me,{...prev,...doc}); closeModal(true); toast("Saved"); schedule(); }
       else { el.disabled=false; }
       break; }
     case "editHandle": askHandle(true); break;
+    case "dpRemove": UI.dp=""; { const o=S.handles.get(S.me); const w=$("#h-dp"); if(w){ const keep=o?.avatar; if(o) o.avatar=""; w.innerHTML=avatar(S.me,"lg"); if(o) o.avatar=keep; } } break;
     case "readAll": for(const n of S.notifs.filter(n=>!n.read)){ try{ await db.doc("notifs/"+n.id).update({read:true}); }catch{} } break;
     case "clearSample": {
       if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Click again to delete all sample content"; el.classList.add("pri"); break; }
@@ -2010,6 +2015,16 @@ document.addEventListener("click", async e=>{
       for(const [col,m] of groups) for(const [k,d] of [...m]) if(d.seed){ try{ await db.doc(col+"/"+k).delete(); n++; }catch{} }
       toast(`Removed ${n} sample items`); break; }
   }
+});
+document.addEventListener("change", async e=>{
+  if(e.target.id!=="h-file") return; const f=e.target.files&&e.target.files[0]; if(!f) return; const err=$("#h-err");
+  try{
+    if(!/^image\/(gif|png|jpeg|webp)$/.test(f.type)) throw new Error("Pick a PNG, JPG, WebP or GIF photo.");
+    const [w,h,img]=await imgSize(await readAsDataURL(f)); if(!img) throw new Error("That file couldn’t be opened.");
+    const side=Math.min(w,h), c=document.createElement("canvas"); c.width=c.height=192;
+    c.getContext("2d").drawImage(img,(w-side)/2,(h-side)/2,side,side,0,0,192,192);
+    UI.dp=c.toDataURL("image/jpeg",0.82); $("#h-dp").innerHTML=`<img class="av lg" src="${UI.dp}" alt="">`; if(err) err.textContent="";
+  }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t use that photo."; }
 });
 document.addEventListener("input", e=>{ if(e.target.id==="n-tagin"||e.target.id==="n-group") tagSuggest();
   const id=e.target?.dataset?.wc; if(!id) return; const n=wordCount(e.target.value), el=document.getElementById(id);

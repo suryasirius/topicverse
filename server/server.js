@@ -194,6 +194,7 @@ function check(op, col, id, prev, next, patch, uid) {
     case "handles": {
       if (id !== uid) deny();
       if (next) {
+        if (next.avatar && String(next.avatar).length > 60000) bad("That photo is too large.");
         if (!HANDLE_RE.test(next.handle || "")) bad("Use 3–24 letters, numbers or underscores.");
         for (const [hid, h] of DOCS.handles) if (hid !== uid && (h.handle || "").toLowerCase() === next.handle.toLowerCase()) deny("That username is taken.");
         const u = q.userByName.get(next.handle); if (u && u.id !== uid) deny("That username is taken.");
@@ -249,7 +250,7 @@ function validate(col, v, key = "", depth = 0) {
   if (depth > 12) bad("That’s nested too deeply.");
   if (typeof v === "string") {
     if ((key === "id" || /Id$/.test(key)) && v !== "" && !ID_RE.test(v)) bad("Bad id in " + key + ".");
-    if (col === "media" && key === "data" && !DATA_URL.test(v)) bad("Only GIF, PNG, JPG or WebP images can be saved.");
+    if (((col === "media" && key === "data") || (col === "handles" && key === "avatar" && v !== "")) && !DATA_URL.test(v)) bad("Only GIF, PNG, JPG or WebP images can be saved.");
     if (v.length > 300 * 1024) bad("That’s too large to save.");
     return;
   }
