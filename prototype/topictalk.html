@@ -1126,21 +1126,42 @@ function vAlerts(){
    :emptyBox("You’re all caught up","Replies, @mentions, branches and battles from your comments, and activity on topics you follow show up here.")}`;
 }
 
-async function prepBanner(file){
+async function loadBanner(file){
   if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)) throw new Error("Pick a PNG, JPG, WebP or GIF picture.");
   const [w,h,img]=await imgSize(await readAsDataURL(file)); if(!img) throw new Error("That file couldn’t be opened.");
+  return {img,w,h,px:.5,py:.5,z:1};
+}
+function bnRect(st,W2,H2){ const k=Math.max(W2/st.w,H2/st.h)*st.z, sw=W2/k, sh=H2/k; return [(st.w-sw)*st.px,(st.h-sh)*st.py,sw,sh]; }
+function bnDraw(st,c){ const x=c.getContext("2d"); const [sx,sy,sw,sh]=bnRect(st,c.width,c.height); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(st.img,sx,sy,sw,sh,0,0,c.width,c.height); }
+function bnEncode(st){
   for(const [W2,H2,qs] of [[960,320,[.8,.7,.6,.5]],[720,240,[.7,.55,.45]],[540,180,[.6,.45]]]){
-    const c=document.createElement("canvas"); c.width=W2; c.height=H2; const x=c.getContext("2d");
-    const k=Math.max(W2/w,H2/h), sw=W2/k, sh=H2/k; x.drawImage(img,(w-sw)/2,(h-sh)/2,sw,sh,0,0,W2,H2);
+    const c=document.createElement("canvas"); c.width=W2; c.height=H2; bnDraw(st,c);
     for(const q of qs){ const out=c.toDataURL("image/jpeg",q); if(out.length<=48000) return out; }
   }
   throw new Error("That picture is too detailed to shrink enough. Try another one.");
+}
+function bnAdjust(box,st,err){
+  box.innerHTML=`<div class="banner adj" id="bn-frame" style="touch-action:none;cursor:grab"><canvas width="480" height="160" style="width:100%;height:100%;display:block"></canvas></div>
+  <div class="dprow" style="margin-top:6px"><span class="muted" style="font-size:12px">Zoom</span><input type="range" id="bn-zoom" min="1" max="4" step="0.01" value="${st.z}" style="flex:1"></div>
+  <div class="muted" style="font-size:12px">Drag the picture to move it. Use Zoom to fit what you want in the banner.</div>`;
+  const fr=box.querySelector("#bn-frame"), cv=fr.querySelector("canvas"), zm=box.querySelector("#bn-zoom");
+  const redraw=()=>bnDraw(st,cv), commit=()=>{ try{ UI.bn=bnEncode(st); if(err) err.textContent=""; }catch(ex){ if(err) err.textContent=ex.message; } };
+  redraw(); commit();
+  let drag=null;
+  fr.addEventListener("pointerdown",e=>{ drag={x:e.clientX,y:e.clientY,px:st.px,py:st.py}; fr.setPointerCapture(e.pointerId); fr.style.cursor="grabbing"; });
+  fr.addEventListener("pointermove",e=>{ if(!drag) return; const r=fr.getBoundingClientRect(), [,,sw,sh]=bnRect(st,480,160);
+    const dxs=(e.clientX-drag.x)/r.width*sw, dys=(e.clientY-drag.y)/r.height*sh, mx=st.w-sw, my=st.h-sh;
+    st.px=mx>0?Math.min(1,Math.max(0,drag.px-dxs/mx)):.5; st.py=my>0?Math.min(1,Math.max(0,drag.py-dys/my)):.5; redraw(); });
+  const end=()=>{ if(!drag) return; drag=null; fr.style.cursor="grab"; commit(); };
+  fr.addEventListener("pointerup",end); fr.addEventListener("pointercancel",end);
+  zm.addEventListener("input",()=>{ st.z=+zm.value; redraw(); }); zm.addEventListener("change",commit);
+  box._st=st;
 }
 function bannerModal(id){
   const t=S.topics.get(id); UI.bn=undefined;
   openModal(`<h2 style="font-size:18px">Banner picture</h2><div class="l"><div id="bm-pre">${t.banner?`<div class="banner"><img src="${esc(t.banner)}" alt=""></div>`:`<div class="muted">No banner yet.</div>`}</div>
     <div class="dprow"><label class="btn sm" style="cursor:pointer">Choose picture<input type="file" id="bm-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="btn sm" data-act="bmRemove">Remove</button></div>
-    <div class="muted" style="font-size:12px">Wide pictures work best. We crop and shrink it for you.</div></div><div class="hint" id="bm-err"></div>
+    <div class="muted" style="font-size:12px">Wide pictures work best. You can move and zoom it to choose the part that shows.</div></div><div class="hint" id="bm-err"></div>
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="bmSave" data-id="${esc(id)}">Save</button></div>`);
 }
 function invRows(q){
@@ -2213,7 +2234,7 @@ document.addEventListener("focusin",e=>{ if(e.target.matches&&e.target.matches("
 document.addEventListener("focusout",()=>setTimeout(()=>{ if(!document.activeElement||!document.activeElement.matches("textarea,input")) document.documentElement.classList.remove("kb"); },150));
 document.addEventListener("change", async e=>{
   if(e.target.id==="n-bfile"||e.target.id==="bm-file"){ const f=e.target.files&&e.target.files[0]; if(!f) return; const bm=e.target.id==="bm-file", err=$(bm?"#bm-err":"#n-err");
-    try{ UI.bn=await prepBanner(f); const box=$(bm?"#bm-pre":"#n-bn"); if(box) box.innerHTML=`<div class="banner"><img src="${UI.bn}" alt=""></div>`; if(err) err.textContent=""; }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t use that picture."; } return; }
+    try{ const st=await loadBanner(f); const box=$(bm?"#bm-pre":"#n-bn"); if(box) bnAdjust(box,st,err); }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t use that picture."; } return; }
   if(e.target.id!=="h-file") return; const f=e.target.files&&e.target.files[0]; if(!f) return; const err=$("#h-err");
   try{
     if(!/^image\/(gif|png|jpeg|webp)$/.test(f.type)) throw new Error("Pick a PNG, JPG, WebP or GIF photo.");
