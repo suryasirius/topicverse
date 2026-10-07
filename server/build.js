@@ -43,10 +43,12 @@ function buildPage() {
   const head = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="TopicTalk: review anything, talk about it, and turn any comment into a new topic.">
 <meta name="theme-color" content="#1F9D63">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M6 5h20a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H14l-6 5v-5H6a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3z' fill='%231F9D63'/%3E%3C/svg%3E">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif;background:#f8f8f6}img{max-width:100%}[hidden]{display:none!important}</style>
 <script>${shim}</script></head><body>`;
-  return head + page + "</body></html>";
+  const sw = `<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}))</script>`;
+  return head + page + sw + "</body></html>";
 }
 module.exports = { buildPage };
 if (require.main === module) { fs.writeFileSync(path.join(__dirname, "index.built.html"), buildPage()); console.log("wrote index.built.html"); }

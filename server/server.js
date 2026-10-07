@@ -312,6 +312,9 @@ function meFor(uid) {
   const u = q.userById.get(uid); if (!u) return null;
   return { id: uid, username: u.username, isOwner: isAdmin(uid) };
 }
+const STATIC = {};
+for (const [p, f, t] of [["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json"], ["/sw.js", "sw.js", "text/javascript; charset=utf-8"], ["/icon-192.png", "icon-192.png", "image/png"], ["/icon-512.png", "icon-512.png", "image/png"], ["/icon-maskable.png", "icon-maskable.png", "image/png"]])
+  STATIC[p] = { t, b: fs.readFileSync(path.join(__dirname, "static", f)) };
 const SEC = { "X-Content-Type-Options": "nosniff", "Referrer-Policy": "same-origin", "X-Frame-Options": "DENY" };
 
 const server = http.createServer(async (req, res) => {
@@ -322,6 +325,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache", ...SEC });
       return res.end(PAGE);
     }
+    if (req.method === "GET" && STATIC[p]) { const f = STATIC[p]; res.writeHead(200, { "Content-Type": f.t, "Cache-Control": p === "/sw.js" ? "no-cache" : "public, max-age=86400", ...SEC }); return res.end(f.b); }
     if (p === "/healthz") return json(res, 200, { ok: true, docs: COLS.reduce((a, c) => a + DOCS[c].size, 0), clients: clients.size });
     if (!p.startsWith("/api/")) { res.writeHead(404, { "Content-Type": "text/plain" }); return res.end("Not found"); }
 
