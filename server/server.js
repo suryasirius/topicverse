@@ -171,11 +171,11 @@ function check(op, col, id, prev, next, patch, uid) {
       if (op === "update" && onlyKeys(patch, ["answer"]) && topicVisible(prev, uid)) return;
       deny();
     case "comments": case "battles":
-      if (!prev) { if (next.authorId !== uid) deny(); if (!topicVisible(DOCS.topics.get(next.topicId), uid)) deny(); return; }
+      if (!prev) { if (next.authorId !== uid) deny(); if (!topicVisible(DOCS.topics.get(next.topicId), uid)) deny(); if (DOCS.topics.get(next.topicId)?.deletedAt) deny("This topic was deleted."); return; }
       if (prev.authorId !== uid && !admin) deny(); if (!same("authorId")) deny(); return;
     case "reviews":
       if ((next || prev).authorId !== uid && !admin) deny();
-      if (!prev && id !== `${next.topicId}__${uid}`) bad(); if (!same("authorId")) deny(); return;
+      if (!prev && id !== `${next.topicId}__${uid}`) bad(); if (!prev && DOCS.topics.get(next.topicId)?.deletedAt) deny("This topic was deleted."); if (!same("authorId")) deny(); return;
     case "likes": case "follows":
       if (!suffixUid(id, uid) || (next && next.userId !== uid)) deny(); return;
     case "bvotes": {
@@ -195,6 +195,7 @@ function check(op, col, id, prev, next, patch, uid) {
       if (id !== uid) deny();
       if (next) {
         if (next.avatar && String(next.avatar).length > 60000) bad("That photo is too large.");
+        if (next.textSize && !["s", "m", "l", "x"].includes(next.textSize)) bad();
         if (!HANDLE_RE.test(next.handle || "")) bad("Use 3–24 letters, numbers or underscores.");
         for (const [hid, h] of DOCS.handles) if (hid !== uid && (h.handle || "").toLowerCase() === next.handle.toLowerCase()) deny("That username is taken.");
         const u = q.userByName.get(next.handle); if (u && u.id !== uid) deny("That username is taken.");
