@@ -170,7 +170,7 @@ body{font-kerning:normal;font-variant-ligatures:common-ligatures contextual;text
 .hl-url{color:var(--brand-deep);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--brand) 40%,transparent);text-underline-offset:2px}
 .composer .box{gap:6px}
 .composer .rt-in{min-height:54px}
-.composer:focus-within .rt-in{min-height:92px}
+.composer:focus-within .rt-in,.composer.keep .rt-in{min-height:92px}
 .cfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;flex-wrap:wrap}
 .ctool{display:flex;align-items:center;gap:4px;min-width:0;flex-wrap:wrap}
 .cact{display:flex;gap:6px;align-items:center;margin-left:auto}
@@ -188,7 +188,31 @@ body{font-kerning:normal;font-variant-ligatures:common-ligatures contextual;text
 @keyframes spin{to{transform:rotate(360deg)}}
 .cmt.rise{animation:rise .42s cubic-bezier(.2,.8,.2,1)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.ac[hidden],.dd[hidden]{display:none!important}
+.ac[hidden],.dd[hidden],.ep[hidden]{display:none!important}
+.tbtn svg{display:block}
+.tbtn.gifb{width:auto;padding:0 7px;font-size:11px;letter-spacing:.06em;border:1.5px solid currentColor;height:22px;border-radius:6px;margin:0 4px}
+.ep{position:fixed;z-index:85;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 40px rgba(10,20,16,.18),0 2px 6px rgba(10,20,16,.06);padding:10px;display:grid;gap:8px;animation:pop .14s ease-out}
+.ep-q{width:100%;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:0 12px;font-size:14px;outline:none;caret-color:var(--brand)}
+.ep-q:focus{border-color:var(--brand)}
+.ep-tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.ep-tab{flex:1 0 auto;min-width:32px;padding:0;height:32px;border:0;border-radius:9px;background:none;font-size:17px;filter:grayscale(.85);opacity:.65;transition:filter .15s,opacity .15s,background .15s}
+.ep-tab:hover{opacity:1;filter:none}
+.ep-tab.on{background:var(--brand-soft);filter:none;opacity:1}
+.ep-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:0 2px}
+.ep-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;max-height:232px;overflow-y:auto;overscroll-behavior:contain}
+.ep-e{aspect-ratio:1;min-width:0;padding:0;border:0;border-radius:9px;background:none;font-size:23px;line-height:1;display:grid;place-items:center;transition:transform .1s ease,background .12s}
+.ep-e:hover{background:var(--chip);transform:scale(1.15)}
+.ep-e:active{transform:scale(.92)}
+.ep-foot{font-size:12px;padding:0 2px}
+.ace{font-size:20px;width:24px;text-align:center}
+.ctext.big{font-size:36px;line-height:1.2;letter-spacing:2px}
+.cmedia{position:relative;display:inline-block;margin-top:8px;padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--chip);max-width:100%;cursor:zoom-in}
+.cmedia img{display:block;max-width:100%;height:auto;object-fit:cover}
+.cmedia.ph{padding:30px 40px;color:var(--muted);font-size:13px;cursor:default}
+.gifbadge{position:absolute;left:8px;bottom:8px;font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 6px;border-radius:5px;background:rgba(0,0,0,.6);color:#fff}
+.attach{display:flex;align-items:center;gap:10px;width:100%;padding:6px;border:1px dashed var(--line);border-radius:12px;font-size:13px;animation:rise .25s ease}
+.attach img{width:64px;height:64px;object-fit:cover;border-radius:9px}
+@media(max-width:420px){.ep-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
 .ac{position:fixed;z-index:80;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(10,20,16,.16),0 2px 6px rgba(10,20,16,.06);padding:5px;display:grid;gap:1px;animation:pop .12s ease-out}
 @keyframes pop{from{opacity:0;transform:translateY(-3px) scale(.98)}}
 .aci{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;border:0;background:none;text-align:left;font-size:14px;color:var(--ink);width:100%}
@@ -412,7 +436,7 @@ if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.roundRec
 (() => {
 const CATS = ["Tech","Food","Movies","Travel","Apps","Shopping","Sports","Gaming","Finance","Education","Health","Cars","Bikes","Local","Services","Entertainment","Lifestyle","Other"];
 const S = { topics:new Map(), comments:new Map(), reviews:new Map(), likes:new Map(), follows:new Map(), handles:new Map(),
-  battles:new Map(), bvotes:new Map(), pvotes:new Map(), groups:new Map(), gmembers:new Map(), duels:new Map(), dvotes:new Map(), myGroups:new Set(), notifs:[], me:null, isOwner:false, readOnly:false, ready:{}, dbOk:null };
+  battles:new Map(), bvotes:new Map(), pvotes:new Map(), groups:new Map(), gmembers:new Map(), duels:new Map(), dvotes:new Map(), media:new Map(), myGroups:new Set(), notifs:[], me:null, isOwner:false, readOnly:false, ready:{}, dbOk:null };
 const UI = { replyOpen:new Set(), tab:"discussion", rvOpen:false, rvRating:0, exCat:"All", exSort:"trending", ptab:"topics", query:"", lastRoute:"", lastPost:0,
   csort:"top", ai:{}, aiBusy:{}, ans:{}, ansBusy:null, dReady:{}, city:null, lang:"en" };
 let db=null, user=null, sampleFn=null, downloads=null;
@@ -988,7 +1012,8 @@ function commentNode(c,t,depth,otherIds){
   const fresh = TY.seenReady && !TY.seen.has(c.id); TY.pending.add(c.id);
   return `<div class="cmt${fresh?" rise":""}" id="c-${c.id}">${avatar(c.authorId,depth?"xs":"")}<div class="main">
     <div class="head">${who(c.authorId)}${c.authorId===t.authorId?'<span class="op">OP</span>':""}${otherIds&&otherIds.has(c.id)?'<span class="otherchip">Other side</span>':""}<span class="muted">· ${ago(c.createdAt)}</span>${outs.length?`<span class="op" title="Topics started from this comment">Sparked ${outs.length} topic${outs.length>1?"s":""}</span>`:""}</div>
-    <div class="ctext">${rich(c.text)}</div>
+    ${c.text?`<div class="ctext${isEmojiOnly(c.text)?" big":""}">${rich(c.text)}</div>`:""}
+    ${mediaHTML(c)}
     ${outs.map(b=>`<a class="bout" href="#t-${b.id}">${ICON.branch.replace("<svg",'<svg width="14" height="14"')}Became a topic: ${esc(b.title)} ↗</a>`).join(" ")}
     ${bts.map(b=>battleCard(b,{inline:true})).join("")}
     ${(IX.dByComment.get(c.id)||[]).filter(d=>{ const p=duelState(d).phase; return p!=="declined"&&p!=="expired"; }).map(duelMini).join("")}
@@ -1085,7 +1110,7 @@ function syncRich(ta){
   const back=ta.previousElementSibling;
   if(back&&back.classList.contains("rt-back")){ let v=ta.value; if(v.endsWith("\n")||!v) v+=" "; back.innerHTML=hlRich(v); back.scrollTop=ta.scrollTop; }
   const box=ta.closest(".composer,.dbox,.form"); const btn=box&&box.querySelector(".btn.pri");
-  if(btn&&box.classList.contains("composer")) btn.classList.toggle("idle", !ta.value.trim());
+  if(btn&&box.classList.contains("composer")) btn.classList.toggle("idle", !ta.value.trim()&&!ATT[ta.id]);
   const n=ta.closest(".rt")?.parentNode?.querySelector(".ccount");
   if(n){ const len=ta.value.length, lim=+ta.maxLength>0?+ta.maxLength:3000; n.textContent=len>lim*0.8?`${len.toLocaleString("en-IN")} / ${lim.toLocaleString("en-IN")}`:""; n.classList.toggle("over",len>lim); }
 }
@@ -1104,12 +1129,13 @@ function enhance(root){
       if(box && !box.querySelector(".cfoot")){
         const foot=document.createElement("div"); foot.className="cfoot";
         const tools=document.createElement("div"); tools.className="ctool";
-        tools.innerHTML=`<button type="button" class="tbtn" data-ins="@" title="Mention someone" aria-label="Mention someone">@</button><button type="button" class="tbtn" data-ins="#" title="Add a hashtag" aria-label="Add a hashtag">#</button><span class="khint">${/Mac|iPhone|iPad/.test(navigator.platform)?"⌘":"Ctrl"} ↵ to post</span>${wrap.dataset.draft?'<span class="dchip">Draft restored</span>':""}<span class="ccount"></span>`;
+        tools.innerHTML=`<button type="button" class="tbtn" data-ins="@" title="Mention someone" aria-label="Mention someone">@</button><button type="button" class="tbtn" data-ins="#" title="Add a hashtag" aria-label="Add a hashtag">#</button><button type="button" class="tbtn" data-tool="emoji" title="Emoji" aria-label="Add emoji"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2"/><circle cx="9" cy="10" r=".9" fill="currentColor"/><circle cx="15" cy="10" r=".9" fill="currentColor"/></svg></button><button type="button" class="tbtn gifb" data-tool="gif" title="Add a GIF or photo" aria-label="Add a GIF or photo">GIF</button><span class="khint">${/Mac|iPhone|iPad/.test(navigator.platform)?"⌘":"Ctrl"} ↵ to post</span>${wrap.dataset.draft?'<span class="dchip">Draft restored</span>':""}<span class="ccount"></span>`;
         const rest=[...box.children].filter(x=>x!==wrap);
         const right=document.createElement("div"); right.className="cact"; rest.forEach(x=>right.append(x.tagName==="DIV"&&!x.className?(x.style.cssText="display:flex;gap:6px",x):x));
         foot.append(tools,right); box.append(foot);
       }
     }
+    if(ATT[ta.id]&&ta.closest(".box")) attachUI(ta.closest(".box"),ta.id);
     syncRich(ta);
   });
 }
@@ -1122,15 +1148,123 @@ function caretRect(ta){
   const r=back.querySelector(".cm").getBoundingClientRect();
   syncRich(ta); return r;
 }
+// emoji data: "emoji name keywords", grouped
+const EMOJI_RAW = `smileys|😀 grinning happy smile|😃 smiley happy|😄 smile happy joy|😁 grin beaming|😆 laughing lol|😅 sweat smile relief|🤣 rofl rolling laughing|😂 joy tears laughing lol|🙂 slight smile|😉 wink|😊 blush happy|😇 innocent angel|🥰 love hearts|😍 heart eyes love|🤩 star struck wow|😘 kiss|😋 yum tasty delicious|😛 tongue|😜 wink tongue crazy|🤪 zany crazy|😎 cool sunglasses|🤓 nerd|🧐 monocle hmm|🤔 thinking hmm|🤨 raised eyebrow doubt|😐 neutral|😑 expressionless|😶 no mouth|🙄 eye roll|😏 smirk|😬 grimace awkward|😌 relieved|😔 pensive sad|😴 sleeping tired|😷 mask sick|🤒 fever sick|🥵 hot|🥶 cold|🤯 mind blown|🥳 party celebrate|😕 confused|😟 worried|🙁 frown|😮 wow surprised|😲 astonished shocked|😳 flushed embarrassed|🥺 pleading puppy|😢 cry sad tear|😭 sob crying|😤 triumph angry huff|😠 angry mad|😡 rage furious|🤬 cursing swear|😈 devil|💀 skull dead lol|🤡 clown|👻 ghost|🤖 robot|😺 cat smile|🙈 see no evil monkey|🙊 speak no evil
+gestures|👍 thumbs up yes like agree|👎 thumbs down no dislike disagree|👌 ok perfect|🤌 pinched fingers|✌️ victory peace|🤞 fingers crossed luck|🤟 love you|🤘 rock|🤙 call me|👈 point left|👉 point right|👆 point up|👇 point down|☝️ index up one|👋 wave hello bye|🤚 raised back hand|✋ raised hand stop|🖐️ hand five|🖖 vulcan|👏 clap applause|🙌 raised hands hooray|👐 open hands|🤲 palms up|🤝 handshake deal|🙏 pray thanks please namaste|✍️ writing|💪 muscle strong flex|🧠 brain smart|👀 eyes look|👂 ear listen|🫡 salute respect
+hearts|❤️ heart love red|🧡 orange heart|💛 yellow heart|💚 green heart|💙 blue heart|💜 purple heart|🖤 black heart|🤍 white heart|💔 broken heart|❣️ heart exclamation|💕 two hearts|💯 hundred perfect 100|💥 boom|💫 dizzy|💬 speech bubble chat|🗯️ anger bubble|💭 thought bubble
+food|🍛 curry rice biryani meals|🍚 rice|🍲 stew pot|🥘 paella pan|🫓 flatbread parotta roti dosa|🥙 wrap|🍗 chicken leg|🍖 meat bone mutton|🥩 steak|🍤 prawn shrimp|🐟 fish|🥚 egg|🍳 cooking fried egg|🧆 vada falafel|🥟 dumpling momo|🍜 noodles ramen|🍝 pasta|🍕 pizza|🍔 burger|🍟 fries|🌭 hot dog|🌮 taco|🥗 salad|🌶️ chilli spicy hot|🧅 onion|🧄 garlic|🥥 coconut|🥭 mango|🍌 banana|🍉 watermelon|🍎 apple|🍇 grapes|🍓 strawberry|🍋 lemon|🍦 ice cream|🍨 kulfi ice cream|🍰 cake|🎂 birthday cake|🍩 donut|🍪 cookie|🍫 chocolate|🍬 sweet candy|🍯 honey|☕ coffee filter coffee tea|🍵 tea chai|🥛 milk|🧃 juice|🥤 drink soda|🍹 cocktail|🧋 bubble tea
+sports|🏏 cricket bat ipl|⚽ football soccer|🏀 basketball|🏐 volleyball|🎾 tennis|🏸 badminton|🏑 hockey|🥊 boxing|🏃 running|🚴 cycling|🏊 swimming|🧘 yoga|🏆 trophy winner champion|🥇 gold medal first|🥈 silver medal second|🥉 bronze medal third|🏅 medal|🎯 target bullseye|🎮 game controller gaming|🎲 dice|♟️ chess|🎉 party tada celebrate|🎊 confetti|🎁 gift present|🎈 balloon|🎬 movie film clapper|🎥 camera movie|🍿 popcorn movie|🎵 music note|🎶 music notes song|🎤 mic sing|🎧 headphones|📸 camera photo|🎨 art paint
+travel|🚗 car|🚕 taxi|🛺 auto rickshaw|🏍️ bike motorcycle|🛵 scooter|🚌 bus|🚆 train|🚇 metro|✈️ plane flight|🚀 rocket launch|🏖️ beach|🏝️ island|⛰️ mountain|🌊 wave sea|🌅 sunrise|🌇 sunset city|🏙️ city|🏠 home house|🏫 school college|🏥 hospital|🛕 temple|🕌 mosque|⛪ church|🗺️ map|📍 pin location|🌧️ rain monsoon|⛈️ storm|☀️ sun sunny|🌙 moon night|⭐ star|🌈 rainbow|🔥 fire lit hot|❄️ snow cold|🌸 flower blossom|🌴 palm tree
+objects|📱 phone mobile|💻 laptop|⌚ watch|📷 camera|🔋 battery|🔌 charger plug|💡 idea bulb|📚 books study|📖 book read|✏️ pencil|📝 memo notes|📌 pushpin|📎 paperclip|🔗 link|📅 calendar date|⏰ alarm clock|⏳ hourglass waiting|💰 money bag|💸 money flying expensive|💵 cash|💳 card payment upi|🧾 receipt bill|🛒 cart shopping|🎟️ ticket|🔑 key|🔒 lock private|🔓 unlocked public|🔔 bell notification|📣 megaphone announce|📢 loudspeaker|🧭 compass|⚙️ settings gear|🧪 test|📈 chart up growth stocks|📉 chart down|📊 bar chart poll
+symbols|✅ check yes done|❌ cross no wrong|⭕ circle|❓ question|❗ exclamation|‼️ double exclamation|⚠️ warning|🚫 no forbidden|⚡ zap lightning fast|✨ sparkles|🌟 glowing star|🆕 new|🆒 cool|🆗 ok|🔝 top|🔜 soon|💤 sleep zzz|♻️ recycle|➕ plus|➖ minus|➡️ right arrow|⬅️ left arrow|⬆️ up arrow|⬇️ down arrow|🔁 repeat|🏁 finish flag|🚩 red flag|🇮🇳 india flag`;
+const EMOJI_CATS = EMOJI_RAW.split("\n").map(line=>{ const [cat,...rest]=line.split("|"); return {cat, items:rest.map(x=>{ const i=x.indexOf(" "); return {e:x.slice(0,i), n:x.slice(i+1)}; })}; });
+const EMOJI_ALL = EMOJI_CATS.flatMap(c=>c.items);
+const CAT_ICON = {smileys:"😀",gestures:"👍",hearts:"❤️",food:"🍛",sports:"🏏",travel:"🛺",objects:"📱",symbols:"✅"};
+const emojiKey = x => x.n.split(" ")[0].replace(/[^a-z0-9_]/g,"_");
+function recentEmoji(){ try{ return JSON.parse(localStorage.getItem("tt-emoji-recent")||"[]").slice(0,16); }catch{ return []; } }
+function pushRecent(e){ try{ const r=[e,...recentEmoji().filter(x=>x!==e)].slice(0,16); localStorage.setItem("tt-emoji-recent",JSON.stringify(r)); }catch{} }
+const epEl=document.createElement("div"); epEl.className="ep"; epEl.hidden=true; document.body.append(epEl);
+const EP={ta:null, taId:"", start:0, end:0, cat:"recent"};
+function epRender(){
+  const q=(epEl.querySelector("#ep-q")?.value||"").trim().toLowerCase();
+  const rec=recentEmoji();
+  let list;
+  if(q) list=EMOJI_ALL.filter(x=>x.n.includes(q)).slice(0,64);
+  else if(EP.cat==="recent") list=rec.length?rec.map(e=>EMOJI_ALL.find(x=>x.e===e)||{e,n:""}):EMOJI_CATS[0].items;
+  else list=(EMOJI_CATS.find(c=>c.cat===EP.cat)||EMOJI_CATS[0]).items;
+  const grid=epEl.querySelector(".ep-grid");
+  grid.innerHTML=list.length?list.map(x=>`<button type="button" class="ep-e" data-e="${x.e}" title="${esc(x.n.split(" ")[0])}" aria-label="${esc(x.n.split(" ")[0])}">${x.e}</button>`).join(""):`<div class="muted" style="grid-column:1/-1;padding:16px;text-align:center;font-size:13px">No emoji found</div>`;
+  epEl.querySelectorAll(".ep-tab").forEach(b=>b.classList.toggle("on",!q&&b.dataset.cat===EP.cat));
+  epEl.querySelector(".ep-label").textContent=q?`Results for “${q}”`:EP.cat==="recent"?(rec.length?"Recently used":"Popular"):EP.cat[0].toUpperCase()+EP.cat.slice(1);
+}
+function epOpen(ta, anchor){
+  document.querySelectorAll(".composer.keep").forEach(x=>x.classList.remove("keep")); ta.closest(".composer")?.classList.add("keep");
+  EP.ta=ta; EP.taId=ta.id; EP.start=ta.selectionStart; EP.end=ta.selectionEnd; EP.cat=recentEmoji().length?"recent":"smileys";
+  epEl.innerHTML=`<div class="ep-top"><input id="ep-q" class="ep-q" placeholder="Search emoji… fire, biryani, cricket" autocomplete="off" spellcheck="false"></div>
+    <div class="ep-tabs">${[["recent","🕘"],...EMOJI_CATS.map(c=>[c.cat,CAT_ICON[c.cat]||c.items[0].e])].map(([k,i])=>`<button type="button" class="ep-tab" data-cat="${k}" title="${k}" aria-label="${k}">${i}</button>`).join("")}</div>
+    <div class="ep-label"></div><div class="ep-grid"></div>
+    <div class="ep-foot muted">Tip: type <b>:fire</b> in any comment</div>`;
+  epRender(); epEl.hidden=false;
+  const r=anchor.getBoundingClientRect(), w=Math.min(332, window.innerWidth-24);
+  epEl.style.width=w+"px"; epEl.style.left=Math.max(12,Math.min(r.left-8, window.innerWidth-w-12))+"px";
+  const h=epEl.offsetHeight; epEl.style.top=(r.bottom+8+h>window.innerHeight-8 ? Math.max(8,r.top-h-8) : r.bottom+8)+"px";
+  if(window.matchMedia("(pointer:fine)").matches) epEl.querySelector("#ep-q").focus();
+}
+function epClose(refocus){ if(epEl.hidden) return; epEl.hidden=true; document.querySelectorAll(".composer.keep").forEach(x=>x.classList.remove("keep")); if(refocus&&EP.ta){ EP.ta.focus(); try{ EP.ta.setSelectionRange(EP.start,EP.end); }catch{} } }
+function epInsert(e){
+  let ta=EP.ta; if(!ta||!document.body.contains(ta)) ta=EP.ta=document.getElementById(EP.taId); if(!ta){ epClose(); return; }
+  ta.focus(); ta.setRangeText(e, EP.start, EP.end, "end"); EP.start=EP.end=ta.selectionStart;
+  ta.dispatchEvent(new Event("input",{bubbles:true})); pushRecent(e);
+}
+epEl.addEventListener("mousedown",e=>{ if(e.target.closest(".ep-e,.ep-tab")) e.preventDefault(); });
+epEl.addEventListener("click",e=>{
+  const b=e.target.closest(".ep-e"); if(b){ epInsert(b.dataset.e); if(!e.shiftKey&&!window.matchMedia("(pointer:fine)").matches) epClose(); else if(epEl.querySelector("#ep-q")===document.activeElement) EP.ta.focus(); return; }
+  const t=e.target.closest(".ep-tab"); if(t){ EP.cat=t.dataset.cat; const qi=epEl.querySelector("#ep-q"); qi.value=""; epRender(); }
+});
+epEl.addEventListener("input",e=>{ if(e.target.id==="ep-q") epRender(); });
+epEl.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ e.preventDefault(); e.stopPropagation(); epClose(true); }
+  if(e.key==="Enter"&&e.target.id==="ep-q"){ e.preventDefault(); const f=epEl.querySelector(".ep-e"); if(f){ epInsert(f.dataset.e); } }
+});
+document.addEventListener("mousedown",e=>{ if(!epEl.hidden&&!e.target.closest(".ep,.tbtn[data-tool=emoji]")) epClose(); },true);
+const isEmojiOnly = t => { const v=String(t).trim(); if(!v||v.length>40) return false; if(!/^(?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|\p{Regional_Indicator}|\uFE0F|\u200D|\s)+$/u.test(v)) return false;
+  const n = typeof Intl!=="undefined"&&Intl.Segmenter ? [...new Intl.Segmenter().segment(v.replace(/\s/g,""))].length : v.replace(/\s/g,"").length/2; return n<=4; };
+
+// GIFs and photos attached to a comment
+const MEDIA_MAX = 190*1024;
+const ATT = {};   // textarea id -> {data, w, h, type, size}
+function readAsDataURL(f){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(f); }); }
+function imgSize(src){ return new Promise(res=>{ const i=new Image(); i.onload=()=>res([i.naturalWidth,i.naturalHeight,i]); i.onerror=()=>res([0,0,null]); i.src=src; }); }
+async function prepMedia(file){
+  const animated = /gif|webp/.test(file.type);
+  if(!/^image\/(gif|webp|png|jpeg)$/.test(file.type)) throw new Error("Pick a GIF, PNG, JPG or WebP file.");
+  let data=await readAsDataURL(file); let [w,h,img]=await imgSize(data);
+  if(!img) throw new Error("That file couldn’t be opened.");
+  if(file.size<=MEDIA_MAX) return {data,w,h,type:file.type==="image/gif"?"gif":"image",size:file.size};
+  if(animated && file.type==="image/gif") throw new Error(`This GIF is ${Math.round(file.size/1024)} KB. In this prototype GIFs must be under 190 KB. Try a smaller one, or a sticker-size GIF.`);
+  // photos (and big WebP stills): shrink to fit
+  for(const max of [1280,1024,800,640]){
+    const k=Math.min(1,max/Math.max(w,h)), c=document.createElement("canvas"); c.width=Math.round(w*k); c.height=Math.round(h*k);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    for(const qv of [0.82,0.7,0.6]){ const out=c.toDataURL("image/jpeg",qv); const bytes=Math.round((out.length-23)*3/4); if(bytes<=MEDIA_MAX) return {data:out,w:c.width,h:c.height,type:"image",size:bytes}; }
+  }
+  throw new Error("That image is too large even after shrinking it.");
+}
+function attachUI(box, taId){
+  let el=box.querySelector(".attach"); const a=ATT[taId];
+  if(!a){ el&&el.remove(); return; }
+  if(!el){ el=document.createElement("div"); el.className="attach"; box.querySelector(".rt").after(el); }
+  el.innerHTML=`<img src="${a.data}" alt=""><span class="muted">${a.type==="gif"?"GIF":"Photo"} · ${Math.round(a.size/1024)} KB</span><button type="button" class="act" data-act="unattach" data-id="${esc(taId)}" aria-label="Remove">✕ Remove</button>`;
+}
+const gifInput=document.createElement("input"); gifInput.type="file"; gifInput.accept="image/gif,image/webp,image/png,image/jpeg"; gifInput.hidden=true; document.body.append(gifInput);
+let gifTarget=null;
+gifInput.addEventListener("change",async()=>{
+  const f=gifInput.files[0]; gifInput.value=""; const ta=gifTarget; if(!f||!ta) return;
+  try{ ATT[ta.id]=await prepMedia(f); const box=ta.closest(".box"); attachUI(box,ta.id); syncRich(ta); ta.focus(); }
+  catch(err){ toast(err.message||"Couldn’t add that file."); }
+});
+function mediaHTML(c){
+  return (c.media||[]).map(mid=>{ const m=S.media.get(mid); if(!m) return `<div class="cmedia ph">${c.mediaType==="gif"?"GIF":"Image"} loading…</div>`;
+    const r=m.w&&m.h?Math.min(1, 320/m.w, 260/m.h):1;
+    return `<button type="button" class="cmedia" data-act="viewMedia" data-id="${esc(mid)}" aria-label="Open image"><img src="${m.data}" alt="${m.type==="gif"?"GIF":"Image"} from ${esc(nameOf(c.authorId))}" width="${Math.round((m.w||320)*r)}" height="${Math.round((m.h||200)*r)}" loading="lazy">${m.type==="gif"?'<span class="gifbadge">GIF</span>':""}</button>`; }).join("");
+}
+
 // @mention and #tag suggestions
 const acEl=document.createElement("div"); acEl.className="ac"; acEl.hidden=true; acEl.setAttribute("role","listbox"); document.body.append(acEl);
 function tagPool(){ const m=new Map(); for(const t of S.topics.values()) (t.tags||[]).forEach(x=>m.set(x,(m.get(x)||0)+3)); for(const c of S.comments.values()) tagsIn(c.text).forEach(x=>m.set(x,(m.get(x)||0)+1)); return [...m].sort((a,b)=>b[1]-a[1]).map(x=>x[0]); }
 function acUpdate(ta){
   const pos=ta.selectionStart; if(pos!==ta.selectionEnd){ acClose(); return; }
-  const m=ta.value.slice(0,pos).match(/(^|[\s(])([@#])([\p{L}\p{M}\p{N}_]{0,40})$/u);
+  const m=ta.value.slice(0,pos).match(/(^|[\s(])([@#:])([\p{L}\p{M}\p{N}_+-]{0,40})$/u);
   if(!m){ acClose(); return; }
   const kind=m[2], qq=m[3].toLowerCase(); let items=[];
-  if(kind==="@"){
+  if(kind===":"){
+    if(qq.length<2||!/^[a-z0-9_+-]+$/.test(qq)){ acClose(); return; }
+    const POP=[..."🔥😂❤️👍🙏👏💯😍🤣😭🥳🍛☕🏏🏆😎🤔😢😡✅🎉😊👀💪🤝"];
+    const pop=e=>{ const i=POP.indexOf(e); return i<0?99:i; };
+    const sc=x=>{ const words=x.n.split(" "); return words.includes(qq)?0:words.some(w=>w.startsWith(qq))?1:x.n.includes(qq)?2:9; };
+    const rec=recentEmoji();
+    items=EMOJI_ALL.map(x=>({v:x.e,n:x.n,k:sc(x)})).filter(x=>x.k<9).sort((a,b)=>a.k-b.k||(rec.indexOf(a.v)<0?99:rec.indexOf(a.v))-(rec.indexOf(b.v)<0?99:rec.indexOf(b.v))||pop(a.v)-pop(b.v)||a.n.split(" ")[0].length-b.n.split(" ")[0].length).slice(0,7);
+  } else if(kind==="@"){
     items=[...S.handles].filter(([id,d])=>d.handle&&id!==S.me).map(([id,d])=>({id,v:d.handle,k:(d.handle.toLowerCase().startsWith(qq)?0:d.handle.toLowerCase().includes(qq)?1:9)})).filter(x=>x.k<9).sort((a,b)=>a.k-b.k||a.v.localeCompare(b.v)).slice(0,6);
   } else {
     items=tagPool().filter(x=>x.includes(qq)).sort((a,b)=>(!b.startsWith(qq))-(!a.startsWith(qq))).slice(0,6).map(v=>({v}));
@@ -1138,7 +1272,7 @@ function acUpdate(ta){
   }
   if(!items.length){ acClose(); return; }
   TY.ac={ta,kind,start:pos-m[3].length-1,items,i:0};
-  acEl.innerHTML=items.map((x,i)=>`<button type="button" class="aci${i===0?" on":""}" data-i="${i}" role="option">${kind==="@"?avatar(x.id,"xs")+`<span><b>@${esc(x.v)}</b>${isSeed(x.id)?' <span class="sample">sample</span>':""}</span>`:`<span class="acht">#</span><span><b>${esc(x.v)}</b>${x.isNew?' <span class="muted">new tag</span>':""}</span>`}</button>`).join("");
+  acEl.innerHTML=items.map((x,i)=>`<button type="button" class="aci${i===0?" on":""}" data-i="${i}" role="option">${kind===":"?`<span class="ace">${x.v}</span><span><b>:${esc(x.n.split(" ")[0])}:</b> <span class="muted">${esc(x.n.split(" ").slice(1).filter(w=>w.startsWith(qq)).concat(x.n.split(" ").slice(1)).filter((w,i,a)=>a.indexOf(w)===i).slice(0,2).join(" "))}</span></span>`:kind==="@"?avatar(x.id,"xs")+`<span><b>@${esc(x.v)}</b>${isSeed(x.id)?' <span class="sample">sample</span>':""}</span>`:`<span class="acht">#</span><span><b>${esc(x.v)}</b>${x.isNew?' <span class="muted">new tag</span>':""}</span>`}</button>`).join("");
   const r=caretRect(ta), w=Math.min(280, window.innerWidth-24);
   acEl.style.width=w+"px"; acEl.style.left=Math.max(12,Math.min(r.left-8, window.innerWidth-w-12))+"px";
   acEl.hidden=false;
@@ -1148,7 +1282,8 @@ function acUpdate(ta){
 function acClose(){ if(!acEl.hidden){ acEl.hidden=true; } TY.ac=null; }
 function acPick(i){
   const a=TY.ac; if(!a) return; const x=a.items[i]; if(!x) return;
-  const ta=a.ta, end=ta.selectionStart, ins=(a.kind==="@"?"@":"#")+x.v+" ";
+  const ta=a.ta, end=ta.selectionStart, ins=a.kind===":"?x.v:(a.kind==="@"?"@":"#")+x.v+" ";
+  if(a.kind===":") pushRecent(x.v);
   ta.setRangeText(ins, a.start, end, "end");
   acClose(); ta.focus(); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
@@ -1171,7 +1306,12 @@ document.addEventListener("compositionend",()=>{ TY.composing=false; TY.last=Dat
 document.addEventListener("scroll",e=>{ const ta=e.target; if(ta&&ta.classList&&ta.classList.contains("rt-in")){ const b=ta.previousElementSibling; if(b) b.scrollTop=ta.scrollTop; } },true);
 document.addEventListener("selectionchange",()=>{ const ta=document.activeElement; if(TY.ac&&ta===TY.ac.ta) acUpdate(ta); });
 document.addEventListener("focusout",e=>{ if(TY.ac&&e.target===TY.ac.ta) setTimeout(()=>{ if(document.activeElement!==TY.ac?.ta) acClose(); },120); });
-document.addEventListener("mousedown",e=>{ const b=e.target.closest(".tbtn"); if(!b) return; e.preventDefault(); const ta=b.closest(".composer")?.querySelector("textarea"); if(ta) insertToken(ta,b.dataset.ins); });
+function toolAct(b){ const ta=b.closest(".composer")?.querySelector("textarea"); if(!ta) return;
+  if(b.dataset.ins) insertToken(ta,b.dataset.ins);
+  else if(b.dataset.tool==="emoji"){ if(!epEl.hidden&&EP.ta===ta) epClose(true); else { acClose(); epOpen(ta,b); } }
+  else if(b.dataset.tool==="gif"){ gifTarget=ta; gifInput.click(); } }
+document.addEventListener("mousedown",e=>{ const b=e.target.closest(".tbtn"); if(!b) return; e.preventDefault(); toolAct(b); });
+document.addEventListener("click",e=>{ const b=e.target.closest(".tbtn"); if(b&&e.detail===0) toolAct(b); });
 document.addEventListener("keydown",e=>{
   if(TY.ac && e.target===TY.ac.ta && !e.isComposing){
     if(e.key==="ArrowDown"){ e.preventDefault(); acMove(1); return; }
@@ -1182,7 +1322,7 @@ document.addEventListener("keydown",e=>{
   const tag=(e.target.tagName||""), typing=/^(INPUT|TEXTAREA|SELECT)$/.test(tag)||e.target.isContentEditable;
   if(!typing && !$("#modal").innerHTML && (e.key==="/"||((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"))){ e.preventDefault(); $("#q").focus(); $("#q").select(); }
 },true);
-window.addEventListener("resize",()=>{ acClose(); document.querySelectorAll("textarea[data-tt]").forEach(grow); });
+window.addEventListener("resize",()=>{ acClose(); epClose(); document.querySelectorAll("textarea[data-tt]").forEach(grow); });
 
 /* ---------- render ---------- */
 let rq=0;
@@ -1192,7 +1332,7 @@ function render(){
   buildIndex();
   const r=parseRoute(), changed=r!==UI.lastRoute;
   { const ae=document.activeElement;
-    if(!changed && ae && view.contains(ae) && /^(TEXTAREA|INPUT)$/.test(ae.tagName) && (TY.composing || Date.now()-TY.last<1400)){
+    if(!changed && ((ae && view.contains(ae) && /^(TEXTAREA|INPUT)$/.test(ae.tagName) && (TY.composing || Date.now()-TY.last<1400)) || !epEl.hidden)){
       clearTimeout(TY.defer); TY.defer=setTimeout(schedule,900); return; } }
   const keep={}; let fid=null, sel=null;
   if(!changed){ view.querySelectorAll("input[id],textarea[id],select[id]").forEach(el=>keep[el.id]=el.value);
@@ -1280,19 +1420,22 @@ async function notify(list, base){
 function notifyGroup(gid,tid,text){ if(!gid) return; notify((IX.gMem.get(gid)||[]).map(m=>[m.userId,"grouppost"]),{topicId:tid,text,groupId:gid}); }
 const followersOf = tid => (IX.fByTopic.get(tid)||[]);
 async function ensureFollow(tid){ if(!IX.myFollows.has(tid)){ try{ await db.doc(`follows/${tid}__${S.me}`).set({topicId:tid,userId:S.me,createdAt:Date.now()}); }catch{} } }
-async function postComment(topicId, parentId, text){
-  text=text.trim(); if(!text) { toast("Write something first."); return false; }
+async function postComment(topicId, parentId, text, taId){
+  text=text.trim(); const att=taId&&ATT[taId];
+  if(!text&&!att) { toast("Write something first."); return false; }
   if(text.length>3000){ toast("Keep it under 3,000 characters."); return false; }
-  if(!(await gate())||!rateOk(text)) return false;
-  const id=rid("c");
-  const ok=await W(()=>db.doc("comments/"+id).set({topicId,parentId:parentId||null,authorId:S.me,text,createdAt:Date.now()}));
+  if(!(await gate())||!rateOk(text||("media"+Date.now()))) return false;
+  const id=rid("c"); const body={topicId,parentId:parentId||null,authorId:S.me,text,createdAt:Date.now()};
+  if(att){ const mid=rid("m"); if(!(await W(()=>db.doc("media/"+mid).set({data:att.data,w:att.w,h:att.h,type:att.type,by:S.me,commentId:id,createdAt:Date.now()})))) return false; body.media=[mid]; body.mediaType=att.type; }
+  const ok=await W(()=>db.doc("comments/"+id).set(body));
+  if(ok&&att){ delete ATT[taId]; }
   if(!ok) return false;
   const parent=parentId&&S.comments.get(parentId);
   const list=[]; if(parent) list.push([parent.authorId,"reply"]);
   mentionsIn(text).forEach(u=>list.push([u,"mention"]));
   followersOf(topicId).forEach(u=>list.push([u,"comment"]));
   ensureFollow(topicId);
-  notify(list,{topicId,commentId:id,text:text.slice(0,140)});
+  notify(list,{topicId,commentId:id,text:(text||(att?.type==="gif"?"sent a GIF":"sent a photo")).slice(0,140)});
   return true;
 }
 
@@ -1606,8 +1749,8 @@ document.addEventListener("click", async e=>{
     case "pickCity": UI.city=el.dataset.v; try{ localStorage.setItem("tt-city",UI.city); }catch{} schedule(); break;
     case "lang": UI.lang=UI.lang==="ta"?"en":"ta"; try{ localStorage.setItem("tt-lang",UI.lang); }catch{} render(); break;
     case "reply": UI.replyOpen.has(id)?UI.replyOpen.delete(id):UI.replyOpen.add(id); render(); { const t=document.getElementById("r-"+id); t&&t.focus(); } break;
-    case "postComment": { const ta=$("#newc"); const lbl=el.textContent; el.disabled=true; el.classList.add("busy"); el.textContent="Posting"; if(await postComment(el.dataset.topic,null,ta.value)){ clearField(ta); } el.disabled=false; el.classList.remove("busy"); el.textContent=lbl; break; }
-    case "postReply": { const ta=document.getElementById("r-"+id); const c=S.comments.get(id); el.disabled=true; if(c&&await postComment(c.topicId,id,ta.value)){ UI.replyOpen.delete(id); clearField(ta); schedule(); } el.disabled=false; break; }
+    case "postComment": { const ta=$("#newc"); const lbl=el.textContent; el.disabled=true; el.classList.add("busy"); el.textContent="Posting"; if(await postComment(el.dataset.topic,null,ta.value,"newc")){ clearField(ta); attachUI(ta.closest(".box"),"newc"); } el.disabled=false; el.classList.remove("busy"); el.textContent=lbl; break; }
+    case "postReply": { const ta=document.getElementById("r-"+id); const c=S.comments.get(id); el.disabled=true; if(c&&await postComment(c.topicId,id,ta.value,"r-"+id)){ UI.replyOpen.delete(id); clearField(ta); schedule(); } el.disabled=false; break; }
     case "like": {
       if(!(await gate())) break;
       const key=`${id}__${S.me}`, ref=db.doc("likes/"+key);
@@ -1728,6 +1871,8 @@ document.addEventListener("click", async e=>{
       if(IX.myDV.get(id)===el.dataset.v) break;
       await W(()=>db.doc(`dvotes/${id}__${S.me}`).set({duelId:id,side:el.dataset.v,userId:S.me,createdAt:Date.now()}));
       break; }
+    case "unattach": { delete ATT[id]; const ta=document.getElementById(id); if(ta){ attachUI(ta.closest(".box"),id); syncRich(ta); ta.focus(); } break; }
+    case "viewMedia": { const m=S.media.get(id); if(!m) break; openModal(`<img src="${m.data}" alt="" style="width:100%;border-radius:12px;display:block"><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`); break; }
     case "newGroup": if(!(await gate())) break; groupModal(); break;
     case "gvis": UI.gvis=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); $("#g-vis-hint").textContent=UI.gvis==="private"?"Only members can see topics. People join with an invite code.":"Anyone can see and join. Topics show up on the public site."; break;
     case "saveGroup": {
@@ -1833,7 +1978,7 @@ document.addEventListener("click", async e=>{
     case "clearSample": {
       if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Click again to delete all sample content"; el.classList.add("pri"); break; }
       el.disabled=true; el.textContent="Removing…"; let n=0;
-      const groups=[["topics",R.topics],["comments",R.comments],["reviews",R.reviews],["battles",R.battles],["duels",R.duels],["gmembers",S.gmembers],["groups",S.groups],["handles",S.handles]];
+      const groups=[["topics",R.topics],["comments",R.comments],["reviews",R.reviews],["battles",R.battles],["duels",R.duels],["media",S.media],["gmembers",S.gmembers],["groups",S.groups],["handles",S.handles]];
       for(const [col,m] of groups) for(const [k,d] of [...m]) if(d.seed){ try{ await db.doc(col+"/"+k).delete(); n++; }catch{} }
       toast(`Removed ${n} sample items`); break; }
   }
@@ -1843,6 +1988,7 @@ document.addEventListener("input", e=>{
   if(el){ el.textContent=`${n} / ${MAX_WORDS} words`; el.style.color=n>MAX_WORDS?"var(--danger)":""; }
 });
 document.addEventListener("keydown", e=>{
+  if(e.key==="Escape"&&!epEl.hidden){ epClose(true); return; }
   if(e.key==="Escape"&&$("#modal").innerHTML) closeModal(false);
   if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)&&e.target.tagName==="TEXTAREA"){
     e.preventDefault(); const b=e.target.closest(".composer,.form,.dbox,.modal")?.querySelector(".btn.pri"); b&&b.click(); }
@@ -1873,7 +2019,7 @@ q.addEventListener("keydown",e=>{
     q.blur(); ddi=-1; }
   if(e.key==="Escape"){ dd.hidden=true; ddi=-1; q.blur(); } });
 document.addEventListener("click",e=>{ if(!e.target.closest(".search")) dd.hidden=true; else if(e.target.closest("#dd a")){ UI.query=q.value; dd.hidden=true; if(e.target.closest("[data-act=fullSearch]")&&location.hash==="#search") schedule(); } });
-window.addEventListener("hashchange", ()=>{ dd.hidden=true; if($("#modal").innerHTML&&!modalResolve) $("#modal").innerHTML=""; render(); });
+window.addEventListener("hashchange", ()=>{ dd.hidden=true; epClose(); for(const k in ATT) delete ATT[k]; if($("#modal").innerHTML&&!modalResolve) $("#modal").innerHTML=""; render(); });
 setInterval(()=>{ if(!document.hidden && !$("#modal").innerHTML) schedule(); }, 60000);
 
 /* ---------- boot ---------- */
@@ -1886,7 +2032,7 @@ render();
   if(user){ S.me=await user.id(); S.isOwner=await user.isOwner(); const cw=await user.can("data.write"); if(cw===false) S.readOnly=true; }
   const sub=(col,map)=>db.collection(col).onSnapshot(snap=>{ map.clear(); snap.docs.forEach(d=>map.set(d.id,{id:d.id,...d.data()})); S.ready[col]=true; schedule(); }, err=>{ console.warn(col,err); });
   sub("topics",R.topics); sub("comments",R.comments); sub("reviews",R.reviews); sub("likes",S.likes); sub("follows",S.follows); sub("handles",S.handles);
-  sub("battles",R.battles); sub("groups",S.groups); sub("gmembers",S.gmembers); sub("duels",R.duels); sub("dvotes",S.dvotes); sub("bvotes",S.bvotes); sub("pvotes",S.pvotes);
+  sub("battles",R.battles); sub("groups",S.groups); sub("gmembers",S.gmembers); sub("duels",R.duels); sub("media",S.media); sub("dvotes",S.dvotes); sub("bvotes",S.bvotes); sub("pvotes",S.pvotes);
   if(S.me) db.collection("notifs").where("to","==",S.me).onSnapshot(snap=>{ S.notifs=snap.docs.map(d=>({id:d.id,...d.data()})); schedule(); },()=>{});
   render();
 })();
