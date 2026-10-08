@@ -319,6 +319,7 @@ label.l{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;d
 .plres{max-height:46vh;overflow:auto;margin:10px -4px 0}.plh{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:6px 4px}
 .plrow{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:10px 8px;min-height:52px;border:0;background:none;border-radius:10px;cursor:pointer;color:var(--ink)}
 .plrow:hover,.plrow:active{background:var(--brand-soft)}.plrow b{display:block}.plrow small{color:var(--muted)}
+.interp{margin:6px 0 4px;font-size:14px}.interp a{color:var(--brand-deep);font-weight:600}
 .phead h1{font-size:30px}
 .kpis{display:flex;flex-wrap:wrap;gap:22px;margin-top:18px}
 .kpis div{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
@@ -1126,16 +1127,33 @@ function vSearch(){
   if(!q) return emptyBox("Search TopicTalk","Ask a question or type anything: a phone, a dish, a place, a person.");
   const r=searchAll(q,50);
   const none=!r.topics.length&&!r.tags.length&&!r.people.length&&!r.cities.length;
-  return `<h1 style="font-size:28px;font-weight:800">${esc(q)}</h1>
+  const interp=r.place?`<div class="interp">Showing ${r.words.length?`<b>${esc(r.words.join(" "))}</b> in `:"what’s happening in "}<b>📍 ${esc(r.place.label)}</b>${r.near?" (your area)":""} · <a href="#city-${enc(r.place.id)}">Explore ${esc(r.place.name)} →</a> · <a href="#search" data-act="searchAnywhere">Search everywhere</a></div>`:r.homeFallback&&r.topics.length?`<div class="interp muted">Results near ${esc(homePlace().name)} come first.</div>`:"";
+  return `<h1 style="font-size:28px;font-weight:800">${esc(q)}</h1>${interp}
   ${r.topics.length?answerPanel(q,r.topics):`<div class="answer"><div class="ahead">Community answer</div><div class="atext">Nobody has talked about this yet.</div><div class="muted" style="font-size:14px">Ask it, and the answer will come from people who know.</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri sm" data-act="newQuestion" data-title="${esc(q)}">Ask the community</button><button class="btn sm" data-act="newTopic" data-title="${esc(q)}">Start it as a topic</button></div></div>`}
+  ${r.battles.length?`<section class="sec" style="margin-top:22px"><div class="sech"><h2>🔥 Live battles</h2></div><div class="grid b">${r.battles.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
   ${r.topics.length?`<section class="sec" style="margin-top:22px"><div class="sech"><h2>Conversations</h2></div><div class="grid">${r.topics.map(t=>topicCard(t)).join("")}</div></section>`:""}
-  ${r.cities.length?`<section class="sec"><div class="sech"><h2>Cities</h2></div><div class="tagrow">${r.cities.map(c=>`<a class="chip" href="#city-${enc(c.slug)}">${esc(c.name)}</a>`).join("")}</div></section>`:""}
+  ${r.cities.length?`<section class="sec"><div class="sech"><h2>Places</h2></div><div class="tagrow">${r.cities.map(c=>`<a class="chip" href="#city-${enc(c.slug)}">📍 ${esc(c.name)}</a>`).join("")}</div></section>`:""}
   ${r.tags.length?`<section class="sec"><div class="sech"><h2>Hashtags</h2></div><div class="tagrow">${r.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div></section>`:""}
   ${r.people.length?`<section class="sec"><div class="sech"><h2>People</h2></div><div class="list">${r.people.map(id=>`<div class="prow"><a href="#u-${esc(id)}">${avatar(id)}<div class="txt"><b>${esc(nameOf(id))}</b> ${idTag(id)}</div></a><span class="pbtns">${peopleBtns(id)}</span></div>`).join("")}</div></section>`:""}`;
 }
 
-const STOP=new Set("a an the is are was were be to of in on for and or vs versus which what who whom how why where when best most good better any do does did should can could would will i my me we our it its this that these with at by from about than near under over into get got".split(" "));
+const STOP=new Set("a an the is are was were be to of in on for and or vs versus which what who whom how why where when best most good better any around nearby happening things place places there top find show me do does did should can could would will i my me we our it its this that these with at by from about than near under over into get got".split(" "));
 const qWords = q => String(q).toLowerCase().split(/[^\p{L}\p{M}\p{N}₹]+/u).filter(w=>w&&w.length>1&&!STOP.has(w));
+function parseQ(q){
+  q=q.trim().toLowerCase(); let near=/\b(near me|nearby|around me|close to me|in my area|my area)\b/.test(q); let rest=q.replace(/\b(near me|nearby|around me|close to me|in my area|my area)\b/g," ");
+  const toks=rest.split(/[^\p{L}\p{M}\p{N}₹.]+/u).filter(Boolean); let place=null, used=new Set();
+  for(let n=3;n>=1&&!place;n--) for(let i=0;i+n<=toks.length&&!place;i++){ const ph=toks.slice(i,i+n).join(" "); const pl=placeOf(ph); if(pl&&!STOP.has(ph)){ place=pl; for(let j=i;j<i+n;j++) used.add(j); } }
+  // "anna nagar biryani" also tries area before a following city word handled by placeOf; keep first hit
+  if(!place&&near){ place=homeArea()||homePlace(); }
+  const words=toks.filter((w,i)=>!used.has(i)&&w.length>1&&!STOP.has(w));
+  return {place,words,near,homeFallback:!place&&!!homePlace()};
+}
+function suggestQ(v){
+  const pq=parseQ(v), out=[]; const add=x=>{ if(x&&x.toLowerCase()!==v&&!out.includes(x)&&out.length<4) out.push(x); };
+  if(pq.place&&pq.words.length<=1){ const tc=new Map(); LIVE().filter(t=>inPlace(t,pq.place)).forEach(t=>(t.tags||[]).forEach(g=>tc.set(g,(tc.get(g)||0)+1))); const pre=pq.words[0]||""; [...tc].filter(([g])=>g!==pq.place.name.toLowerCase().replace(/\s/g,"")&&g.startsWith(pre)).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([g])=>add(pq.place.name+" "+g)); }
+  else if(!pq.place&&pq.words.length&&v.length>=3){ const w=pq.words[pq.words.length-1], pc=new Map(); LIVE().forEach(t=>{ const pl=placeOf(t.location); if(!pl) return; const hay=((t.tags||[]).join(" ")+" "+t.title+" "+t.category).toLowerCase(); if(hay.includes(w)){ const c=pl.type==="area"?PLACES.byId.get(pl.city):pl; pc.set(c.name,(pc.get(c.name)||0)+1); } }); const hp=homePlace(); if(hp&&pc.has(hp.name)) add(pq.words.join(" ")+" in "+hp.name); [...pc].sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([n])=>add(pq.words.join(" ")+" in "+n)); }
+  return out;
+}
 function topicScore(t, q, words){
   const title=t.title.toLowerCase(); let s=0;
   if(title.includes(q)) s+=6;
@@ -1147,14 +1165,23 @@ function topicScore(t, q, words){
   return s;
 }
 function searchAll(q,n){
-  q=q.trim().toLowerCase(); const words=qWords(q);
+  q=q.trim().toLowerCase(); const pq=parseQ(q); const words=pq.place?pq.words:qWords(q), place=pq.place, hp=homePlace();
   const tagset=new Set(); for(const t of LIVE())(t.tags||[]).forEach(x=>tagset.add(x));
-  const topics=LIVE().map(t=>[t,topicScore(t,q,words)]).filter(x=>x[1]>=1.5).sort((a,b)=>b[1]-a[1]||IX.trend.get(b[0].id)-IX.trend.get(a[0].id)).slice(0,n).map(x=>x[0]);
+  const qtext=place?words.join(" "):q;
+  const score=t=>{ let sc=words.length?topicScore(t,qtext,words):0; const inP=place?inPlace(t,place):false;
+    if(place){ if(!words.length) return inP?2+IX.trend.get(t.id)*.01:0; if(inP) sc=sc>=1?sc+5:sc>0?sc+3:2.2; else if(sc>=1.5) sc=sc*.6; else sc=0; }
+    else if(hp&&sc>=1.5&&inPlace(t,hp)) sc+=2.5;
+    return sc; };
+  const scored=LIVE().map(t=>[t,score(t)]).filter(x=>x[1]>=(place&&!words.length?1:1.5)).sort((a,b)=>b[1]-a[1]||IX.trend.get(b[0].id)-IX.trend.get(a[0].id));
+  const topics=scored.slice(0,n).map(x=>x[0]);
   const qq=q.replace(/^#/,"");
-  const tags=[...tagset].filter(x=>x.includes(qq)||words.includes(x)).slice(0,10);
-  const people=[...S.handles].filter(([id,d])=>(d.handle||"").toLowerCase().includes(qq.replace(/^@/,""))||idHit(id,qq)).map(([id])=>id).slice(0,8);
-  const cs=cities().filter(c=>c.name.toLowerCase().includes(qq)||words.includes(c.slug)).slice(0,6);
-  return {topics,tags,people,cities:cs};
+  const tags=[...tagset].filter(x=>x.includes(qq)||words.includes(x)||(place&&x===place.name.toLowerCase().replace(/\s/g,""))).slice(0,10);
+  const people=place?[]:[...S.handles].filter(([id,d])=>(d.handle||"").toLowerCase().includes(qq.replace(/^@/,""))||idHit(id,qq)).map(([id])=>id).slice(0,8);
+  let cs=cities().filter(c=>c.name.toLowerCase().includes(qq)||words.includes(c.slug)).slice(0,6);
+  if(place){ const pid=place.id; cs=[{slug:pid,name:place.label,n:0},...cs.filter(c=>c.slug!==pid&&c.slug!==place.city)]; }
+  const live=new Set(LIVE().map(t=>t.id)), ids=new Set(topics.map(t=>t.id));
+  const battles=[...S.battles.values()].filter(b=>b.endsAt>Date.now()&&live.has(b.topicId)&&(ids.has(b.topicId)||(words.length&&words.every(w=>(b.question||"").toLowerCase().includes(w))))&&(!place||inPlace(S.topics.get(b.topicId),place))).slice(0,3);
+  return {topics,tags,people,cities:cs,battles,place,words,near:pq.near,homeFallback:pq.homeFallback};
 }
 
 function verdictPanel(t, rs){
@@ -2157,6 +2184,8 @@ document.addEventListener("click", async e=>{
     case "exSort": UI.exSort=el.dataset.v; schedule(); break;
     case "exGo": UI.exSort=el.dataset.v; break;
     case "exCat": UI.exCat=el.dataset.v; schedule(); break;
+    case "searchAnywhere": { const pq=parseQ(UI.query); UI.query=pq.words.join(" ")||UI.query; if(typeof q!=="undefined"&&q) q.value=UI.query; schedule(); break; }
+    case "suggest": { UI.query=el.dataset.q; if(typeof q!=="undefined"&&q) q.value=UI.query; dd.hidden=true; location.hash="#search"; schedule(); break; }
     case "plOpen": placeSheet(el.dataset.m||"explore"); break;
     case "plLater": try{ localStorage.setItem("tt-loc-skip",String(Date.now())); }catch{} closeModal(); break;
     case "plPick": { const pl=PLACES.byId.get(el.dataset.id); if(!pl) break; const m=UI.plMode; closeModal();
@@ -2524,6 +2553,7 @@ q.addEventListener("input",()=>{
   const r=searchAll(v,6);
   let h="";
   if(qWords(v).length>=2&&r.topics.length) h+=`<a href="#search" data-act="fullSearch" class="hl"><span style="color:var(--brand-deep);font-weight:700">Get the community answer</span><span class="muted">for “${esc(q.value.trim())}”</span></a>`;
+  { const sg=suggestQ(v); if(sg.length) h+=`<div class="grp">Suggestions</div>`+sg.map(x=>`<a href="#search" data-act="suggest" data-q="${esc(x)}">🔍 ${esc(x)}</a>`).join(""); }
   if(r.topics.length) h+=`<div class="grp">Topics</div>`+r.topics.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:30px;height:30px;font-size:11px;border-radius:8px">${esc(abbr(t))}</div><span>${markq(t.title,v)}</span></a>`).join("");
   if(r.cities.length) h+=`<div class="grp">Cities</div>`+r.cities.slice(0,3).map(c=>`<a href="#city-${enc(c.slug)}">📍 ${esc(c.name)}</a>`).join("");
   if(r.tags.length) h+=`<div class="grp">Hashtags</div>`+r.tags.slice(0,4).map(x=>`<a href="#tag-${enc(x)}">#${markq(x,v.replace(/^#/,""))}</a>`).join("");
