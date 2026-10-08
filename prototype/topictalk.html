@@ -441,6 +441,12 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .citychip.on b::before{content:"✓ ";color:var(--brand)}
 .botd .bn{border-left-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
 .botd .bn.n1::after,.botd .bn.n2::after{content:"↓";position:absolute;left:-8px;bottom:1px;width:14px;text-align:center;color:var(--brand);background:var(--surface);font-size:13px;font-weight:700;line-height:14px}
+
+.local{margin-top:16px;padding:16px;border-radius:16px;background:var(--brand-soft);border:1px solid color-mix(in srgb,var(--brand) 25%,var(--line))}
+.local .sech{margin-bottom:12px}
+.local .sech h2{font-size:21px}
+.local .tcard{background:var(--surface)}
+@media(max-width:720px){.local{margin-inline:-4px;padding:14px}.local .grid.g2{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* v2: battles, predictions, analysis, cities, share cards */
@@ -840,8 +846,8 @@ function branchOfDay(){
   return br.sort((a,b)=>sc(b)-sc(a))[0];
 }
 const SH=(title,sub,link)=>`<div class="sech"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div>${link||""}</div>`;
-function hotRows(){
-  const seen=new Set(), out=[];
+function hotRows(skip){
+  const seen=new Set(skip||[]), out=[];
   for(const c of [...S.comments.values()].filter(cLive).sort((a,b)=>b.createdAt-a.createdAt)){
     const t=S.topics.get(c.topicId); if(!t||seen.has(t.id)) continue; seen.add(t.id);
     const st=stat(t.id);
@@ -859,29 +865,35 @@ function vHome(){
   const topTags=[...tagCount].sort((a,b)=>b[1]-a[1]).slice(0,14);
   const roots=LIVE().filter(t=>!t.parentId).map(t=>[t,descCount(t.id)]).sort((a,b)=>b[1]-a[1]);
   const bigTree = roots[0] && roots[0][1]>0 ? roots[0][0] : null;
-  const newest=LIVE().sort((a,b)=>b.createdAt-a.createdAt).slice(0,5);
+  const newest2=LIVE().sort((a,b)=>b.createdAt-a.createdAt);
   const live=[...S.battles.values()].filter(b=>b.endsAt>now).sort((a,b)=>{ const x=IX.bv.get(a.id),y=IX.bv.get(b.id); return (y.a+y.b)-(x.a+x.b); }).slice(0,3);
   const preds=LIVE().filter(t=>t.kind==="prediction").sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id)).slice(0,3);
   const cs=cities().slice(0,10);
   const cur=UI.city&&cs.find(c=>c.slug===UI.city);
   const cityTopics=cur?byTrend().filter(t=>slugCity(t.location)===cur.slug).slice(0,3):[];
+  const shown=new Set(cityTopics.map(t=>t.id));
+  let trList=tr.filter(t=>!shown.has(t.id)).slice(0,6); if(trList.length<3) trList=tr.slice(0,6);
+  trList.forEach(t=>shown.add(t.id));
+  let hotHTML=hotRows(shown); if(hotHTML.split("<a ").length<4) hotHTML=hotRows();
+  const hotIds=new Set([...hotHTML.matchAll(/href="#t-([^"~]+)~/g)].map(m=>m[1])); hotIds.forEach(i=>shown.add(i));
+  let newList=newest2.filter(t=>!shown.has(t.id)).slice(0,5); if(newList.length<3) newList=newest2.slice(0,5);
   const bod=branchOfDay(), bodC=bod&&S.comments.get(bod.originCommentId), bodP=bod&&S.topics.get(bod.parentId);
   return heroHTML() + `
-  ${cs.length?`<section class="sec"><div class="sech"><h2>${L("Your city")}</h2>${cur?`<a href="#city-${enc(cur.slug)}">${esc(cur.name)} →</a>`:`<span class="muted" style="font-size:13px">Pick one to see local debates</span>`}</div>
+  ${cs.length?`<section class="sec"><div class="sech"><h2>${L("Your city")}</h2>${cur?"":`<span class="muted" style="font-size:13px">Pick one to see local debates</span>`}</div>
     <div class="cityrow">${cs.map(c=>`<button class="citychip ${UI.city===c.slug?"on":""}" data-act="pickCity" data-v="${esc(c.slug)}"><b>${esc(c.name)}</b><span>${c.n} topic${c.n>1?"s":""}</span></button>`).join("")}</div>
-    ${cityTopics.length?`<div class="grid" style="margin-top:12px">${cityTopics.map(t=>topicCard(t)).join("")}</div>`:""}</section>`:""}
+    ${cityTopics.length?`<div class="local"><div class="sech"><div><h2>📍 Around ${esc(cur.name)}</h2><div class="sub">What’s being discussed locally</div></div><a href="#city-${enc(cur.slug)}">${L("See all")} →</a></div><div class="grid g2">${cityTopics.map(t=>topicCard(t)).join("")}</div></div>`:""}</section>`:""}
   ${S.myGroups.size?`<section class="sec"><div class="sech"><h2>Your groups</h2><a href="#groups">All groups</a></div><div class="grid">${[...S.myGroups].map(id=>S.groups.get(id)).filter(Boolean).map(groupCard).join("")}</div></section>`:""}
   ${(()=>{ const ds=[...S.duels.values()].filter(d=>duelState(d).phase==="voting"&&!IX.myDV.has(d.id)&&d.challengerId!==S.me&&d.opponentId!==S.me).slice(0,2); return ds.length?`<section class="sec">${SH(L("Debates to judge"),"",`<a href="#explore" data-act="exGo" data-v="duels">${L("See all")} →</a>`)}<div class="grid b">${ds.map(duelMini).join("")}</div></section>`:""; })()}
   ${live.length?`<section class="sec">${SH("🔥 "+L("Live battles"),"Quick debates. Real opinions.",`<a href="#explore" data-act="exGo" data-v="battles">${L("See all")} →</a>`)}<div class="grid b bscroll">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
   <div class="cols">
     <div>
       <section class="sec">${SH(L("Trending now"),"What people are talking about.",`<a href="#explore">${L("See all")} →</a>`)}
-        <div class="grid g2 tscroll">${tr.slice(0,6).map((t,i)=>topicCard(t,i)).join("")}</div></section>
+        <div class="grid g2 tscroll">${trList.map((t,i)=>topicCard(t,i)).join("")}</div></section>
       <section class="sec">${SH(L("Hot discussions"),"Conversations happening right now.")}
-        <div class="list feed">${hotRows()||`<div class="muted">No comments yet.</div>`}</div></section>
+        <div class="list feed">${hotHTML||`<div class="muted">No comments yet.</div>`}</div></section>
       ${preds.length?`<section class="sec">${SH(L("Predictions"),"Call it before it happens.",`<a href="#explore" data-act="exGo" data-v="predictions">${L("See all")} →</a>`)}<div class="grid preds" style="grid-template-columns:1fr">${preds.map(t=>`<div><a href="#t-${t.id}" style="display:block;font-family:var(--f-display);font-weight:700;font-size:17px;margin-bottom:8px">${esc(t.title)}</a>${predCard(t)}</div>`).join("")}</div>${preds.length>1?`<a class="morep" href="#explore" data-act="exGo" data-v="predictions">More predictions →</a>`:""}</section>`:""}
       <section class="sec">${SH(L("New topics"),"Fresh conversations to join.")}
-        <div class="list feed compact">${newest.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>by ${esc(nameOf(t.authorId))}</span><span>${ago(t.createdAt)}</span></div></div></a>`).join("")}</div></section>
+        <div class="list feed compact">${newList.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>by ${esc(nameOf(t.authorId))}</span><span>${ago(t.createdAt)}</span></div></div></a>`).join("")}</div></section>
     </div>
     <div>
       ${bod&&bodC&&bodP?`<section class="sec">${SH("🌱 "+L("Branch of the day"),"A comment that became its own conversation.")}<a class="botd" href="#t-${bod.id}">
