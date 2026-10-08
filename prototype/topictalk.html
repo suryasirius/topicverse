@@ -328,6 +328,22 @@ label.l{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;d
   .bnav .dot{top:0;right:calc(50% - 22px)}
 }
 footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);font-size:13px}
+
+.cityrow,.catrow,.tabs{scrollbar-width:none}.cityrow::-webkit-scrollbar,.catrow::-webkit-scrollbar,.tabs::-webkit-scrollbar{display:none}
+@media(max-width:720px){
+  .hero{padding:4px 0 16px;margin-bottom:16px;gap:12px}
+  .hero h1{font-size:30px;max-width:none}
+  .hero p{font-size:14.5px;margin-top:6px}
+  .hero .ctas{flex-wrap:nowrap;gap:8px;width:100%}.hero .ctas .btn{flex:1;padding-inline:10px;font-size:14px;white-space:nowrap}
+  .hero .ctas a.btn{display:none}
+  .catrow{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px}.catrow .chip{flex:none;padding:7px 14px;font-size:13.5px}
+  .cityrow{margin-inline:-16px;padding-inline:16px}
+  .tabs{margin:18px -16px 14px;padding-inline:16px}.tabs button{flex:none}
+  .atext{font-size:16px}
+  .answer{padding:16px}
+  .bnav .plus{height:22px}
+  h1{overflow-wrap:anywhere}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* v2: battles, predictions, analysis, cities, share cards */
@@ -429,7 +445,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
     </a>
     <div class="search">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Ask anything… which UPI app is most reliable?" enterkeyhint="search" spellcheck="false" autocomplete="off" aria-label="Search">
+      <input id="q" type="search" placeholder="Ask anything…" enterkeyhint="search" spellcheck="false" autocomplete="off" aria-label="Search">
       <div class="dd" id="dd" hidden></div>
     </div>
     <div class="navr">
@@ -776,7 +792,7 @@ function vExplore(){
   const tabs=[["trending","Trending"],["latest","Latest"],["battles","Battles"],["duels","Debates"],["predictions","Predictions"],["discussed","Most discussed"],["reviewed","Most reviewed"],["branched","Most branched"],["questions","Questions"]];
   const head=`<h1 style="font-size:32px;font-weight:800">${L("Explore")}</h1>
   <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button class="${UI.exSort===k?"on":""}" data-act="exSort" data-v="${k}">${l}</button>`).join("")}</div>
-  <div class="tagrow" style="margin-bottom:18px">${cats.map(c=>`<button class="chip ${UI.exCat===c?"on":""}" data-act="exCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
+  <div class="tagrow catrow" style="margin-bottom:18px">${cats.map(c=>`<button class="chip ${UI.exCat===c?"on":""}" data-act="exCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
   const catOk=t=>UI.exCat==="All"||t?.category===UI.exCat;
   if(UI.exSort==="battles"){
     const now=Date.now(), bs=[...S.battles.values()].filter(b=>catOk(S.topics.get(b.topicId))).sort((a,b)=>(b.endsAt>now)-(a.endsAt>now)||b.createdAt-a.createdAt);
@@ -2282,6 +2298,7 @@ q.addEventListener("keydown",e=>{
     else if(location.hash==="#search") schedule(); else location.hash="search";
     q.blur(); ddi=-1; }
   if(e.key==="Escape"){ dd.hidden=true; ddi=-1; q.blur(); } });
+if(innerWidth>720) q.placeholder="Ask anything… which UPI app is most reliable?";
 document.addEventListener("click",e=>{ if(!e.target.closest(".search")) dd.hidden=true; else if(e.target.closest("#dd a")){ UI.query=q.value; dd.hidden=true; if(e.target.closest("[data-act=fullSearch]")&&location.hash==="#search") schedule(); } });
 window.addEventListener("hashchange", ()=>{ dd.hidden=true; epClose(); for(const k in ATT) delete ATT[k]; if($("#modal").innerHTML&&!modalResolve) $("#modal").innerHTML=""; render(); });
 setInterval(()=>{ if(!document.hidden && !$("#modal").innerHTML) schedule(); }, 60000);
