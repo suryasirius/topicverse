@@ -303,6 +303,13 @@ label.l{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;d
 .tabs{scrollbar-width:none;scroll-snap-type:x proximity;scroll-padding-inline:16px}.tabs::-webkit-scrollbar{display:none}.tabs button{scroll-snap-align:start}
 @media(max-width:720px){.phead{flex-wrap:nowrap;align-items:flex-start;gap:14px}.phead>:first-child{flex:none;width:64px;height:64px;font-size:22px;margin-top:4px}.phead h1{font-size:26px;line-height:1.15}
 .tabs{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);padding-right:28px}}
+.cnt{color:var(--muted);padding:4px 0;border-radius:6px}.cnt b{color:var(--ink)}.cnt:hover,.cnt:active{color:var(--brand-deep);text-decoration:underline}
+.pback{display:inline-block;font-weight:700;color:var(--brand-deep);padding:6px 0;margin-bottom:4px}.ptitle{font-size:24px;margin:4px 0 12px}
+.plist .prow{display:flex;align-items:center;gap:10px;padding:10px 14px;min-height:60px}.plist .prow+.prow{border-top:1px solid var(--line)}
+.prow .who{display:flex;align-items:center;gap:12px;flex:1;min-width:0}.prow .who span{min-width:0}.prow b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prow small{color:var(--muted)}
+.prow .unf{color:var(--muted);background:none;border:1px solid var(--line)}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:60;display:grid;place-items:center;padding:20px}
+.bgc{position:absolute;inset:0}.dlg{position:relative;background:var(--surface);border-radius:16px;padding:20px;max-width:360px;width:100%}.dlg h3{font-size:18px;margin-bottom:6px}.dlg .dact{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
 .phead h1{font-size:30px}
 .kpis{display:flex;flex-wrap:wrap;gap:22px;margin-top:18px}
 .kpis div{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
@@ -1352,6 +1359,18 @@ function peopleBtns(id){
     : `<button class="btn pri sm" data-act="friendAdd" data-id="${esc(id)}">Add friend</button>`;
   return fb+`<button class="btn sm" data-act="followU" data-id="${esc(id)}">${isFollowing(id)?"Following":"Follow"}</button>`;
 }
+function friendsOf(id){ return [...S.friends.values()].filter(f=>f.status==="accepted"&&(f.fromId===id||f.toId===id)).map(f=>f.fromId===id?f.toId:f.fromId).filter(u=>S.handles.has(u)); }
+function vPeople(kind,id){
+  const isMe=id===S.me, nm=isMe?"":nameOf(id);
+  let ids=kind==="friends"?friendsOf(id):kind==="followers"?[...S.ufollows.values()].filter(f=>f.followingId===id).map(f=>f.followerId):[...S.ufollows.values()].filter(f=>f.followerId===id).map(f=>f.followingId);
+  ids=ids.filter(u=>S.handles.has(u));
+  const title=kind[0].toUpperCase()+kind.slice(1), canUnf=isMe&&kind==="friends";
+  const back=`<a class="pback" href="#${isMe?"me":"u-"+esc(id)}">← ${title}</a>`;
+  const rows=ids.map(u=>`<div class="prow"><a class="who" href="#u-${esc(u)}">${avatar(u,"sm")}<span><b>${esc(nameOf(u))}</b><small>@${esc(nameOf(u))}</small></span></a>${canUnf?`<button class="btn sm unf" data-act="unfAsk" data-id="${esc(u)}">Unfriend</button>`:""}</div>`).join("");
+  const empty=kind==="friends"?emptyBox("No friends yet","Find people and start connecting with your community.",'<a class="btn pri sm" href="#search">Find people →</a>'):emptyBox("No "+kind+" yet","");
+  const dlg=UI.unf&&canUnf&&ids.includes(UI.unf)?`<div class="ovl"><div class="bgc" data-act="unfNo"></div><div class="dlg" role="dialog"><h3>Unfriend ${esc(nameOf(UI.unf))}?</h3><p class="muted">You won’t be friends anymore. You can send a friend request again later.</p><div class="dact"><button class="btn" data-act="unfNo">Cancel</button><button class="btn pri" data-act="unfYes" data-id="${esc(UI.unf)}">Unfriend</button></div></div></div>`:"";
+  return `${back}<h1 class="ptitle">${title} · ${ids.length}</h1>${nm?`<div class="muted" style="margin:-6px 0 10px">${esc(nm)}</div>`:""}${ids.length?`<div class="list plist">${rows}</div>`:empty}${dlg}`;
+}
 function vProfile(id){
   if(!id) return emptyBox("Sign in to see your profile","Open this page in claude.ai while signed in.");
   const h=S.handles.get(id), isMe=id===S.me;
@@ -1376,7 +1395,7 @@ function vProfile(id){
   return `<div class="phead">${avatar(id,"lg")}<div style="min-width:0"><h1>${esc(nameOf(id))}${isSeed(id)?' <span class="sample">sample account</span>':""}</h1>
      <div style="margin-top:2px">${idTag(id)}${isMe?` <button class="act" data-act="copyId" data-id="${ttCode(id)}" title="Share it so friends can search for you">Copy</button> `:""}</div>
      ${h?.bio?`<p style="margin:4px 0 0">${esc(h.bio)}</p>`:""}<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="lvl">${lvl[1]}</span>${isMe?`<button class="btn sm" data-act="editHandle">Edit profile</button>`:peopleBtns(id)}</div>
-     <div class="muted" style="font-size:13px;margin-top:8px"><b style="color:var(--ink)">${followerN(id)}</b> followers · <b style="color:var(--ink)">${followingN(id)}</b> following${isMe?` · <b style="color:var(--ink)">${myFriends().length}</b> friends`:""}</div>
+     <div class="muted" style="font-size:13px;margin-top:8px"><a class="cnt" href="#ppl-followers-${esc(id)}"><b>${followerN(id)}</b> followers</a> · <a class="cnt" href="#ppl-following-${esc(id)}"><b>${followingN(id)}</b> following</a> · <a class="cnt" href="#ppl-friends-${esc(id)}"><b>${friendsOf(id).length}</b> ${friendsOf(id).length===1?"friend":"friends"}</a></div>
      ${isMe&&incomingReqs().length?`<div class="panel" style="margin-top:10px"><h3 style="margin:0 0 6px">Friend requests</h3>${incomingReqs().map(f=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 0">${avatar(f.fromId,"xs")}<a href="#u-${esc(f.fromId)}" style="font-weight:600;flex:1">${esc(nameOf(f.fromId))}</a><button class="btn pri sm" data-act="friendAccept" data-id="${esc(f.fromId)}">Accept</button><button class="btn sm" data-act="friendRemove" data-id="${esc(f.fromId)}">Decline</button></div>`).join("")}</div>`:""}</div></div>
    <div class="kpis main"><div><b>${rep}</b>Reputation</div><div><b>${ts.length}</b>Topics</div><div><b>${cs.length}</b>Comments</div></div>
    <details class="how rephow"><summary>How reputation works</summary><div class="muted" style="font-size:13px;padding:6px 0 2px;line-height:1.6">You earn reputation when you:<br>• start a topic (+3)<br>• get likes on comments (+1 each)<br>• write a review (+2, and +5 per like)<br>• have a comment branched into a new topic (+10)<br>• call a prediction correctly (+5)</div></details>
@@ -1647,6 +1666,7 @@ function render(){
   else if(r==="search"){ html=vSearch(); const qq=UI.query.trim(); if(qq&&sampleFn&&!UI.ans[qq.toLowerCase()]&&qWords(qq).length>=2){ const rr=searchAll(qq,5); if(rr.topics.length) setTimeout(()=>askAnswer(qq,rr.topics),0); } }
   else if(r==="me") html=vProfile(S.me);
   else if(r.startsWith("u-")) html=vProfile(r.slice(2));
+  else if(r.startsWith("ppl-")){ const m=r.slice(4).match(/^(friends|followers|following)-(.+)$/); html=m?vPeople(m[1],m[2]):vHome(); }
   else if(r.startsWith("tag-")) html=vTag(r.slice(4).toLowerCase());
   else if(r.startsWith("city-")) html=vCity(r.slice(5));
   else if(r==="groups") html=vGroups();
@@ -1662,7 +1682,7 @@ function render(){
   if(changed){ UI.lastRoute=r;
     const el=focusC&&document.getElementById("c-"+focusC);
     if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); } else window.scrollTo(0,0); }
-  document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="groups"&&r.startsWith("g-"))));
+  document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="groups"&&r.startsWith("g-"))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
   document.querySelectorAll("[data-l]").forEach(el=>el.textContent=L(el.dataset.l));
   $("#langBtn").textContent=UI.lang==="ta"?"EN":"தமிழ்";
   const unread=S.notifs.filter(n=>!n.read).length;
@@ -2061,6 +2081,9 @@ document.addEventListener("click", async e=>{
     case "exSort": UI.exSort=el.dataset.v; schedule(); break;
     case "exGo": UI.exSort=el.dataset.v; break;
     case "exCat": UI.exCat=el.dataset.v; schedule(); break;
+    case "unfAsk": UI.unf=el.dataset.id; schedule(); break;
+    case "unfNo": UI.unf=null; schedule(); break;
+    case "unfYes": { const u=el.dataset.id; UI.unf=null; for(const k of [fKey(S.me,u),fKey(u,S.me)]) if(S.friends.has(k)) await W(()=>db.doc("friends/"+k).delete()); toast("Friend removed"); schedule(); break; }
     case "ptab": UI.ptab=el.dataset.v; schedule(); break;
     case "tab": UI.tab=el.dataset.v; schedule(); break;
     case "csort": UI.csort=el.dataset.v; if(UI.csort==="other"&&!UI.ai[id]&&sampleFn) analyze(id); schedule(); break;
