@@ -606,7 +606,7 @@ if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.roundRec
 (() => {
 const CATS = ["Tech","Food","Movies","Travel","Apps","Shopping","Sports","Gaming","Finance","Education","Health","Cars","Bikes","Local","Services","Entertainment","Lifestyle","Other"];
 const S = { topics:new Map(), comments:new Map(), reviews:new Map(), likes:new Map(), follows:new Map(), handles:new Map(),
-  battles:new Map(), bvotes:new Map(), pvotes:new Map(), groups:new Map(), gmembers:new Map(), duels:new Map(), dvotes:new Map(), media:new Map(), friends:new Map(), ufollows:new Map(), tmembers:new Map(), joinreqs:new Map(), myGroups:new Set(), notifs:[], me:null, isOwner:false, readOnly:false, ready:{}, dbOk:null };
+  battles:new Map(), bvotes:new Map(), pvotes:new Map(), groups:new Map(), gmembers:new Map(), duels:new Map(), dvotes:new Map(), media:new Map(), friends:new Map(), ufollows:new Map(), reports:new Map(), blocks:new Map(), tmembers:new Map(), joinreqs:new Map(), myGroups:new Set(), notifs:[], me:null, isOwner:false, readOnly:false, ready:{}, dbOk:null };
 const UI = { more:new Set(), replyOpen:new Set(), tab:"discussion", rvOpen:false, rvRating:0, exCat:"All", exSort:"trending", ptab:"topics", query:"", lastRoute:"", lastPost:0,
   csort:"top", ai:{}, aiBusy:{}, ans:{}, ansBusy:null, dReady:{}, city:null, lang:"en" };
 let db=null, user=null, sampleFn=null, downloads=null;
@@ -680,6 +680,23 @@ const PLACES=(()=>{ const byId=new Map(), list=[], al=new Map(); const sl=x=>Str
 const placeOf=str=>PLACES.find(str);
 const slugCity = s => { const p=placeOf(s); return p?(p.type==="area"?p.city:p.id):PLACES.sl(s); };
 const inPlace=(t,pl)=>{ const q=placeOf(t.location); if(!q) return false; return pl.type==="area"?q.id===pl.id:(q.id===pl.id||q.city===pl.id); };
+
+let MUTED=new Set(); try{ MUTED=new Set(JSON.parse(localStorage.getItem("tt-muted")||"[]")); }catch{}
+const saveMuted=()=>{ try{ localStorage.setItem("tt-muted",JSON.stringify([...MUTED].slice(-200))); }catch{} };
+const notifList=()=>S.notifs.filter(n=>!(n.topicId&&MUTED.has(n.topicId)&&!/^(friend_req|friend_ok|follow)$/.test(n.type)));
+const myBlocks=()=>[...S.blocks.values()].map(b=>b.blockedId);
+const REASONS=[["spam","Spam or scam"],["abuse","Harassment or abuse"],["hate","Hate or discrimination"],["sexual","Sexual or inappropriate"],["violence","Violence or threats"],["misinformation","False or misleading"],["privacy","Shares private information"],["other","Something else"]];
+function reportSheet(type,id){
+  UI.rp={type,id,reason:""};
+  const what=type==="user"?"this person":type==="topic"?"this topic":"this comment";
+  openModal(`<h2 style="font-size:18px">Report ${what}</h2><p class="muted" style="margin:-4px 0 8px;font-size:14px">Reports are private. The person isn’t told who reported them.</p>
+   <div class="sheet" id="rp-list">${REASONS.map(([k,l])=>`<label class="privrow"><input type="radio" name="rp" value="${k}" data-act="rpPick"> <span>${l}</span></label>`).join("")}</div>
+   <label class="l">Add a note (optional)<textarea id="rp-note" rows="2" maxlength="300"></textarea></label><div class="hint" id="rp-err"></div>
+   <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="rpSend">Send report</button></div>`);
+}
+function blockSheet(id){
+  openModal(`<h2 style="font-size:18px">Block ${esc(nameOf(id))}?</h2><p class="muted" style="margin:0">You won’t see their topics or comments, and they can’t friend, follow or reply to you. Any friendship or follow between you ends. You can unblock anytime in Settings.</p><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn danger" data-act="blockYes" data-id="${esc(id)}">Block</button></div>`);
+}
 const placeName=slug=>PLACES.byId.get(slug)?.name;
 const homeId=()=>{ const h=S.handles.get(S.me); return h?.homeCity||UI.homeLocal?.c||UI.city||null; };
 const homePlace=()=>PLACES.byId.get(homeId())||null;
@@ -1308,6 +1325,7 @@ function vTopic(id){
       ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="bannerEdit" data-id="${id}">${t.banner?"Change banner":"Add banner"}</button>`:""}
       ${S.me&&S.me!==t.authorId&&S.tmembers.has(fKey(id,S.me))?`<button class="btn sm" data-act="leaveT" data-id="${id}">Leave topic</button>`:""}
       ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="delTopic" data-id="${id}">Delete topic</button>`:""}
+      ${S.me?`<button class="btn sm" data-act="muteT" data-id="${id}">${MUTED.has(id)?"🔕 Muted":"Mute alerts"}</button>`:""}${S.me&&S.me!==t.authorId?`<button class="btn sm" data-act="rpT" data-id="${id}">Report</button>`:""}
     </div>`}
     ${(()=>{ const ds=(IX.dByTopic.get(id)||[]).filter(d=>["voting","active","pending"].includes(duelState(d).phase)); return ds.length?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">${ds.map(d=>`<a class="bout" href="#d-${esc(d.id)}">${ICON.duel.replace("<svg",'<svg width="14" height="14"')}Debate: ${esc(nameOf(d.challengerId))} vs ${esc(nameOf(d.opponentId))} · ${duelState(d).phase==="voting"?"vote now":duelState(d).phase==="active"?"in progress":"waiting to start"}</a>`).join("")}</div>`:""; })()}
     ${cbattles.length?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">${cbattles.map(b=>`<a class="bout" href="#t-${id}~${b.commentId}">${ICON.vs.replace("<svg",'<svg width="14" height="14"')}Live battle: ${esc(b.a)} vs ${esc(b.b)} · ends in ${left(b.endsAt-Date.now())}</a>`).join("")}</div>`:""}
@@ -1375,7 +1393,7 @@ function groupNotifs(ns){
 }
 function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
-  const ns=[...S.notifs].sort((a,b)=>b.createdAt-a.createdAt);
+  const ns=notifList().sort((a,b)=>b.createdAt-a.createdAt);
   const label={reply:"replied to you",mention:"mentioned you",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request"};
   return `<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read)?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
   ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}" href="${n.duelId?"#d-"+esc(n.duelId):n.type==="joined"?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
@@ -1459,7 +1477,7 @@ function peopleBtns(id){
     : fs==="sent"?`<button class="btn sm" data-act="friendRemove" data-id="${esc(id)}">Request sent · Cancel</button>`
     : fs==="incoming"?`<button class="btn pri sm" data-act="friendAccept" data-id="${esc(id)}">Accept request</button><button class="btn sm" data-act="friendRemove" data-id="${esc(id)}">Decline</button>`
     : `<button class="btn pri sm" data-act="friendAdd" data-id="${esc(id)}">Add friend</button>`;
-  return fb+`<button class="btn sm" data-act="followU" data-id="${esc(id)}">${isFollowing(id)?"Following":"Follow"}</button>`;
+  return fb+`<button class="btn sm" data-act="followU" data-id="${esc(id)}">${isFollowing(id)?"Following":"Follow"}</button>`+(UI.profMore===id?`<button class="btn sm" data-act="rpU" data-id="${esc(id)}">Report</button><button class="btn sm danger" data-act="blkUser" data-id="${esc(id)}">Block</button>`:`<button class="btn sm" data-act="profMore" data-id="${esc(id)}" aria-label="More">⋯</button>`);
 }
 function friendsOf(id){ return [...S.friends.values()].filter(f=>f.status==="accepted"&&(f.fromId===id||f.toId===id)).map(f=>f.fromId===id?f.toId:f.fromId).filter(u=>S.handles.has(u)); }
 function vPeople(kind,id){
@@ -1504,7 +1522,7 @@ function vProfile(id){
    <a class="spk" data-act="ptab" data-v="sparks" href="javascript:void 0"><span class="sp-i">🌱</span><span><b>${branchesFrom} topic${branchesFrom===1?"":"s"} sparked</b><small>${branchesFrom?"Your comments inspired new conversations.":"When someone branches one of your comments, it counts here."}</small></span></a>
    <div class="kpis sec muted">${rec.total?`${rec.w}–${rec.l}${rec.d?"–"+rec.d:""} debates`:"0 debates"} · ${rs.length} review${rs.length===1?"":"s"} · Called it ${resolved.length?correct+"/"+resolved.length:"–"}</div>
    <div class="tabs">${tabs.map(([k,l,n])=>`<button class="${UI.ptab===k?"on":""}" data-act="ptab" data-v="${k}">${l} · ${n}</button>`).join("")}</div>${{topics:"Topics started by "+(isMe?"you":nameOf(id)),sparks:"New topics created from "+(isMe?"your":"their")+" comments"}[UI.ptab]?`<div class="muted ptabnote">${{topics:"Topics started by "+(isMe?"you":esc(nameOf(id))),sparks:"New topics created from "+(isMe?"your":"their")+" comments"}[UI.ptab]}</div>`:""}${body}
-   ${isMe?`<details class="how setd"><summary>Settings</summary><div class="muted" style="font-size:12px;margin:8px 0 4px">Location</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:14px">${homePlace()?esc((homeArea()?homeArea().name+", ":"")+homePlace().name):"Not set"}</span><button class="btn sm" data-act="plOpen" data-m="home">Change location</button></div><div class="muted" style="font-size:12px;margin:8px 0 4px">Accessibility · Text size</div><div class="seg">${[["s","Small"],["m","Medium"],["l","Large"],["x","Extra large"]].map(([k,l])=>`<button class="${curTS===k?"on":""}" data-act="textSize" data-v="${k}">${l}</button>`).join("")}</div>${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Admin (owner only)</div><p class="muted" style="margin:0 0 8px;font-size:13px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button>`:""}</details>`:""}`;
+   ${isMe?`<details class="how setd"><summary>Settings</summary>${myBlocks().length?`<div class="muted" style="font-size:12px;margin:8px 0 4px">Blocked people</div>${myBlocks().map(u=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="flex:1">${esc(nameOf(u))}</span><button class="btn sm" data-act="unblock" data-id="${esc(u)}">Unblock</button></div>`).join("")}`:""}${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Reports to review (${S.reports.size})</div>${[...S.reports.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,30).map(r=>{ const lnk=r.type==="topic"?"#t-"+r.targetId:r.type==="comment"?"#t-"+(S.comments.get(r.targetId)?.topicId||"")+"~"+r.targetId:"#u-"+r.targetId; return `<div class="panel" style="margin:6px 0;padding:10px"><div style="font-size:13px"><b>${esc(r.type)}</b> · ${esc(r.reason)} · by ${esc(nameOf(r.reporterId))}</div>${r.note?`<div class="muted" style="font-size:13px">${esc(r.note)}</div>`:""}<div class="dprow" style="margin-top:6px"><a class="btn sm" href="${esc(lnk)}">Open</a><button class="btn sm" data-act="rpDismiss" data-id="${esc(r.id)}">Dismiss</button>${r.type!=="user"?`<button class="btn sm danger" data-act="rpRemove" data-id="${esc(r.id)}">Remove content</button>`:""}</div></div>`; }).join("")}`:""}<div class="muted" style="font-size:12px;margin:8px 0 4px">Location</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:14px">${homePlace()?esc((homeArea()?homeArea().name+", ":"")+homePlace().name):"Not set"}</span><button class="btn sm" data-act="plOpen" data-m="home">Change location</button></div><div class="muted" style="font-size:12px;margin:8px 0 4px">Accessibility · Text size</div><div class="seg">${[["s","Small"],["m","Medium"],["l","Large"],["x","Extra large"]].map(([k,l])=>`<button class="${curTS===k?"on":""}" data-act="textSize" data-v="${k}">${l}</button>`).join("")}</div>${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Admin (owner only)</div><p class="muted" style="margin:0 0 8px;font-size:13px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button>`:""}</details>`:""}`;
 }
 
 /* ---------- typing ---------- */
@@ -1788,7 +1806,7 @@ function render(){
   document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="groups"&&r.startsWith("g-"))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
   document.querySelectorAll("[data-l]").forEach(el=>el.textContent=L(el.dataset.l));
   $("#langBtn").textContent=UI.lang==="ta"?"EN":"தமிழ்";
-  const unread=S.notifs.filter(n=>!n.read).length;
+  const unread=notifList().filter(n=>!n.read).length;
   for(const b of [$("#bell"),$("#bell2")]){ b.hidden=!unread; b.textContent=unread>9?"9+":unread; }
   { const ts=S.handles.get(S.me)?.textSize; if(ts&&ts!==curTS){ applyTS(ts); try{ localStorage.setItem("tt_ts",ts); }catch{} } }
   $("#meLink").innerHTML=S.me?avatar(S.me):`<span class="av" style="--h:150">?</span>`;
@@ -2449,9 +2467,27 @@ document.addEventListener("click", async e=>{
       const words=txt.split(/\s+/).filter(Boolean).length, rich_ok=words>=5&&!isEmojiOnly(txt), items=[];
       if(rich_ok){ items.push(["branch","Branch into topic ↗"],["settle","Settle it (A vs B vote)"]); if(!own) items.push(["duel","Challenge to a duel"]); }
       if(txt) items.push(["copyC","Copy text"]);
-      if(own){ items.push(["editC","Edit"],["delC","Delete"]); }
+      if(own){ items.push(["editC","Edit"],["delC","Delete"]); } else if(S.me){ items.push(["rpC","Report comment"],["blkU","Block "+nameOf(c.authorId)]); }
       openModal(`<h2 style="font-size:18px">Comment actions</h2><div class="sheet">${items.map(([a2,l])=>`<button type="button" class="btn${a2==="delC"?" danger":""}" data-act="${a2}" data-id="${esc(id)}">${l}</button>`).join("")}</div><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`);
       break; }
+    case "profMore": UI.profMore=id; schedule(); break;
+    case "rpC": closeModal(false); reportSheet("comment",id); break;
+    case "rpT": reportSheet("topic",id); break;
+    case "rpU": reportSheet("user",id); break;
+    case "blkU": { const c=S.comments.get(id); const u=c?c.authorId:id; closeModal(false); blockSheet(u); break; }
+    case "blkUser": blockSheet(id); break;
+    case "rpPick": UI.rp.reason=el.value; break;
+    case "rpSend": { if(!UI.rp?.reason){ $("#rp-err").textContent="Choose a reason."; break; } if(!(await gate())) break; el.disabled=true;
+      const {type,id:tid,reason}=UI.rp, note=($("#rp-note").value||"").trim().slice(0,300);
+      const ok=await W(()=>db.doc("reports/"+S.me+"__"+type+"__"+tid).set({reporterId:S.me,type,targetId:tid,reason,note,createdAt:Date.now(),status:"open"}));
+      if(ok){ closeModal(true); toast("Thanks. We’ll review this."); } else el.disabled=false; break; }
+    case "blockYes": { if(!(await gate())) break; el.disabled=true;
+      const ok=await W(()=>db.doc("blocks/"+S.me+"__"+id).set({blockerId:S.me,blockedId:id,createdAt:Date.now()}));
+      if(ok){ closeModal(true); toast("Blocked "+nameOf(id)); if(location.hash.startsWith("#u-")) location.hash="#home"; schedule(); } else el.disabled=false; break; }
+    case "unblock": if(await W(()=>db.doc("blocks/"+S.me+"__"+id).delete())){ toast("Unblocked"); } break;
+    case "muteT": if(MUTED.has(id)){ MUTED.delete(id); toast("Notifications on for this topic"); } else { MUTED.add(id); toast("Muted. You won’t get alerts from this topic."); } saveMuted(); schedule(); break;
+    case "rpDismiss": await W(()=>db.doc("reports/"+id).delete()); break;
+    case "rpRemove": { const r=S.reports.get(id); if(!r) break; const col=r.type==="topic"?"topics":r.type==="comment"?"comments":null; if(col){ const upd=r.type==="topic"?{deletedAt:Date.now(),deletedBy:S.me}:{text:"",deletedAt:Date.now(),media:[],mediaType:""}; await W(()=>db.doc(col+"/"+r.targetId).update(upd)); } await W(()=>db.doc("reports/"+id).delete()); toast("Removed"); break; }
     case "copyC": { const c=S.comments.get(id); closeModal(false); try{ await navigator.clipboard.writeText(c?.text||""); toast("Copied"); }catch{ toast("Couldn’t copy"); } break; }
     case "editC": { const c=S.comments.get(id); if(!c||c.authorId!==S.me) break;
       openModal(`<h2 style="font-size:18px">Edit comment</h2><textarea id="ce-text" rows="5" maxlength="3000" style="width:100%">${esc(c.text||"")}</textarea><div class="hint" id="ce-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveCE" data-id="${esc(id)}">Save</button></div>`); break; }
@@ -2585,7 +2621,7 @@ render();
   const sub=(col,map)=>db.collection(col).onSnapshot(snap=>{ map.clear(); snap.docs.forEach(d=>map.set(d.id,{id:d.id,...d.data()})); S.ready[col]=true; schedule(); }, err=>{ console.warn(col,err); });
   sub("topics",R.topics); sub("comments",R.comments); sub("reviews",R.reviews); sub("likes",S.likes); sub("follows",S.follows); sub("handles",S.handles);
   sub("battles",R.battles); sub("groups",S.groups); sub("gmembers",S.gmembers); sub("duels",R.duels); sub("media",S.media); sub("dvotes",S.dvotes); sub("bvotes",S.bvotes); sub("pvotes",S.pvotes);
-  if(S.me){ sub("friends",S.friends); sub("tmembers",S.tmembers); sub("joinreqs",S.joinreqs); } sub("ufollows",S.ufollows);
+  if(S.me){ sub("friends",S.friends); sub("tmembers",S.tmembers); sub("joinreqs",S.joinreqs); sub("blocks",S.blocks); sub("reports",S.reports); } sub("ufollows",S.ufollows);
   if(S.me) db.collection("notifs").where("to","==",S.me).onSnapshot(snap=>{ S.notifs=snap.docs.map(d=>({id:d.id,...d.data()})); schedule(); },()=>{});
   render();
 })();

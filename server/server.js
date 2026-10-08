@@ -51,7 +51,7 @@ const q = {
 };
 
 // ---------- documents in memory ----------
-const COLS = ["topics", "comments", "reviews", "likes", "follows", "handles", "battles", "bvotes", "pvotes", "groups", "gmembers", "duels", "dvotes", "media", "notifs", "friends", "ufollows", "tmembers", "joinreqs"];
+const COLS = ["topics", "comments", "reviews", "likes", "follows", "handles", "battles", "bvotes", "pvotes", "groups", "gmembers", "duels", "dvotes", "media", "notifs", "friends", "ufollows", "tmembers", "joinreqs", "reports", "blocks"];
 const DOCS = Object.fromEntries(COLS.map(c => [c, new Map()]));
 function seedIfEmpty() {
   if (q.count.get().n > 0 || !fs.existsSync(SEED_DIR)) return;
@@ -137,8 +137,13 @@ function topicVisible(t, uid) { return !t || (groupOK(t, uid) && accessOK(t, uid
 const stubOK = (t, uid) => !!t && (t.access === "request" || t.access === "invite") && groupOK(t, uid) && !accessOK(t, uid);
 const tAdmin = (t, uid) => !!uid && (isAdmin(uid) || t.authorId === uid || tRole(t.id, uid) === "admin");
 const memberCount = tid => 1 + [...DOCS.tmembers.values()].filter(m => m.topicId === tid).length;
+const blockedPair = (a, b) => !!a && !!b && (DOCS.blocks.has(`${a}__${b}`) || DOCS.blocks.has(`${b}__${a}`));
+const authorOf = (col, d) => col === "duels" ? d.challengerId : d.authorId;
 function visible(col, id, d, uid) {
+  if (uid && !isAdmin(uid) && ["topics", "comments", "reviews", "battles", "duels"].includes(col) && blockedPair(uid, authorOf(col, d))) return false;
   switch (col) {
+    case "reports": return !!uid && (d.reporterId === uid || isAdmin(uid));
+    case "blocks": return !!uid && d.blockerId === uid;
     case "topics": return topicVisible(d, uid) || stubOK(d, uid);
     case "comments": case "reviews": case "battles": case "duels": return topicVisible(DOCS.topics.get(d.topicId), uid);
     case "pvotes": return topicVisible(DOCS.topics.get(d.topicId), uid);
@@ -184,6 +189,25 @@ function mergeDeep(a, b) {
 }
 function check(op, col, id, prev, next, patch, uid) {
   const admin = isAdmin(uid);
+  if (col === "blocks") {
+    const [a, b] = id.split("__"); if (!a || !b || a === b || a !== uid) deny();
+    if (op === "delete") return;
+    if (prev || !DOCS.handles.has(b) || next.blockerId !== uid || next.blockedId !== b) bad(); return;
+  }
+  if (col === "reports") {
+    if (op === "delete" || prev) { if (admin) return; deny(); }
+    if (!uid || next.reporterId !== uid) deny();
+    if (!["topic", "comment", "user"].includes(next.type) || typeof next.targetId !== "string" || !next.targetId) bad();
+    if (id !== `${uid}__${next.type}__${next.targetId}`) bad();
+    if (!["spam", "abuse", "hate", "sexual", "violence", "misinformation", "privacy", "other"].includes(next.reason)) bad();
+    if (typeof next.note === "string" && next.note.length > 300) bad("Keep the note under 300 characters.");
+    const tgt = next.type === "topic" ? DOCS.topics.get(next.targetId) : next.type === "comment" ? DOCS.comments.get(next.targetId) : DOCS.handles.get(next.targetId);
+    if (!tgt) bad("That no longer exists.");
+    if (next.type === "user" && next.targetId === uid) deny("You can’t report yourself.");
+    return;
+  }
+  if (!admin && !prev && next && ((col === "friends" && blockedPair(next.fromId, next.toId)) || (col === "ufollows" && blockedPair(next.followerId, next.followingId)))) deny("You can’t do that.");
+  if (!admin && !prev && next && col === "comments") { const t = DOCS.topics.get(next.topicId); if (t && blockedPair(uid, t.authorId)) deny("You can’t comment here."); }
   if (op === "delete" && admin) return;
   const same = (field) => !prev || !next || prev[field] === next[field];
   switch (col) {
@@ -347,6 +371,13 @@ function afterWrite(col, id, prev, next) {
     }
     if (prev && prev.access !== next.access) reloadFor(() => true);
   }
+  if (col === "blocks") {
+    const d = next || prev;
+    if (next) for (const [c2, k] of [["friends", `${d.blockerId}__${d.blockedId}`], ["friends", `${d.blockedId}__${d.blockerId}`], ["ufollows", `${d.blockerId}__${d.blockedId}`], ["ufollows", `${d.blockedId}__${d.blockerId}`]]) {
+      const pv = DOCS[c2].get(k); if (pv) { apply(c2, k, null); broadcast(c2, k, null, pv); }
+    }
+    reloadFor(c => c.uid === d.blockerId || c.uid === d.blockedId);
+  }
   if (col === "tmembers") { const mu = id.slice(id.lastIndexOf("__") + 2); reloadFor(c => c.uid === mu); }
   if (col === "friends") { const d = next || prev; if (!prev || !next || next.status !== prev.status) reloadFor(c => c.uid === d.fromId || c.uid === d.toId); }
 }
@@ -359,6 +390,7 @@ function write(uid, { op, col, id, data }) {
   if (size > (col === "media" ? 280 * 1024 : 64 * 1024)) bad("That’s too large to save.");
   if (op !== "delete") validate(col, data);
   const prev = DOCS[col].get(id) || null;
+  if (col === "notifs" && !prev && data && blockedPair(data.from, data.to)) return;
   if (op === "update" && !prev) bad("That no longer exists.");
   if (op === "delete" && !prev) return;
   const next = op === "delete" ? null : op === "update" ? mergeDeep(prev, data) : data;
