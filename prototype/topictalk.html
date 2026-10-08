@@ -565,6 +565,60 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @media(max-width:640px){.dpair{grid-template-columns:1fr}}
 .dturn{padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);min-width:0}
 .dturn.empty{color:var(--muted);font-size:13.5px;border-style:dashed}
+/* COMPACT-MOBILE v1: denser, app-like phone layout. Delete this block (or `git checkout before-compact -- prototype/topictalk.html`) to go back. */
+@media(max-width:720px){
+html{zoom:calc(var(--tz,1.07)*.94)}
+body{font-size:14.5px;line-height:1.45}
+.wrap{padding-inline:14px}
+main{padding-block:10px 92px}
+.top .wrap{height:54px}
+.hero{padding:2px 0 14px;margin-bottom:14px;gap:10px}
+.hero h1{font-size:25px;line-height:1.12;max-width:none}
+.hero p{font-size:14px;margin-top:6px}
+.sec{margin-bottom:20px}
+.sech{margin-bottom:9px}
+.sech h2{font-size:18px}
+.sech .sub{font-size:12.5px;margin-top:0}
+.sech>a,.linkb{font-size:13.5px}
+.grid{gap:9px}.grid.g2{gap:9px}
+.tcard>a{padding:11px 12px;gap:10px}
+.tcard .body{gap:3px}
+.tcard h3{font-size:15.5px;line-height:1.28}
+.tcard .tgs{font-size:12px}
+.tcard .thumb{width:60px;height:60px;border-radius:10px}
+.meta{font-size:12px}
+.list>*{padding:10px 12px;gap:10px}
+.local{padding:10px;margin-top:10px}
+.local .sech h2{font-size:17px}
+.localfoot{margin-top:8px}
+.btn{font-size:14px}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px}
+.kpis{margin-top:12px}.kpis b{font-size:21px}
+.kpis.main{gap:24px}
+.tabs{margin:16px 0 12px}.tabs button{padding:8px 11px;font-size:14px}
+.phead h1{font-size:23px}
+.cityrow{gap:6px}
+.panel{padding:12px}
+h1{letter-spacing:-.02em}
+.modal{padding:16px}
+.bnav a,.bnav button{min-height:44px}
+.atext{font-size:15px;line-height:1.45}
+.answer{padding:12px 14px;gap:8px;margin-top:10px}
+.thead{gap:12px}.thead h1{font-size:22px!important;line-height:1.2}.thead .tile{width:46px;height:46px;font-size:15px;border-radius:12px}
+main h1[style]{font-size:24px!important}
+.battle{padding:12px;gap:9px}.battle .bq{font-size:16.5px}.battle .side .pct{font-size:24px}
+.list .txt .q{font-size:13.5px;margin-top:2px}
+.cmt{padding-top:10px}
+.hero .ctas .btn{min-height:40px!important;height:40px;font-size:14px!important}
+.hero .ctas{gap:8px!important}
+.empty{padding:16px 14px}.empty b{font-size:15.5px}
+.local .empty{font-size:13.5px}
+.tscroll{margin-inline:-14px!important;padding:0 14px 4px!important;scroll-padding-inline:14px!important;gap:9px!important}.tscroll>.tcard{flex-basis:78%!important}.tscroll .tcard .tile,.tscroll .tcard .thumb{height:52px!important;border-radius:10px!important}.tscroll .tcard>a{gap:8px!important}
+.bscroll{margin-inline:-14px!important;padding-inline:14px!important;gap:9px!important}
+.bout{margin-top:6px;font-size:12.5px;padding:5px 9px}
+.btn{height:38px;padding:0 13px}
+.btn.sm{height:30px}
+}
 </style>
 
 <header class="top">
