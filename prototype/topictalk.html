@@ -313,6 +313,12 @@ label.l{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;d
 .nlist .nrow{position:relative}.nlist .nrow:not(.unread){opacity:.82}.nlist .nrow.unread{background:var(--brand-soft)}.nlist .nrow.unread .txt>div:first-child{font-weight:500}
 .ndot{position:absolute;left:5px;top:50%;width:7px;height:7px;margin-top:-3.5px;border-radius:50%;background:var(--brand)}
 .vp{cursor:pointer;display:inline-flex;align-items:center}
+.linkb{background:none;border:0;padding:4px 0;color:var(--brand-deep);font-weight:700;font-size:14px;cursor:pointer}
+.localfoot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px}.localfoot a{color:var(--brand-deep);font-weight:700;font-size:14px}
+.viewing{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-deep);margin-top:6px}
+.plres{max-height:46vh;overflow:auto;margin:10px -4px 0}.plh{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:6px 4px}
+.plrow{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:10px 8px;min-height:52px;border:0;background:none;border-radius:10px;cursor:pointer;color:var(--ink)}
+.plrow:hover,.plrow:active{background:var(--brand-soft)}.plrow b{display:block}.plrow small{color:var(--muted)}
 .phead h1{font-size:30px}
 .kpis{display:flex;flex-wrap:wrap;gap:22px;margin-top:18px}
 .kpis div{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
@@ -607,7 +613,7 @@ const R = { topics:new Map(), comments:new Map(), reviews:new Map(), battles:new
 const pcache = {};
 const $ = s => document.querySelector(s);
 const view = $("#view");
-try{ UI.city=localStorage.getItem("tt-city"); UI.lang=localStorage.getItem("tt-lang")||"en"; }catch{}
+try{ UI.homeLocal=JSON.parse(localStorage.getItem("tt-home")||"null"); UI.city=localStorage.getItem("tt-city"); UI.lang=localStorage.getItem("tt-lang")||"en"; }catch{}
 
 /* ---------- language ---------- */
 const TA = {
@@ -658,7 +664,56 @@ function rich(text){
 const tagsIn = t => [...String(t).matchAll(TAGRE)].map(m=>m[2].toLowerCase());
 const mentionsIn = t => [...String(t).matchAll(/(?:^|[\s(])@([A-Za-z0-9_]{2,24})/g)].map(m=>handleToId(m[1])).filter(Boolean);
 function parseTags(s){ return [...new Set(String(s).split(/[\s,#]+/u).map(x=>x.trim().toLowerCase()).filter(x=>/^[\p{L}\p{M}\p{N}_]{2,40}$/u.test(x)))].slice(0,8); }
-const slugCity = s => String(s||"").toLowerCase().trim().replace(/[^\p{L}\p{M}\p{N}]+/gu,"-").replace(/^-|-$/g,"");
+const PLACE_DATA="Tamil Nadu|Chennai|Anna Nagar,T. Nagar,Velachery,Tambaram,Adyar,Mylapore,Porur,Guindy,Kodambakkam,Perambur,Ambattur,Avadi;Arakkonam|Nemili,Sholinghur;Vellore|Katpadi,Sathuvachari,Gandhi Nagar,Bagayam;Kanchipuram|;Ranipet|Walajapet;Walajapet|;Tiruvallur|;Chengalpattu|Maraimalai Nagar;Sriperumbudur|;Tiruvannamalai|;Coimbatore|RS Puram,Gandhipuram,Peelamedu,Saibaba Colony;Madurai|Anna Nagar Madurai,Thirunagar;Tiruchirappalli|Srirangam,Thillai Nagar;Salem|;Tirunelveli|Palayamkottai;Erode|;Tiruppur|;Thanjavur|;Hosur|;Dindigul|;Karur|;Namakkal|;Cuddalore|;Nagercoil|;Kanyakumari|;Thoothukudi|;Krishnagiri|;Dharmapuri|;Pudukkottai|;Villupuram|~Puducherry|Puducherry|;~Karnataka|Bengaluru|Koramangala,Indiranagar,Whitefield,Jayanagar,HSR Layout;Mysuru|~Andhra Pradesh|Tirupati|;Visakhapatnam|;Vijayawada|~Telangana|Hyderabad|Gachibowli,Madhapur,Banjara Hills,Secunderabad~Kerala|Kochi|Edappally;Thiruvananthapuram|;Kozhikode|~Maharashtra|Mumbai|Andheri,Bandra,Powai;Pune|Kothrud,Hinjewadi~Delhi|Delhi|Connaught Place,Dwarka~West Bengal|Kolkata|~Goa|Goa|~Gujarat|Ahmedabad|~Rajasthan|Jaipur|";
+const PLACES=(()=>{ const byId=new Map(), list=[], al=new Map(); const sl=x=>String(x||"").toLowerCase().trim().replace(/[^\p{L}\p{M}\p{N}]+/gu,"-").replace(/^-|-$/g,"");
+  const ALIAS={arakonam:"arakkonam",arakkonam:"arakkonam",madras:"chennai",bangalore:"bengaluru",bombay:"mumbai",trichy:"tiruchirappalli",tiruchirapalli:"tiruchirappalli",trichirappalli:"tiruchirappalli",tirupur:"tiruppur",kovai:"coimbatore",pondicherry:"puducherry",pondy:"puducherry",vizag:"visakhapatnam",cochin:"kochi",trivandrum:"thiruvananthapuram",calicut:"kozhikode",mysore:"mysuru",tuticorin:"thoothukudi",tirunelvelli:"tirunelveli",thiruvallur:"tiruvallur",kancheepuram:"kanchipuram",kanchi:"kanchipuram","new-delhi":"delhi"};
+  for(const stBlock of PLACE_DATA.split("~")){ const parts=stBlock.split(";"); let state; parts.forEach((blk,i)=>{ let [head,locs]=blk.split("|"); if(i===0&&head.includes("|")===false&&blk.split("|").length===3){} 
+    if(i===0){ const x=blk.split("|"); state=x[0]; head=x[1]; locs=x[2]; }
+    if(!head) return; const id=sl(head); const c={id,name:head,state,type:"city",loc:[]}; byId.set(id,c); list.push(c);
+    (locs||"").split(",").filter(Boolean).forEach(l=>{ const lid=id+"--"+sl(l); const o={id:lid,name:l,state,type:"area",city:id,cityName:head}; byId.set(lid,o); list.push(o); c.loc.push(o); }); }); }
+  list.forEach(pl=>al.set(sl(pl.name),pl.id)); for(const k in ALIAS) if(byId.has(ALIAS[k])) al.set(sl(k),ALIAS[k]);
+  const label=pl=>pl.type==="area"?pl.name+", "+pl.cityName:pl.name;
+  list.forEach(pl=>{ pl.label=label(pl); });
+  const find=str=>{ const raw=String(str||"").trim(); if(!raw) return null; const k=sl(raw); if(al.has(k)&&byId.get(al.get(k)).type==="city") return byId.get(al.get(k)); const m=raw.split(/\s*,\s*/); if(m.length>1){ const c=al.get(sl(m[m.length-1])); const a=c&&byId.get(c+"--"+sl(m[0])); if(a) return a; if(c) return byId.get(c); } if(al.has(k)) return byId.get(al.get(k)); return null; };
+  return {byId,list,find,sl}; })();
+const placeOf=str=>PLACES.find(str);
+const slugCity = s => { const p=placeOf(s); return p?(p.type==="area"?p.city:p.id):PLACES.sl(s); };
+const inPlace=(t,pl)=>{ const q=placeOf(t.location); if(!q) return false; return pl.type==="area"?q.id===pl.id:(q.id===pl.id||q.city===pl.id); };
+const placeName=slug=>PLACES.byId.get(slug)?.name;
+const homeId=()=>{ const h=S.handles.get(S.me); return h?.homeCity||UI.homeLocal?.c||UI.city||null; };
+const homePlace=()=>PLACES.byId.get(homeId())||null;
+const homeArea=()=>{ const h=S.handles.get(S.me); const a=h?.homeArea??UI.homeLocal?.a; return a&&PLACES.byId.get(a)||null; };
+const stateOf=pl=>pl?(pl.state||PLACES.byId.get(pl.city)?.state||""):"";
+const normLoc=v=>{ v=String(v||"").trim(); const pl=placeOf(v); return (pl?pl.label:v).slice(0,60); };
+async function saveHome(cityId,areaId){
+  UI.homeLocal={c:cityId,a:areaId||""}; try{ localStorage.setItem("tt-home",JSON.stringify(UI.homeLocal)); localStorage.setItem("tt-city",cityId); }catch{} UI.city=cityId;
+  const h=S.handles.get(S.me); if(h&&db){ h.homeCity=cityId; h.homeArea=areaId||""; try{ await db.doc("handles/"+S.me).update({homeCity:cityId,homeArea:areaId||""}); }catch{} }
+}
+function placeSheet(mode){
+  UI.plMode=mode; const first=mode==="first";
+  openModal(`<h2>${first?"📍 Where are you based?":mode==="home"?"Change my area":"Explore another area"}</h2>
+    <p class="muted" style="margin:-4px 0 10px;font-size:14px">${first?"Choose your city to personalize your TopicTalk feed. You can explore any other area anytime.":mode==="home"?"This personalizes your local feed. It never shows exactly where you are.":"Browse what’s happening anywhere. Your own area stays the same."}</p>
+    <input class="f" id="pl-q" autocomplete="off" placeholder="Search city, town or locality" aria-label="Search places">
+    <div id="pl-res" class="plres"></div>
+    <div class="acts">${first?`<button class="btn" data-act="plLater">Choose later</button>`:`<button class="btn" data-act="closeModal">Cancel</button>`}</div>`);
+  plRender("");
+}
+function plRender(q){
+  const box=$("#pl-res"); if(!box) return; q=q.trim().toLowerCase(); const mode=UI.plMode;
+  const row=pl=>`<button class="plrow" data-act="plPick" data-id="${esc(pl.id)}"><span>📍</span><span><b>${esc(pl.name)}</b><small>${pl.type==="area"?esc(pl.cityName)+", "+esc(pl.state):esc(pl.state)}</small></span></button>`;
+  if(!q){ const pop=["chennai","vellore","arakkonam","kanchipuram","coimbatore","madurai","bengaluru","hyderabad"].map(i=>PLACES.byId.get(i)).filter(Boolean);
+    box.innerHTML=`<div class="plh">Popular places</div>${pop.map(row).join("")}`; return; }
+  const wp=x=>x.toLowerCase().split(/[\s.]+/).some(w=>w.startsWith(q))||x.toLowerCase().startsWith(q); const hits=PLACES.list.filter(pl=>wp(pl.name)||(pl.type==="area"&&wp(pl.cityName))).sort((a,b)=>(a.name.toLowerCase().startsWith(q)?0:1)-(b.name.toLowerCase().startsWith(q)?0:1)||(a.type==="city"?0:1)-(b.type==="city"?0:1)).slice(0,24);
+  box.innerHTML=hits.length?hits.map(row).join(""):`<div class="muted" style="padding:14px 4px">No match yet. Try the nearest big town.</div>`;
+}
+function maybeAskHome(){
+  if(UI.homeAsked||!S.me||!S.ready.handles||!handleOf(S.me)||$("#modal").innerHTML) return;
+  UI.homeAsked=true; const h=S.handles.get(S.me);
+  if(!h.homeCity&&UI.homeLocal?.c&&db){ db.doc("handles/"+S.me).update({homeCity:UI.homeLocal.c,homeArea:UI.homeLocal.a||""}).catch(()=>{}); h.homeCity=UI.homeLocal.c; h.homeArea=UI.homeLocal.a||""; return; }
+  if(homeId()) return; let skip=0; try{ skip=+localStorage.getItem("tt-loc-skip")||0; }catch{}
+  if(Date.now()-skip<7*864e5) return; placeSheet("first");
+}
+
 const stars = n => "★★★★★".slice(0,Math.round(n)) + "☆☆☆☆☆".slice(0,5-Math.round(n));
 const TS_Z={s:.94,m:1.07,l:1.2,x:1.33}; let curTS="";
 function applyTS(v){ if(!TS_Z[v]) v="m"; curTS=v; document.documentElement.style.setProperty("--tz",TS_Z[v]); }
@@ -736,7 +791,7 @@ const stat = id => IX.stats.get(id) || {reviews:0,avg:0,comments:0,branches:0,fo
 const byTrend = () => LIVE().sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id));
 function rootOf(t){ const seen=new Set(); while(t.parentId && S.topics.get(t.parentId) && !seen.has(t.id)){ seen.add(t.id); t=S.topics.get(t.parentId); } return t; }
 function descCount(id, seen=new Set()){ if(seen.has(id)) return 0; seen.add(id); return (IX.tKids.get(id)||[]).reduce((a,k)=>a+1+descCount(k.id,seen),0); }
-function cities(){ const m=new Map(); for(const t of LIVE()){ if(!t.location) continue; const s=slugCity(t.location); if(!m.has(s)) m.set(s,{slug:s,name:t.location,n:0,score:0}); const c=m.get(s); c.n++; c.score+=IX.trend.get(t.id); } return [...m.values()].sort((a,b)=>b.score-a.score); }
+function cities(){ const m=new Map(); for(const t of LIVE()){ if(!t.location) continue; const s=slugCity(t.location); if(!m.has(s)) m.set(s,{slug:s,name:placeName(s)||t.location,n:0,score:0}); const c=m.get(s); c.n++; c.score+=IX.trend.get(t.id); } return [...m.values()].sort((a,b)=>b.score-a.score); }
 
 const LOCK='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="vertical-align:-1px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const isAdmin = gid => !!S.me && (S.gmembers.get(gid+"__"+S.me)?.role==="admin");
@@ -886,9 +941,9 @@ function vHome(){
   const newest2=LIVE().sort((a,b)=>b.createdAt-a.createdAt);
   const live=[...S.battles.values()].filter(b=>b.endsAt>now).sort((a,b)=>{ const x=IX.bv.get(a.id),y=IX.bv.get(b.id); return (y.a+y.b)-(x.a+x.b); }).slice(0,3);
   const preds=LIVE().filter(t=>t.kind==="prediction").sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id)).slice(0,3);
-  const cs=cities().slice(0,10);
-  const cur=UI.city&&cs.find(c=>c.slug===UI.city);
-  const cityTopics=cur?byTrend().filter(t=>slugCity(t.location)===cur.slug).slice(0,3):[];
+  const hp=homePlace(), ha=homeArea();
+  const cur=hp?{slug:hp.id,name:hp.name}:null;
+  const cityTopics=hp?byTrend().filter(t=>inPlace(t,hp)).slice(0,3):[];
   const shown=new Set(cityTopics.map(t=>t.id));
   let trList=tr.filter(t=>!shown.has(t.id)).slice(0,6); if(trList.length<3) trList=tr.slice(0,6);
   trList.forEach(t=>shown.add(t.id));
@@ -897,9 +952,10 @@ function vHome(){
   let newList=newest2.filter(t=>!shown.has(t.id)).slice(0,5); if(newList.length<3) newList=newest2.slice(0,5);
   const bod=branchOfDay(), bodC=bod&&S.comments.get(bod.originCommentId), bodP=bod&&S.topics.get(bod.parentId);
   return heroHTML() + `
-  ${cs.length?`<section class="sec"><div class="sech"><h2>${L("Your city")}</h2>${cur?"":`<span class="muted" style="font-size:13px">Pick one to see local debates</span>`}</div>
-    <div class="cityrow">${cs.map(c=>`<button class="citychip ${UI.city===c.slug?"on":""}" data-act="pickCity" data-v="${esc(c.slug)}"><b>${esc(c.name)}</b><span>${c.n} topic${c.n>1?"s":""}</span></button>`).join("")}</div>
-    ${cityTopics.length?`<div class="local"><div class="sech"><div><h2>📍 Around ${esc(cur.name)}</h2><div class="sub">What’s being discussed locally</div></div><a href="#city-${enc(cur.slug)}">${L("See all")} →</a></div><div class="grid g2">${cityTopics.map(t=>topicCard(t)).join("")}</div></div>`:""}</section>`:""}
+  <section class="sec"><div class="sech"><div><h2>📍 ${L("Your area")}${hp?` · ${esc(ha?ha.name+", ":"")}${esc(hp.name)}`:""}</h2>${hp?`<div class="sub">What’s happening around you</div>`:""}</div>${hp?`<button class="linkb" data-act="plOpen" data-m="home">Change</button>`:""}</div>
+    ${hp?(cityTopics.length?`<div class="local"><div class="grid g2">${cityTopics.map(t=>topicCard(t)).join("")}</div><div class="localfoot"><a href="#city-${enc(hp.id)}">${L("See all")} ${esc(hp.name)} →</a><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`
+      :`<div class="local"><div class="empty" style="background:var(--surface)"><b>No local discussions yet.</b>Be the first to start one.<div style="margin-top:12px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button></div></div><div class="localfoot"><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`)
+     :`<div class="local"><div class="empty" style="background:var(--surface)"><b>Add your city to personalize local discussions.</b>See what people around you are talking about.<div style="margin-top:12px"><button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button></div></div><div class="localfoot"><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`}</section>
   ${S.myGroups.size?`<section class="sec"><div class="sech"><h2>Your groups</h2><a href="#groups">All groups</a></div><div class="grid">${[...S.myGroups].map(id=>S.groups.get(id)).filter(Boolean).map(groupCard).join("")}</div></section>`:""}
   ${(()=>{ const ds=[...S.duels.values()].filter(d=>duelState(d).phase==="voting"&&!IX.myDV.has(d.id)&&d.challengerId!==S.me&&d.opponentId!==S.me).slice(0,2); return ds.length?`<section class="sec">${SH(L("Debates to judge"),"",`<a href="#explore" data-act="exGo" data-v="duels">${L("See all")} →</a>`)}<div class="grid b">${ds.map(duelMini).join("")}</div></section>`:""; })()}
   ${live.length?`<section class="sec">${SH("🔥 "+L("Live battles"),"Quick debates. Real opinions.",`<a href="#explore" data-act="exGo" data-v="battles">${L("See all")} →</a>`)}<div class="grid b bscroll">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
@@ -1038,14 +1094,22 @@ function vGroup(gid){
    </aside></div>`;
 }
 function vCity(slug){
-  const ts=byTrend().filter(t=>slugCity(t.location)===slug);
-  const name=ts[0]?.location||slug;
+  const pl=PLACES.byId.get(slug)||PLACES.byId.get(slugCity(slug)); const hp=homePlace();
+  const ts=pl?byTrend().filter(t=>inPlace(t,pl)):byTrend().filter(t=>slugCity(t.location)===slug);
+  const name=pl?.label||ts[0]?.location||slug, isHome=!!(pl&&hp&&pl.id===hp.id);
   const bs=[...S.battles.values()].filter(b=>ts.some(t=>t.id===b.topicId)&&b.endsAt>Date.now());
-  return `<div class="meta" style="font-size:13px">City</div><h1 style="font-size:36px;font-weight:800">${esc(name)}</h1>
-   <p class="muted">${ts.length} topic${ts.length===1?"":"s"} · ${L("Tamil, Tanglish or English. All welcome.")}</p>
-   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(name)}">Start a ${esc(name)} topic</button><button class="btn sm" data-act="newBattle" data-loc="${esc(name)}">Start a ${esc(name)} battle</button>${UI.city!==slug?`<button class="btn sm" data-act="pickCity" data-v="${esc(slug)}">Make this my city</button>`:""}</div>
-   ${bs.length?`<section class="sec"><div class="sech"><h2>${L("Live battles")}</h2></div><div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
-   ${ts.length?`<div class="grid">${ts.map(t=>topicCard(t)).join("")}</div>`:emptyBox("Nothing here yet","Be the first to start a local debate.")}`;
+  const fresh=[...ts].sort((a,b)=>b.createdAt-a.createdAt);
+  const top=ts.slice(0,6), seen=new Set(top.map(t=>t.id)), more=fresh.filter(t=>!seen.has(t.id)).slice(0,6);
+  const areas=pl&&pl.type==="city"?pl.loc:[];
+  return `${hp&&!isHome?`<a class="pback" href="#home">← Back to ${esc(hp.name)}</a>`:`<a class="pback" href="#home">← Home</a>`}
+   <div class="viewing">${isHome?"🏠 Your area":"📍 Viewing"}</div><h1 style="font-size:34px;font-weight:800;margin-top:2px">${esc(name)}</h1>
+   <p class="muted">${pl?esc(stateOf(pl))+" · ":""}${ts.length} topic${ts.length===1?"":"s"} · ${L("Tamil, Tanglish or English. All welcome.")}</p>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(name)}">Start a topic here</button><button class="btn sm" data-act="newBattle" data-loc="${esc(name)}">Start a battle</button><button class="btn sm" data-act="plOpen" data-m="explore">Explore another area</button>${pl&&!isHome?`<button class="btn sm" data-act="makeHome" data-id="${esc(pl.type==="area"?pl.city:pl.id)}" data-area="${pl.type==="area"?esc(pl.id):""}">Make this my area</button>`:""}</div>
+   ${areas.length?`<div class="cityrow" style="margin-bottom:18px">${areas.map(a=>`<a class="citychip" href="#city-${enc(a.id)}"><b>${esc(a.name)}</b></a>`).join("")}</div>`:""}
+   ${bs.length?`<section class="sec"><div class="sech"><h2>🔥 ${L("Live battles")}</h2></div><div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
+   ${top.length?`<section class="sec"><div class="sech"><h2>📈 Trending here</h2></div><div class="grid">${top.map(t=>topicCard(t)).join("")}</div></section>`:""}
+   ${more.length?`<section class="sec"><div class="sech"><h2>🆕 New topics</h2></div><div class="grid">${more.map(t=>topicCard(t)).join("")}</div></section>`:""}
+   ${ts.length?"":`<div class="empty"><b>No discussions here yet.</b>Be the first to start one.<div style="margin-top:12px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(name)}">Start a topic</button></div></div>`}`;
 }
 
 function vTag(tag){
@@ -1405,7 +1469,7 @@ function vProfile(id){
   if(UI.ptab==="comments") body=cs.length?`<div class="list">${cs.slice(0,40).map(c=>{const t=S.topics.get(c.topicId);return t?`<a href="#t-${t.id}~${c.id}"><div class="txt"><div class="meta">in ${esc(t.title)} · ${ago(c.createdAt)} · ${likes(c)} likes</div><div class="q">${esc(c.text)}</div></div></a>`:""}).join("")}</div>`:emptyBox("No comments yet","");
   return `<div class="phead">${avatar(id,"lg")}<div style="min-width:0"><h1>${esc(nameOf(id))}${isSeed(id)?' <span class="sample">sample account</span>':""}</h1>
      <div style="margin-top:2px">${idTag(id)}${isMe?` <button class="act" data-act="copyId" data-id="${ttCode(id)}" title="Share it so friends can search for you">Copy</button> `:""}</div>
-     ${h?.bio?`<p style="margin:4px 0 0">${esc(h.bio)}</p>`:""}<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="lvl">${lvl[1]}</span>${isMe?`<button class="btn sm" data-act="editHandle">Edit profile</button>`:peopleBtns(id)}</div>
+     ${h?.bio?`<p style="margin:4px 0 0">${esc(h.bio)}</p>`:""}${(()=>{ const hc=PLACES.byId.get(h?.homeCity||(isMe?UI.homeLocal?.c:"")), ha2=PLACES.byId.get(h?.homeArea||(isMe?UI.homeLocal?.a:"")); return hc?`<div class="muted" style="font-size:13px;margin-top:4px">📍 Based in ${esc(ha2?ha2.name+", ":"")}${esc(hc.name)}${hc.state?", "+esc(hc.state):""}</div>`:""; })()}<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="lvl">${lvl[1]}</span>${isMe?`<button class="btn sm" data-act="editHandle">Edit profile</button>`:peopleBtns(id)}</div>
      <div class="muted" style="font-size:13px;margin-top:8px"><a class="cnt" href="#ppl-followers-${esc(id)}"><b>${followerN(id)}</b> followers</a> · <a class="cnt" href="#ppl-following-${esc(id)}"><b>${followingN(id)}</b> following</a> · <a class="cnt" href="#ppl-friends-${esc(id)}"><b>${friendsOf(id).length}</b> ${friendsOf(id).length===1?"friend":"friends"}</a></div>
      ${isMe&&incomingReqs().length?`<div class="panel" style="margin-top:10px"><h3 style="margin:0 0 6px">Friend requests</h3>${incomingReqs().map(f=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 0">${avatar(f.fromId,"xs")}<a href="#u-${esc(f.fromId)}" style="font-weight:600;flex:1">${esc(nameOf(f.fromId))}</a><button class="btn pri sm" data-act="friendAccept" data-id="${esc(f.fromId)}">Accept</button><button class="btn sm" data-act="friendRemove" data-id="${esc(f.fromId)}">Decline</button></div>`).join("")}</div>`:""}</div></div>
    <div class="kpis main"><div><b>${rep}</b>Reputation</div><div><b>${ts.length}</b>Topics</div><div><b>${cs.length}</b>Comments</div></div>
@@ -1413,7 +1477,7 @@ function vProfile(id){
    <a class="spk" data-act="ptab" data-v="sparks" href="javascript:void 0"><span class="sp-i">🌱</span><span><b>${branchesFrom} topic${branchesFrom===1?"":"s"} sparked</b><small>${branchesFrom?"Your comments inspired new conversations.":"When someone branches one of your comments, it counts here."}</small></span></a>
    <div class="kpis sec muted">${rec.total?`${rec.w}–${rec.l}${rec.d?"–"+rec.d:""} debates`:"0 debates"} · ${rs.length} review${rs.length===1?"":"s"} · Called it ${resolved.length?correct+"/"+resolved.length:"–"}</div>
    <div class="tabs">${tabs.map(([k,l,n])=>`<button class="${UI.ptab===k?"on":""}" data-act="ptab" data-v="${k}">${l} · ${n}</button>`).join("")}</div>${{topics:"Topics started by "+(isMe?"you":nameOf(id)),sparks:"New topics created from "+(isMe?"your":"their")+" comments"}[UI.ptab]?`<div class="muted ptabnote">${{topics:"Topics started by "+(isMe?"you":esc(nameOf(id))),sparks:"New topics created from "+(isMe?"your":"their")+" comments"}[UI.ptab]}</div>`:""}${body}
-   ${isMe?`<details class="how setd"><summary>Settings</summary><div class="muted" style="font-size:12px;margin:8px 0 4px">Accessibility · Text size</div><div class="seg">${[["s","Small"],["m","Medium"],["l","Large"],["x","Extra large"]].map(([k,l])=>`<button class="${curTS===k?"on":""}" data-act="textSize" data-v="${k}">${l}</button>`).join("")}</div>${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Admin (owner only)</div><p class="muted" style="margin:0 0 8px;font-size:13px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button>`:""}</details>`:""}`;
+   ${isMe?`<details class="how setd"><summary>Settings</summary><div class="muted" style="font-size:12px;margin:8px 0 4px">Location</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:14px">${homePlace()?esc((homeArea()?homeArea().name+", ":"")+homePlace().name):"Not set"}</span><button class="btn sm" data-act="plOpen" data-m="home">Change location</button></div><div class="muted" style="font-size:12px;margin:8px 0 4px">Accessibility · Text size</div><div class="seg">${[["s","Small"],["m","Medium"],["l","Large"],["x","Extra large"]].map(([k,l])=>`<button class="${curTS===k?"on":""}" data-act="textSize" data-v="${k}">${l}</button>`).join("")}</div>${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Admin (owner only)</div><p class="muted" style="margin:0 0 8px;font-size:13px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button>`:""}</details>`:""}`;
 }
 
 /* ---------- typing ---------- */
@@ -1626,7 +1690,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{
+document.addEventListener("input",e=>{ if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   if(ta.tagName==="TEXTAREA"&&ta.dataset.tt){ syncRich(ta); if(ta.classList.contains("rt-in")) acUpdate(ta);
@@ -1689,7 +1753,7 @@ function render(){
   view.innerHTML=html;
   for(const id in keep){ const el=document.getElementById(id); if(el) el.value=keep[id]; }
   enhance(view);
-  markSeen();
+  markSeen(); maybeAskHome();
   if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
   if(changed){ UI.lastRoute=r;
     const el=focusC&&document.getElementById("c-"+focusC);
@@ -1982,7 +2046,7 @@ function topicModal(o={}){
     <label class="l">${o.kind==="question"?"Your question":"Title"}<input class="f" id="n-title" maxlength="120" placeholder="${b?"e.g. iPhone 17 Pro Max vs Samsung S26 Ultra camera":o.kind==="question"?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"}" value="${esc(o.title||"")}"></label>
     <label class="l">Description (optional)<textarea id="n-desc" rows="3" placeholder="Give people some context. ${L("Tamil, Tanglish or English. All welcome.")}">${esc(o.desc||"")}</textarea></label>
     <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
-      <label class="l">City or place (optional)<input class="f" id="n-loc" maxlength="60" placeholder="e.g. Chennai" value="${esc(o.loc||bt?.location||"")}"></label></div>
+      <label class="l">Location (optional)<input class="f" id="n-loc" maxlength="60" list="pl-list" placeholder="e.g. ${esc(homePlace()?.name||"Chennai")}" value="${esc(o.loc||bt?.location||"")}"><span class="hint" style="margin:0"><button type="button" class="linkb" data-act="plOpen" data-m="content">Choose a place</button>${homePlace()?` · <button type="button" class="linkb" data-act="useHomeLoc">Use my area (${esc(homePlace().name)})</button>`:""} · only if it’s about a place</span><datalist id="pl-list">${PLACES.list.map(x=>`<option value="${esc(x.label)}">`).join("")}</datalist></label></div>
     <label class="l">Hashtags<input class="f" id="n-tags" placeholder="iphone17 camera smartphones" value="${esc(tags)}"></label>
     <div class="l">Tag friends (optional)<div class="tagbox" id="n-tagged"></div><input class="f" id="n-tagin" autocomplete="off" maxlength="30" placeholder="Type a friend’s name, their ID, or a group name"><div class="tagsug" id="n-tagsug" hidden></div><span class="hint" style="margin:0">Tag friends or a whole group you belong to. They get a notification and are shown on the topic. Up to 10 friends.</span></div>
     ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
@@ -2093,6 +2157,14 @@ document.addEventListener("click", async e=>{
     case "exSort": UI.exSort=el.dataset.v; schedule(); break;
     case "exGo": UI.exSort=el.dataset.v; break;
     case "exCat": UI.exCat=el.dataset.v; schedule(); break;
+    case "plOpen": placeSheet(el.dataset.m||"explore"); break;
+    case "plLater": try{ localStorage.setItem("tt-loc-skip",String(Date.now())); }catch{} closeModal(); break;
+    case "plPick": { const pl=PLACES.byId.get(el.dataset.id); if(!pl) break; const m=UI.plMode; closeModal();
+      if(m==="explore"){ location.hash="#city-"+pl.id; break; }
+      if(m==="content"){ const i=$("#n-loc")||$("#bt-loc"); if(i) i.value=pl.label; break; }
+      await saveHome(pl.type==="area"?pl.city:pl.id,pl.type==="area"?pl.id:""); toast("Your area is "+pl.label); schedule(); break; }
+    case "makeHome": await saveHome(el.dataset.id,el.dataset.area); toast("Your area updated"); schedule(); break;
+    case "useHomeLoc": { const hp=homePlace(), ha=homeArea(), i=$("#n-loc")||$("#bt-loc"); if(i&&hp) i.value=(ha||hp).label; break; }
     case "unfAsk": UI.unf=el.dataset.id; schedule(); break;
     case "unfNo": UI.unf=null; schedule(); break;
     case "unfYes": { const u=el.dataset.id; UI.unf=null; for(const k of [fKey(S.me,u),fKey(u,S.me)]) if(S.friends.has(k)) await W(()=>db.doc("friends/"+k).delete()); toast("Friend removed"); schedule(); break; }
@@ -2149,7 +2221,7 @@ document.addEventListener("click", async e=>{
       el.disabled=true;
       if(!c){
         tid=rid("t");
-        const t={title:q.slice(0,120),desc:"",category:$("#bt-cat").value,kind:"battle",tags:parseTags($("#bt-tags").value),location:$("#bt-loc").value.trim().slice(0,60),authorId:S.me,parentId:null,originCommentId:null,createdAt:now,groupId:$("#bt-group")?.value||null};
+        const t={title:q.slice(0,120),desc:"",category:$("#bt-cat").value,kind:"battle",tags:parseTags($("#bt-tags").value),location:normLoc($("#bt-loc").value),authorId:S.me,parentId:null,originCommentId:null,createdAt:now,groupId:$("#bt-group")?.value||null};
         if(!(await W(()=>db.doc("topics/"+tid).set(t)))){ el.disabled=false; break; }
         ensureFollow(tid); notifyGroup(t.groupId,tid,t.title);
       }
@@ -2311,7 +2383,7 @@ document.addEventListener("click", async e=>{
       if(!(await gate())) break;
       const bf=el.dataset.branch, oc=bf&&S.comments.get(bf);
       const desc=$("#n-desc").value.trim().slice(0,2000);
-      const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:$("#n-loc").value.trim().slice(0,60),authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
+      const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:normLoc($("#n-loc").value),authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
         groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null)};
       let acc=$("#n-acc")?.value||"open"; if(acc==="selected") acc="invite";
       if(acc!=="open"&&t.groupId){ err.textContent="Choose a group or a privacy level, not both."; break; }
@@ -2336,7 +2408,7 @@ document.addEventListener("click", async e=>{
       if(!db||!S.me){ err.textContent="Sign in to claude.ai first."; break; }
       el.disabled=true;
       const prev=S.handles.get(S.me);
-      const av=UI.dp===undefined?(prev?.avatar||""):UI.dp; const doc={handle:h,bio:$("#h-bio").value.trim().slice(0,140),createdAt:prev?.createdAt||Date.now()}; if(av) doc.avatar=av;
+      const av=UI.dp===undefined?(prev?.avatar||""):UI.dp; const doc={handle:h,bio:$("#h-bio").value.trim().slice(0,140),createdAt:prev?.createdAt||Date.now()}; { const hc=prev?.homeCity||UI.homeLocal?.c; if(hc){ doc.homeCity=hc; doc.homeArea=prev?.homeArea??UI.homeLocal?.a??""; } } if(av) doc.avatar=av;
       if(await W(()=>db.doc("handles/"+S.me).set(doc))){ S.handles.set(S.me,{...prev,...doc}); closeModal(true); toast("Saved"); schedule(); }
       else { el.disabled=false; }
       break; }
