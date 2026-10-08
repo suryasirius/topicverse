@@ -92,7 +92,7 @@ main{padding-block:22px 110px}
 .sech a{color:var(--brand-deep);font-weight:600;font-size:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px}
-@media(max-width:880px){.cols{grid-template-columns:1fr}}
+@media(max-width:880px){.cols{grid-template-columns:minmax(0,1fr)}.cols>*{min-width:0}}
 
 .tcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);transition:border-color .15s,transform .15s}
 .tcard:hover{border-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
@@ -387,6 +387,40 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
   .bscroll>.battle{flex:0 0 86%;scroll-snap-align:start}
 }
 
+
+/* ---- phone-native home (rounds 2-3) ---- */
+@media(max-width:720px){
+  .sec{margin-bottom:30px}
+  .hero{border-bottom:0;margin-bottom:8px}
+  .hero .ctas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .hero .ctas .btn{min-height:48px;font-size:15px;padding-inline:8px}
+  .citychip{min-width:0;padding:9px 16px;flex-direction:row;align-items:baseline;gap:8px;white-space:nowrap}
+  .citychip span{font-size:12px}
+  .cityrow{gap:8px;padding-bottom:2px}
+  .tscroll{display:flex!important;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;gap:12px;margin-inline:-16px;padding:0 16px 6px;scrollbar-width:none}
+  .tscroll::-webkit-scrollbar{display:none}
+  .tscroll>.tcard{flex:0 0 82%;scroll-snap-align:start}
+  .tscroll .tcard>a{flex-direction:column;gap:10px}
+  .tscroll .tcard .tile,.tscroll .tcard .thumb{width:100%;height:84px;border-radius:12px}
+  .tcard .tgs{display:none}
+  .tscroll .tcard .tgs{display:block}
+  .feed{background:transparent;border:0;border-radius:0}
+  .feed>*{padding:14px 0}
+  .feed>*:first-child{border-top:1px solid var(--line)}
+  .feed .q{-webkit-line-clamp:2}
+  .feed.compact>*{padding:11px 0;align-items:center}
+  .feed.compact .meta{margin-top:2px}
+  .list .hd{font-size:16px}
+  .side{min-height:76px;padding:14px}
+  .battle .bfoot .act{font-size:0;gap:0;padding:8px;min-width:44px;min-height:44px;justify-content:center}
+  .battle .bfoot .act svg{width:20px;height:20px}
+  .pop .chip:nth-child(n+11){display:none}
+  .pop .chip{padding:5px 11px}
+  .bnav{padding-top:4px}
+  .bnav a,.bnav button{min-height:48px;justify-content:center}
+  .bnav .plus{width:48px;height:32px;border-radius:14px;box-shadow:0 3px 10px color-mix(in srgb,var(--brand) 40%,transparent);margin-top:-8px}
+  .bnav .plus svg{width:20px;height:20px}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* v2: battles, predictions, analysis, cities, share cards */
@@ -822,12 +856,12 @@ function vHome(){
   <div class="cols">
     <div>
       <section class="sec">${SH(L("Trending now"),"What people are talking about.",`<a href="#explore">${L("See all")} →</a>`)}
-        <div class="grid g2">${tr.slice(0,6).map((t,i)=>topicCard(t,i)).join("")}</div></section>
+        <div class="grid g2 tscroll">${tr.slice(0,6).map((t,i)=>topicCard(t,i)).join("")}</div></section>
       <section class="sec">${SH(L("Hot discussions"),"Conversations happening right now.")}
-        <div class="list">${hotRows()||`<div class="muted">No comments yet.</div>`}</div></section>
+        <div class="list feed">${hotRows()||`<div class="muted">No comments yet.</div>`}</div></section>
       ${preds.length?`<section class="sec">${SH(L("Predictions"),"Call it before it happens.",`<a href="#explore" data-act="exGo" data-v="predictions">${L("See all")} →</a>`)}<div class="grid" style="grid-template-columns:1fr">${preds.map(t=>`<div><a href="#t-${t.id}" style="display:block;font-family:var(--f-display);font-weight:700;font-size:17px;margin-bottom:8px">${esc(t.title)}</a>${predCard(t)}</div>`).join("")}</div></section>`:""}
       <section class="sec">${SH(L("New topics"),"Fresh conversations to join.")}
-        <div class="list">${newest.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>by ${esc(nameOf(t.authorId))}</span><span>${ago(t.createdAt)}</span></div></div></a>`).join("")}</div></section>
+        <div class="list feed compact">${newest.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>by ${esc(nameOf(t.authorId))}</span><span>${ago(t.createdAt)}</span></div></div></a>`).join("")}</div></section>
     </div>
     <div>
       ${bod&&bodC&&bodP?`<section class="sec">${SH("🌱 "+L("Branch of the day"),"A comment that became its own conversation.")}<a class="botd" href="#t-${bod.id}">
@@ -837,7 +871,7 @@ function vHome(){
         <div class="stats"><span>${stat(bod.id).comments} comments</span>${stat(bod.id).branches?`<span>${stat(bod.id).branches} more branches</span>`:""}<span>${ago(bod.createdAt)}</span></div>
         <span class="go">Explore branch →</span></a></section>`:""}
       ${bigTree?`<section class="sec">${SH(L("How a topic branches"),"")}<div class="panel"><p class="muted" style="margin:0 0 10px;font-size:13.5px">One conversation about <b style="color:var(--ink)">${esc(bigTree.title)}</b> grew into ${descCount(bigTree.id)} new topics.</p><ul class="tree">${treeHTML(bigTree.id,null)}</ul></div></section>`:""}
-      <section class="sec">${SH(L("Popular hashtags"),"")}<div class="tagrow">${topTags.map(([x])=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")||'<span class="muted">None yet</span>'}</div></section>
+      <section class="sec">${SH(L("Popular hashtags"),"")}<div class="tagrow pop">${topTags.map(([x])=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")||'<span class="muted">None yet</span>'}</div></section>
     </div>
   </div>`;
 }
