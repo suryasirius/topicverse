@@ -649,7 +649,6 @@ main h1[style]{font-size:24px!important}
 <nav class="bnav" id="bnav">
   <a href="#home" data-r="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span data-l="Home">Home</span></a>
   <a href="#explore" data-r="explore"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg><span data-l="Explore">Explore</span></a>
-  <a href="#groups" data-r="groups"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9.5" r="2.5"/><path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M15 15.3c2.6-.5 5 .8 6 3.7"/></svg><span data-l="Groups">Groups</span></a>
   <button data-act="create" aria-label="Create"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></span><span data-l="Create">Create</span></button>
   <a href="#alerts" data-r="alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="dot" id="bell2" hidden></span><span data-l="Alerts">Alerts</span></a>
   <a href="#me" data-r="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><span data-l="Profile">Profile</span></a>
@@ -1061,7 +1060,7 @@ function vHome(){
 function vExplore(){
   const cats = ["All",...new Set(LIVE().map(t=>t.category))];
   const tabs=[["trending","Trending"],["latest","Latest"],["battles","Battles"],["duels","Debates"],["predictions","Predictions"],["discussed","Most discussed"],["reviewed","Most reviewed"],["branched","Most branched"],["questions","Questions"]];
-  const head=`<h1 style="font-size:32px;font-weight:800">${L("Explore")}</h1>
+  const head=`<div class="sech" style="margin-bottom:6px"><h1 style="font-size:32px;font-weight:800;margin:0">${L("Explore")}</h1><a class="btn sm" href="#groups">${L("Groups")}</a></div>
   <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button class="${UI.exSort===k?"on":""}" data-act="exSort" data-v="${k}">${l}</button>`).join("")}</div>
   <div class="tagrow catrow" style="margin-bottom:18px">${cats.map(c=>`<button class="chip ${UI.exCat===c?"on":""}" data-act="exCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
   const catOk=t=>UI.exCat==="All"||t?.category===UI.exCat;
@@ -1859,7 +1858,7 @@ function render(){
   if(changed){ UI.lastRoute=r;
     const el=focusC&&document.getElementById("c-"+focusC);
     if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); } else window.scrollTo(0,0); }
-  document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="groups"&&r.startsWith("g-"))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
+  document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="explore"&&(r==="groups"||r.startsWith("g-")))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
   document.querySelectorAll("[data-l]").forEach(el=>el.textContent=L(el.dataset.l));
   $("#langBtn").textContent=UI.lang==="ta"?"EN":"தமிழ்";
   const unread=notifList().filter(n=>!n.read).length;
