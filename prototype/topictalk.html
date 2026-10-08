@@ -320,6 +320,8 @@ label.l{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;d
 .plrow{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:10px 8px;min-height:52px;border:0;background:none;border-radius:10px;cursor:pointer;color:var(--ink)}
 .plrow:hover,.plrow:active{background:var(--brand-soft)}.plrow b{display:block}.plrow small{color:var(--muted)}
 .interp{margin:6px 0 4px;font-size:14px}.interp a{color:var(--brand-deep);font-weight:600}
+.locnote{font-size:13px;color:var(--muted);margin-top:8px}.locnote b{color:var(--ink)}
+.locsug{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--brand) 30%,var(--line));background:var(--brand-soft);border-radius:12px;font-size:14px}.locsug small{color:var(--muted)}.locsug span:last-child{display:flex;align-items:center;gap:6px;flex:none}
 .phead h1{font-size:30px}
 .kpis{display:flex;flex-wrap:wrap;gap:22px;margin-top:18px}
 .kpis div{font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
@@ -878,7 +880,7 @@ function topicCard(t, rank){
   return `<article class="tcard"><a href="#t-${t.id}">
     ${t.banner?`<img class="thumb" src="${esc(t.banner)}" alt="" loading="lazy">`:`<div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>`}
     <div class="body">
-      <div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
+      <div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
       <h3>${esc(t.title)}</h3>
       <div class="stats">${s.reviews?`<span class="rating">★ ${s.avg.toFixed(1)}</span><span>${s.reviews} review${s.reviews>1?"s":""}</span>`:""}<span>${s.comments} comment${s.comments===1?"":"s"}</span>${s.branches?`<span>${s.branches} branch${s.branches>1?"es":""}</span>`:""}${extra}</div>
       ${tags.length?`<div class="tgs">${tags.map(x=>`#${esc(x)}`).join(" ")}</div>`:""}
@@ -1735,7 +1737,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{ if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
+document.addEventListener("input",e=>{ if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   if(ta.tagName==="TEXTAREA"&&ta.dataset.tt){ syncRich(ta); if(ta.classList.contains("rt-in")) acUpdate(ta);
@@ -2084,14 +2086,14 @@ function topicModal(o={}){
   const b=o.branchFrom&&S.comments.get(o.branchFrom), bt=b&&S.topics.get(b.topicId);
   const cat=o.category||(bt?bt.category:"Tech");
   const tags=o.tags||(bt?(bt.tags||[]).slice(0,3).join(" "):"");
-  UI.newKind=o.kind||"topic"; UI.tagged=[]; UI.taggedG=[]; UI.bn="";
+  UI.newKind=o.kind||"topic"; UI.locMode=(o.loc||bt?.location)?"place":null; UI.locVal=o.loc||bt?.location||""; UI.locDis=new Set(); UI.tagged=[]; UI.taggedG=[]; UI.bn="";
   openModal(`<h2>${b?"Turn this comment into a new topic":o.kind==="question"?"Ask the community":"Start a topic"}</h2>
     ${b?`<div class="origin" style="margin:0">From ${esc(nameOf(b.authorId))} in <b>${esc(bt?.title||"")}</b>: <q>${esc(b.text.slice(0,200))}</q></div>`:""}
     ${b?"":`<div><div class="seg" role="tablist"><button class="${UI.newKind==="topic"?"on":""}" data-act="kind" data-v="topic">Topic</button><button class="${UI.newKind==="question"?"on":""}" data-act="kind" data-v="question">Question</button></div></div>`}
     <label class="l">${o.kind==="question"?"Your question":"Title"}<input class="f" id="n-title" maxlength="120" placeholder="${b?"e.g. iPhone 17 Pro Max vs Samsung S26 Ultra camera":o.kind==="question"?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"}" value="${esc(o.title||"")}"></label>
     <label class="l">Description (optional)<textarea id="n-desc" rows="3" placeholder="Give people some context. ${L("Tamil, Tanglish or English. All welcome.")}">${esc(o.desc||"")}</textarea></label>
     <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
-      <label class="l">Location (optional)<input class="f" id="n-loc" maxlength="60" list="pl-list" placeholder="e.g. ${esc(homePlace()?.name||"Chennai")}" value="${esc(o.loc||bt?.location||"")}"><span class="hint" style="margin:0"><button type="button" class="linkb" data-act="plOpen" data-m="content">Choose a place</button>${homePlace()?` · <button type="button" class="linkb" data-act="useHomeLoc">Use my area (${esc(homePlace().name)})</button>`:""} · only if it’s about a place</span><datalist id="pl-list">${PLACES.list.map(x=>`<option value="${esc(x.label)}">`).join("")}</datalist></label></div>
+      <div class="l">Where is this relevant?<div class="seg" id="n-locseg"></div><div id="n-locbox"></div></div></div>
     <label class="l">Hashtags<input class="f" id="n-tags" placeholder="iphone17 camera smartphones" value="${esc(tags)}"></label>
     <div class="l">Tag friends (optional)<div class="tagbox" id="n-tagged"></div><input class="f" id="n-tagin" autocomplete="off" maxlength="30" placeholder="Type a friend’s name, their ID, or a group name"><div class="tagsug" id="n-tagsug" hidden></div><span class="hint" style="margin:0">Tag friends or a whole group you belong to. They get a notification and are shown on the topic. Up to 10 friends.</span></div>
     ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
@@ -2099,6 +2101,25 @@ function topicModal(o={}){
     <div class="l">Banner picture (optional)<div class="dprow"><span id="n-bn" style="flex:1;min-width:0"></span><label class="btn sm" style="cursor:pointer">Choose picture<input type="file" id="n-bfile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="btn sm" data-act="bnRemove">Remove</button></div></div>
     <div class="hint" id="n-err"></div>
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">${b?"Create branch topic":"Create"}</button></div>`);
+  locRender();
+}
+function locRender(){
+  const seg=$("#n-locseg"), box=$("#n-locbox"); if(!seg||!box) return; const m=UI.locMode, hp=homePlace();
+  seg.innerHTML=`<button type="button" class="${m==="place"?"on":""}" data-act="locMode" data-v="place">📍 A place</button><button type="button" class="${m==="all"?"on":""}" data-act="locMode" data-v="all">🌎 Everywhere</button>`;
+  if(m==="all"){ box.innerHTML=`<div class="locnote">Visible to everyone. It won’t appear in any local feed.</div>`; return; }
+  if(m==="place"){ const pl=placeOf(UI.locVal);
+    box.innerHTML=`<input class="f" id="n-loc" maxlength="60" list="pl-list" autocomplete="off" placeholder="Type a city or area, e.g. ${esc(hp?.name||"Chennai")}" value="${esc(UI.locVal)}"><div class="locnote">${pl?`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`:"Choose a place from the list."}${hp?` <button type="button" class="linkb" data-act="useHomeLoc">Use my area (${esc(hp.name)})</button>`:""}</div><datalist id="pl-list">${PLACES.list.map(x=>`<option value="${esc(x.label)}">`).join("")}</datalist>`; return; }
+  box.innerHTML=`<div class="locnote">Pick one. If you skip this, the topic is treated as Everywhere.</div><div id="n-locsug"></div>`; locSuggest();
+}
+function titlePlace(t){
+  const toks=t.toLowerCase().split(/[^\p{L}\p{M}\p{N}.]+/u).filter(Boolean);
+  for(let n=3;n>=1;n--) for(let i=0;i+n<=toks.length;i++){ const ph=toks.slice(i,i+n).join(" "); if(STOP.has(ph)||ph.length<4) continue; const pl=placeOf(ph); if(pl) return pl; }
+  return null;
+}
+function locSuggest(){
+  const box=$("#n-locsug"); if(!box) return; if(UI.locMode){ box.innerHTML=""; return; }
+  const pl=titlePlace(($("#n-title")?.value||"")); if(!pl||UI.locDis.has(pl.id)){ box.innerHTML=""; return; }
+  box.innerHTML=`<div class="locsug"><span>📍 <b>${esc(pl.name)}${pl.type==="area"?", "+esc(pl.cityName):""}, ${esc(stateOf(pl))}</b><br><small>Use this location?</small></span><span><button type="button" class="btn pri sm" data-act="locUse" data-id="${esc(pl.id)}">Use this location</button><button type="button" class="linkb" data-act="locNo" data-id="${esc(pl.id)}" aria-label="Dismiss">✕</button></span></div>`;
 }
 function tagRender(){
   const box=$("#n-tagged"); if(!box) return;
@@ -2204,6 +2225,9 @@ document.addEventListener("click", async e=>{
     case "exCat": UI.exCat=el.dataset.v; schedule(); break;
     case "searchAnywhere": { const pq=parseQ(UI.query); UI.query=pq.words.join(" ")||UI.query; if(typeof q!=="undefined"&&q) q.value=UI.query; schedule(); break; }
     case "suggest": { UI.query=el.dataset.q; if(typeof q!=="undefined"&&q) q.value=UI.query; dd.hidden=true; location.hash="#search"; schedule(); break; }
+    case "locMode": { const prev=$("#n-loc"); if(prev) UI.locVal=prev.value; UI.locMode=UI.locMode===el.dataset.v?null:el.dataset.v; locRender(); break; }
+    case "locUse": { const pl=PLACES.byId.get(el.dataset.id); if(pl){ UI.locMode="place"; UI.locVal=pl.label; locRender(); } break; }
+    case "locNo": UI.locDis.add(el.dataset.id); locSuggest(); break;
     case "plOpen": placeSheet(el.dataset.m||"explore"); break;
     case "plLater": try{ localStorage.setItem("tt-loc-skip",String(Date.now())); }catch{} closeModal(); break;
     case "plPick": { const pl=PLACES.byId.get(el.dataset.id); if(!pl) break; const m=UI.plMode; closeModal();
@@ -2211,7 +2235,7 @@ document.addEventListener("click", async e=>{
       if(m==="content"){ const i=$("#n-loc")||$("#bt-loc"); if(i) i.value=pl.label; break; }
       await saveHome(pl.type==="area"?pl.city:pl.id,pl.type==="area"?pl.id:""); toast("Your area is "+pl.label); schedule(); break; }
     case "makeHome": await saveHome(el.dataset.id,el.dataset.area); toast("Your area updated"); schedule(); break;
-    case "useHomeLoc": { const hp=homePlace(), ha=homeArea(), i=$("#n-loc")||$("#bt-loc"); if(i&&hp) i.value=(ha||hp).label; break; }
+    case "useHomeLoc": { const hp=homePlace(), ha=homeArea(); if(hp&&$("#n-locbox")){ UI.locMode="place"; UI.locVal=(ha||hp).label; locRender(); } else if(hp&&$("#bt-loc")) $("#bt-loc").value=(ha||hp).label; break; }
     case "unfAsk": UI.unf=el.dataset.id; schedule(); break;
     case "unfNo": UI.unf=null; schedule(); break;
     case "unfYes": { const u=el.dataset.id; UI.unf=null; for(const k of [fKey(S.me,u),fKey(u,S.me)]) if(S.friends.has(k)) await W(()=>db.doc("friends/"+k).delete()); toast("Friend removed"); schedule(); break; }
@@ -2424,13 +2448,14 @@ document.addEventListener("click", async e=>{
     case "tagDrop": UI.tagged=UI.tagged.filter(x=>x!==el.dataset.id); tagRender(); break;
     case "saveTopic": {
       const title=$("#n-title").value.trim(), err=$("#n-err");
+      let loc=""; if(UI.locMode==="place"){ const pl=placeOf($("#n-loc")?.value||UI.locVal); if(!pl){ err.textContent="Choose a place from the list, or pick Everywhere."; break; } loc=pl.label; }
       if(title.length<3){ err.textContent="Give it a title of at least 3 characters."; break; }
       const dupe=[...S.topics.values()].find(t=>t.title.toLowerCase()===title.toLowerCase());
       if(dupe){ err.innerHTML=`That topic already exists: <a href="#t-${dupe.id}" style="color:var(--brand-deep);font-weight:600" data-act="closeModal">open it</a>.`; break; }
       if(!(await gate())) break;
       const bf=el.dataset.branch, oc=bf&&S.comments.get(bf);
       const desc=$("#n-desc").value.trim().slice(0,2000);
-      const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:normLoc($("#n-loc").value),authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
+      const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:loc,authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
         groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null)};
       let acc=$("#n-acc")?.value||"open"; if(acc==="selected") acc="invite";
       if(acc!=="open"&&t.groupId){ err.textContent="Choose a group or a privacy level, not both."; break; }
