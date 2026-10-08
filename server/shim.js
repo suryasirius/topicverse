@@ -139,17 +139,23 @@
         <label id="tt-unw">Username<input id="tt-user" autocomplete="username" maxlength="24" spellcheck="false" autocapitalize="off"></label>
         <label id="tt-pww">Password<input id="tt-pass" type="password" autocomplete="current-password" maxlength="200"></label>
         <div class="err" id="tt-err" role="alert"></div>
+        <p id="tt-forgot" hidden><button type="button" class="switch" data-tt="forgot">Forgot password?</button></p>
         <div class="row"><button type="button" class="btn" data-tt="close">Cancel</button><button type="submit" class="btn pri" id="tt-go">Log in</button></div>
         <p id="tt-alt">New here? <button type="button" class="switch" data-tt="swap">Create an account</button></p>
       </form>`;
       document.body.append(box);
-      box.addEventListener("click", e => { if (e.target === box || e.target.closest("[data-tt=close]")) box.hidden = true; if (e.target.closest("[data-tt=swap]")) setMode(box.dataset.mode === "login" ? "signup" : "login"); });
+      box.addEventListener("click", e => { if (e.target === box || e.target.closest("[data-tt=close]")) box.hidden = true; if (e.target.closest("[data-tt=swap]")) setMode(box.dataset.mode === "login" ? "signup" : "login"); if (e.target.closest("[data-tt=forgot]")) setMode("reset"); if (e.target.closest("[data-tt=back]")) setMode("login"); });
       box.querySelector("form").addEventListener("submit", async e => {
         e.preventDefault();
         const err = box.querySelector("#tt-err"), go = box.querySelector("#tt-go");
         err.textContent = ""; go.disabled = true;
         try {
           const g = id => box.querySelector(id).value.trim();
+          if (box.dataset.mode === "reset") {
+            if (box.dataset.step !== "code") { await api("/api/reset/code", { email: g("#tt-email") }); setStep("code"); go.disabled = false; return; }
+            await api("/api/reset", { email: g("#tt-email"), code: g("#tt-code"), password: box.querySelector("#tt-pass").value });
+            location.reload(); return;
+          }
           if (box.dataset.mode === "signup" && EMAIL_ON && box.dataset.step !== "code") {
             await api("/api/signup/code", { email: g("#tt-email") });
             setStep("code"); go.disabled = false; return;
@@ -163,27 +169,30 @@
       document.addEventListener("keydown", e => { if (e.key === "Escape" && box && !box.hidden) box.hidden = true; });
     }
     setMode(mode || "login"); box.hidden = false;
-    setTimeout(() => box.querySelector(EMAIL_ON && box.dataset.mode === "signup" ? "#tt-email" : "#tt-user").focus(), 30);
+    setTimeout(() => box.querySelector(EMAIL_ON && box.dataset.mode !== "login" ? "#tt-email" : "#tt-user").focus(), 30);
   }
   let EMAIL_ON = false;
   fetch("/api/config").then(r => r.json()).then(j => { EMAIL_ON = !!j.emailSignup; if (box && !box.hidden) setMode(box.dataset.mode); }).catch(() => { });
   function setStep(st) {
-    box.dataset.step = st; const s = box.dataset.mode === "signup" && EMAIL_ON, code = s && st === "code";
+    box.dataset.step = st; const m = box.dataset.mode, rs = m === "reset", s = (m === "signup" && EMAIL_ON) || rs, code = s && st === "code";
     const q = id => box.querySelector(id);
     q("#tt-emw").hidden = !s || code; q("#tt-cdw").hidden = !code;
-    q("#tt-unw").hidden = s && !code; q("#tt-pww").hidden = s && !code;
-    q("#tt-go").textContent = box.dataset.mode !== "signup" ? "Log in" : !s ? "Create account" : code ? "Create account" : "Send code";
-    if (s) q("#tt-sub").textContent = code ? "We emailed a 6-digit code to " + q("#tt-email").value.trim() + ". It works for 10 minutes. Then pick a username and password (8+ characters)." : "Enter your email and we’ll send you a code to confirm it.";
+    q("#tt-unw").hidden = rs || (s && !code); q("#tt-pww").hidden = s && !code;
+    q("#tt-go").textContent = rs ? (code ? "Reset password" : "Send code") : m !== "signup" ? "Log in" : !s ? "Create account" : code ? "Create account" : "Send code";
+    q("#tt-pass").autocomplete = (m === "signup" || rs) ? "new-password" : "current-password";
+    q("#tt-pww").firstChild.textContent = rs ? "New password (8+ characters)" : "Password";
+    if (rs) q("#tt-sub").textContent = code ? "We emailed a 6-digit code to " + q("#tt-email").value.trim() + " if it has an account. It works for 10 minutes. Enter it with a new password." : "Enter the email you signed up with and we’ll send you a code.";
+    else if (s) q("#tt-sub").textContent = code ? "We emailed a 6-digit code to " + q("#tt-email").value.trim() + ". It works for 10 minutes. Then pick a username and password (8+ characters)." : "Enter your email and we’ll send you a code to confirm it.";
+    q("#tt-forgot").hidden = !(m === "login" && EMAIL_ON);
     if (code) setTimeout(() => q("#tt-code").focus(), 30);
   }
   function setMode(m) {
-    box.dataset.mode = m; const s = m === "signup";
-    box.querySelector("#tt-title").textContent = s ? "Create your account" : "Log in";
+    box.dataset.mode = m; const s = m === "signup", rs = m === "reset";
+    box.querySelector("#tt-title").textContent = rs ? "Reset your password" : s ? "Create your account" : "Log in";
     box.querySelector("#tt-sub").textContent = s ? "Pick a username people will see on your posts. Passwords need 8 or more characters." : "Welcome back to TopicTalk.";
     box.querySelector("#tt-user").placeholder = s ? "" : (EMAIL_ON ? "Username or email" : "");
     box.querySelector("#tt-user").maxLength = s ? 24 : 120;
-    box.querySelector("#tt-pass").autocomplete = s ? "new-password" : "current-password";
-    box.querySelector("#tt-alt").innerHTML = s ? `Have an account? <button type="button" class="switch" data-tt="swap">Log in</button>` : `New here? <button type="button" class="switch" data-tt="swap">Create an account</button>`;
+    box.querySelector("#tt-alt").innerHTML = rs ? `Remembered it? <button type="button" class="switch" data-tt="back">Log in</button>` : s ? `Have an account? <button type="button" class="switch" data-tt="swap">Log in</button>` : `New here? <button type="button" class="switch" data-tt="swap">Create an account</button>`;
     box.querySelector("#tt-err").textContent = "";
     setStep("email");
   }

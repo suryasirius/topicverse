@@ -43,6 +43,8 @@ const q = {
   addSession: sql.prepare("INSERT INTO sessions (token, uid, created) VALUES (?, ?, ?)"),
   session: sql.prepare("SELECT uid, created FROM sessions WHERE token = ?"),
   dropSession: sql.prepare("DELETE FROM sessions WHERE token = ?"),
+  setPw: sql.prepare("UPDATE users SET salt = ?, hash = ? WHERE id = ?"),
+  dropUserSessions: sql.prepare("DELETE FROM sessions WHERE uid = ?"),
   oldSessions: sql.prepare("DELETE FROM sessions WHERE created < ?"),
   getMeta: sql.prepare("SELECT v FROM meta WHERE k = ?"),
   setMeta: sql.prepare("INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v"),
@@ -480,6 +482,39 @@ const server = http.createServer(async (req, res) => {
       broadcast("handles", id, DOCS.handles.get(id), null);
       setSession(res, id);
       return json(res, 200, { me: meFor(id) });
+    }
+    if (p === "/api/reset/code") {
+      if (!mail.enabled()) return json(res, 400, { error: { code: "bad_request", message: "Password reset needs email, which isn’t switched on for this site." } });
+      const email = normEmail(body.email);
+      if (!email) return json(res, 400, { error: { code: "bad_request", message: "Enter a valid email address." } });
+      if (limited("rcode-ip:" + ip, 10, 36e5) || limited("rcode:" + email, 5, 36e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many codes requested. Try again in an hour." } });
+      const prev = CODES.get("reset:" + email);
+      if (prev && Date.now() - prev.sent < 45e3) return json(res, 429, { error: { code: "resource_exhausted", message: "A code was just sent. Wait a few seconds before asking again." } });
+      // same answer whether or not the email has an account, so nobody can probe who is registered
+      if (q.userByEmail.get(email)) {
+        const code = String(crypto.randomInt(0, 1e6)).padStart(6, "0");
+        CODES.set("reset:" + email, { hash: codeHash("reset:" + email, code), exp: Date.now() + 10 * 6e4, tries: 0, sent: Date.now() });
+        try { await mail.send(String(body.email).trim(), "Your TopicTalk password reset code: " + code, `Your TopicTalk password reset code is ${code}\n\nIt works for 10 minutes. If you didn’t ask for it, ignore this email. Your password has not changed.`); }
+        catch (e) { CODES.delete("reset:" + email); console.error("mail:", e.message); return json(res, 502, { error: { code: "unavailable", message: "Couldn’t send the email. Try again in a moment." } }); }
+      }
+      return json(res, 200, { ok: true });
+    }
+    if (p === "/api/reset") {
+      if (limited("reset:" + ip, 10, 36e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many tries. Try again later." } });
+      const email = normEmail(body.email), password = String(body.password || ""), given = String(body.code || "").replace(/\D/g, "");
+      if (!email) return json(res, 400, { error: { code: "bad_request", message: "Enter a valid email address." } });
+      if (password.length < 8) return json(res, 400, { error: { code: "bad_request", message: "Use a password of at least 8 characters." } });
+      const key = "reset:" + email, c = CODES.get(key), u = q.userByEmail.get(email);
+      if (!c || c.exp < Date.now() || !u) return json(res, 400, { error: { code: "bad_request", message: "That code has expired. Ask for a new one." } });
+      if (++c.tries > 5) { CODES.delete(key); return json(res, 429, { error: { code: "resource_exhausted", message: "Too many wrong codes. Ask for a new one." } }); }
+      const a = Buffer.from(codeHash(key, given), "hex"), b = Buffer.from(c.hash, "hex");
+      if (!crypto.timingSafeEqual(a, b)) return json(res, 400, { error: { code: "bad_request", message: "That code isn’t right. Check your email and try again." } });
+      CODES.delete(key);
+      const salt = crypto.randomBytes(16).toString("hex");
+      q.setPw.run(salt, hashPw(password, salt), u.id);
+      q.dropUserSessions.run(u.id);   // log out every other device
+      setSession(res, u.id);
+      return json(res, 200, { me: meFor(u.id) });
     }
     if (p === "/api/login") {
       if (limited("login:" + ip, 12, 6e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many tries. Wait 10 minutes and try again." } });
