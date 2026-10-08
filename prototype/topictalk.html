@@ -423,14 +423,24 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 }
 
 .how>summary{list-style:none;cursor:pointer}.how>summary::-webkit-details-marker{display:none}
-.how>summary .sech{margin-bottom:10px}
-.how>summary h2::after{content:"";display:inline-block;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-left:10px;vertical-align:4px;transition:transform .15s}
-.how[open]>summary h2::after{transform:rotate(-135deg);vertical-align:-2px}
 .morep{display:none}
 @media(max-width:720px){
   .preds>div:nth-child(n+2){display:none}
   .morep{display:block;margin-top:12px;text-align:right;color:var(--brand-deep);font-weight:700;font-size:15px}
 }
+
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:13.5px}
+.flow span{padding:7px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.flow span.g{background:var(--brand-soft);border-color:var(--brand);color:var(--brand-deep)}
+.flow i{font-style:normal;color:var(--muted)}
+.how{margin-top:12px}
+.how>summary{color:var(--brand-deep);font-weight:700;font-size:14.5px;margin-bottom:8px}
+.how>summary::after{content:"";display:inline-block;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-left:8px;vertical-align:3px}
+.how[open]>summary::after{transform:rotate(-135deg);vertical-align:-2px}
+.citychip.on{border-width:2px;background:var(--brand-soft)}
+.citychip.on b::before{content:"✓ ";color:var(--brand)}
+.botd .bn{border-left-color:color-mix(in srgb,var(--brand) 45%,var(--line))}
+.botd .bn.n1::after,.botd .bn.n2::after{content:"↓";position:absolute;left:-8px;bottom:1px;width:14px;text-align:center;color:var(--brand);background:var(--surface);font-size:13px;font-weight:700;line-height:14px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* v2: battles, predictions, analysis, cities, share cards */
@@ -880,7 +890,9 @@ function vHome(){
         <div class="bn n3"><span class="lb">🌱 Became a topic</span><b>${esc(bod.title)}</b></div>
         <div class="stats"><span>${stat(bod.id).comments} comments</span>${stat(bod.id).branches?`<span>${stat(bod.id).branches} more branches</span>`:""}<span>${ago(bod.createdAt)}</span></div>
         <span class="go">Explore branch →</span></a></section>`:""}
-      ${bigTree?`<section class="sec"><details class="how" ${innerWidth>720?"open":""}><summary>${SH(L("How a topic branches"),"")}</summary><div class="panel"><p class="muted" style="margin:0 0 10px;font-size:13.5px">One conversation about <b style="color:var(--ink)">${esc(bigTree.title)}</b> grew into ${descCount(bigTree.id)} new topics.</p><ul class="tree">${treeHTML(bigTree.id,null)}</ul></div></details></section>`:""}
+      <section class="sec">${SH(L("How a topic branches"),"")}
+        <div class="flow"><span><b>Topic</b></span><i>→</i><span><b>Comment</b></span><i>→</i><span class="g"><b>New topic</b></span><i>→</i><span><b>Discussion</b></span></div>
+        ${bigTree?`<details class="how" ${innerWidth>720?"open":""}><summary>See a real example</summary><div class="panel"><p class="muted" style="margin:0 0 10px;font-size:13.5px">One conversation about <b style="color:var(--ink)">${esc(bigTree.title)}</b> grew into ${descCount(bigTree.id)} new topics.</p><ul class="tree">${treeHTML(bigTree.id,null)}</ul></div></details>`:""}</section>
       <section class="sec">${SH(L("Popular hashtags"),"")}<div class="tagrow pop">${topTags.map(([x])=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")||'<span class="muted">None yet</span>'}</div></section>
     </div>
   </div>`;
