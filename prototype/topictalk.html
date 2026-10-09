@@ -567,6 +567,45 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .dturn{padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);min-width:0}
 .dturn.empty{color:var(--muted);font-size:13.5px;border-style:dashed}
 @media(min-width:721px){.gbtn{display:none!important}}
+/* BATTLE-CARD v2: compact live battle card (VS badge, split bar, momentum line) */
+.battle.bc2{padding:14px;gap:11px;border-radius:16px}
+.bc2 .bc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
+.bc2 .bc-state{display:flex;align-items:center;gap:7px;min-width:0}
+.bc2 .bc-dot{width:7px;height:7px;border-radius:50%;background:var(--brand);flex:none;animation:bcpulse 1.8s infinite}
+@keyframes bcpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--brand) 50%,transparent)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.bc2 .bc-live,.bc2 .bc-end{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--brand-deep)}
+.bc2 .bc-end{color:var(--muted)}
+.bc2 .bc-where{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bc2 .bc-time{display:flex;align-items:center;gap:5px;font-weight:700;color:var(--ink);flex:none;font-variant-numeric:tabular-nums}
+.bc2 .bc-time svg{color:var(--muted)}
+.bc2 .bc-q{font-family:var(--f-display);font-size:18px;font-weight:800;line-height:1.25;letter-spacing:-.01em;color:var(--ink);margin:0;display:block}
+.bc2 .bc-sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative}
+.bc2 .bc-side{min-height:0;padding:12px;gap:10px;border-radius:12px;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
+.bc2 .bc-side:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 18px -10px rgba(21,32,26,.35)}
+.bc2 .bc-side.mine{background:var(--brand-soft);border-color:var(--brand)}
+.bc2 .bc-side.win{border-color:var(--brand)}
+.bc2 .bc-row{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0}
+.bc2 .bc-row:last-child{align-items:baseline;flex-wrap:wrap;row-gap:4px}
+.bc2 .bc-name{font-size:13.5px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.bc2 .bc-side.mine .bc-row svg{color:var(--brand);flex:none}
+.bc2 .bc-pct{font-family:var(--f-display);font-size:24px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.bc2 .bc-tag2{font-size:10px;font-weight:800;letter-spacing:.05em;color:var(--muted);white-space:nowrap}
+.bc2 .bc-tag2.on{color:var(--brand-deep)}
+.bc2 .bc-vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:3px solid var(--surface);pointer-events:none;animation:bcclash 2.4s ease-in-out infinite}
+@keyframes bcclash{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.1)}}
+.bc2 .bc-meter{position:relative;height:18px;display:flex;align-items:center}
+.bc2 .bc-track{display:flex;width:100%;height:6px;border-radius:999px;overflow:hidden;background:var(--line);gap:2px}
+.bc2 .bc-track i{display:block;height:100%;min-width:4px;border-radius:999px;background:var(--line);filter:brightness(.92);transition:width .6s cubic-bezier(.2,.9,.2,1)}
+.bc2 .bc-track i.g{background:var(--brand);filter:none}
+.bc2 .bc-knob{position:absolute;top:0;width:18px;height:18px;box-sizing:border-box;border-radius:50%;background:var(--surface);border:2px solid var(--brand);box-shadow:0 1px 4px rgba(21,32,26,.2);transition:left .6s cubic-bezier(.2,.9,.2,1)}
+.bc2 .bc-mom{font-size:12.5px;font-weight:600;color:var(--muted)}
+.bc2 .bc-foot{padding-top:10px;border-top:1px solid var(--line);flex-wrap:nowrap}
+.bc2 .bc-by{display:flex;align-items:center;gap:8px;min-width:0;font-size:12px;color:var(--muted)}
+.bc2 .bc-by span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bc2 .bc-acts{display:flex;gap:2px;flex:none;align-items:center}
+.bc2 .bc-btn,.bc2 .bc-acts .act{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 8px;border-radius:999px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700}
+.bc2 .bc-btn:hover,.bc2 .bc-acts .act:hover{background:var(--bg)}
+@media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
 /* COMPACT-MOBILE v1: denser, app-like phone layout. Delete this block (or `git checkout before-compact -- prototype/topictalk.html`) to go back. */
 @media(max-width:720px){
 html{zoom:calc(var(--tz,1.07)*.94)}
@@ -965,15 +1004,32 @@ function battleState(b){
 }
 function battleCard(b, o={}){
   const s=battleState(b), show=s.my||s.ended, t=S.topics.get(b.topicId);
-  const side=(k,label,pct)=>`<button class="side ${s.my===k?"mine":""} ${s.winner===k?"win":""}" data-act="bvote" data-id="${b.id}" data-v="${k}" ${s.ended?"disabled":""}>
-      ${show?`<span class="fill" style="width:${pct}%"></span>`:""}
-      <b>${esc(label)}</b>${show?`<span class="pct">${pct}%</span>`:`<span class="muted" style="font-size:12.5px">${L("Vote")}</span>`}${s.my===k?`<span class="you">Your pick</span>`:""}</button>`;
-  return `<div class="battle ${o.inline?"inline":""}" id="b-${b.id}">
-    <div class="bhead">${s.ended?`<span>Battle · ended</span>`:`<span class="live">Live battle · ends in ${left(b.endsAt-Date.now())}</span>`}${o.topicLink&&t?`<a href="#t-${t.id}" style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--brand-deep)">${esc(t.title.length>34?t.title.slice(0,32)+"…":t.title)}</a>`:""}</div>
-    <div class="bq">${esc(b.question)}</div>
-    <div class="sides">${side("a",b.a,s.pa)}<span class="vs">VS</span>${side("b",b.b,s.pb)}</div>
-    <div class="bfoot"><span>${s.ended?(s.winner==="tie"?`<span class="winner">It’s a tie</span>`:`<span class="winner">🏆 ${esc(s.winner==="a"?b.a:b.b)} wins</span>`)+" · ":""}${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${b.authorId?` · started by ${esc(nameOf(b.authorId))}`:""}</span>
-      <button class="act" data-act="shareBattle" data-id="${b.id}">${ICON.share} ${L("Share card")}</button></div>
+  const ck='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
+  const side=(k,label,pct)=>{
+    const mine=s.my===k, win=s.winner===k, tag=s.ended?(win?"WINNER":""):mine?"YOUR PICK":"TAP TO VOTE";
+    return `<button class="side bc-side ${mine?"mine":""} ${win?"win":""}" data-act="bvote" data-id="${b.id}" data-v="${k}" ${s.ended?"disabled":""}>
+      <span class="bc-row"><span class="bc-name">${esc(label)}</span>${mine?ck:""}</span>
+      <span class="bc-row"><span class="bc-pct">${show?pct+"%":"–"}</span><span class="bc-tag2 ${mine||win?"on":""}">${tag}</span></span></button>`; };
+  const lead=s.v.a===s.v.b?null:(s.v.a>s.v.b?b.a:b.b), diff=Math.abs(s.v.a-s.v.b);
+  const vt=n=>n+(n===1?" vote":" votes");
+  const momentum=s.ended?(s.winner==="tie"?"Ended in a tie.":`${esc(s.winner==="a"?b.a:b.b)} won by ${vt(diff)}.`)
+    :(lead?`${esc(lead)} leads by ${vt(diff)}. Bring a friend to flip it.`:"Dead even. Your vote decides it.");
+  const knob=Math.min(95,Math.max(5,s.pa));
+  const gA=s.my?s.my==="a":s.winner==="a"||(s.pa>=s.pb), gB=s.my?s.my==="b":s.winner==="b"||(s.pb>s.pa);
+  const bar=show?`<div class="bc-meter"><div class="bc-track"><i class="${gA?"g":""}" style="width:${s.pa}%"></i><i class="${gB?"g":""}" style="width:${s.pb}%"></i></div><span class="bc-knob" style="left:calc(${knob}% - 9px)"></span></div><div class="bc-mom">${momentum}</div>`
+    :`<div class="bc-mom">Pick a side to see how everyone voted.</div>`;
+  const clock='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/></svg>';
+  const chat='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>';
+  const where=[t&&t.category,t&&t.location].filter(Boolean).map(esc).join(" · ");
+  const q=o.topicLink&&t?`<a class="bc-q" href="#t-${t.id}">${esc(b.question)}</a>`:`<div class="bc-q">${esc(b.question)}</div>`;
+  return `<div class="battle bc2 ${o.inline?"inline":""}" id="b-${b.id}">
+    <div class="bc-top"><div class="bc-state">${s.ended?`<span class="bc-end">ENDED</span>`:`<i class="bc-dot"></i><span class="bc-live">LIVE</span>`}${where?`<span class="bc-where">· ${where}</span>`:""}</div>
+      <div class="bc-time">${clock}<span>${s.ended?"Final":left(b.endsAt-Date.now())}</span></div></div>
+    ${q}
+    <div class="bc-sides">${side("a",b.a,s.pa)}${side("b",b.b,s.pb)}<span class="bc-vs">VS</span></div>
+    ${bar}
+    <div class="bfoot bc-foot"><span class="bc-by">${b.authorId?avatar(b.authorId,"xs"):""}<span>${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${b.authorId?` · by ${esc(nameOf(b.authorId))}`:""}</span></span>
+      <span class="bc-acts">${t&&!o.inline?`<a class="bc-btn" href="#t-${t.id}">${chat} Why?</a>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}<span class="bc-sl"> ${L("Share card")}</span></button></span></div>
   </div>`;
 }
 function predCard(t){
