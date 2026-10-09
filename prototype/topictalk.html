@@ -617,6 +617,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
 .backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
 @media(max-width:720px){.bk-tab{display:none}}
+.modal>*{min-width:0}.modal .acts{flex-wrap:wrap}.cardimg{max-width:100%;height:auto}
 /* ---- CREATE-MENU v1 ---- */
 .cmenu{display:grid;gap:0}
 .cm-hd{display:flex;align-items:center;justify-content:space-between}.cm-hd h2{font-size:22px}
@@ -754,6 +755,7 @@ const S = { topics:new Map(), comments:new Map(), reviews:new Map(), likes:new M
   battles:new Map(), bvotes:new Map(), pvotes:new Map(), groups:new Map(), gmembers:new Map(), duels:new Map(), dvotes:new Map(), media:new Map(), friends:new Map(), ufollows:new Map(), reports:new Map(), blocks:new Map(), tmembers:new Map(), joinreqs:new Map(), myGroups:new Set(), notifs:[], me:null, isOwner:false, readOnly:false, ready:{}, dbOk:null };
 const UI = { more:new Set(), replyOpen:new Set(), tab:"discussion", rvOpen:false, rvRating:0, exCat:"All", exSort:"trending", ptab:"topics", query:"", lastRoute:"", lastPost:0,
   csort:"top", ai:{}, aiBusy:{}, ans:{}, ansBusy:null, dReady:{}, city:null, lang:"en" };
+if(/^\/t\/[\w-]+\/?$/.test(location.pathname)) history.replaceState(null,"","/#t-"+location.pathname.split("/")[2]);
 let db=null, user=null, sampleFn=null, downloads=null;
 const R = { topics:new Map(), comments:new Map(), reviews:new Map(), battles:new Map(), duels:new Map() };  // raw, before group privacy filtering
 const pcache = {};
@@ -2204,7 +2206,7 @@ async function makeCard(kind, id){
   else { t=S.topics.get(id); eyebrow=(kind==="pred"?"PREDICTION":(t.category||"").toUpperCase())+(t.location?" · "+t.location.toUpperCase():""); title=t.title; }
   x.fillStyle=mut; x.font=`700 30px ${B}`; x.fillText(eyebrow,80,240);
   x.fillStyle=ink; x.font=`800 82px ${D}`;
-  const tl=wrap(x,title,W-160,4); tl.forEach((l,i)=>x.fillText(l,80,340+i*92));
+  const tl=wrap(x,title,W-160,kind==="battle"?3:4); tl.forEach((l,i)=>x.fillText(l,80,340+i*92));
   let yy=340+tl.length*92+60;
   const bar=(label,pct,y,win,color)=>{ x.fillStyle=soft; x.beginPath(); x.roundRect(80,y,W-160,120,24); x.fill();
     x.fillStyle=color; x.beginPath(); x.roundRect(80,y,Math.max(48,(W-160)*pct/100),120,24); x.fill();
@@ -2212,8 +2214,16 @@ async function makeCard(kind, id){
     x.fillStyle=win?bg:ink; x.font=`800 54px ${D}`; const p=pct+"%"; x.fillText(p,W-112-x.measureText(p).width,y+80); };
   if(kind==="battle"){
     const b=S.battles.get(id), s=battleState(b);
-    bar(b.a,s.pa,yy,s.winner==="a",s.winner==="a"?acc:"#2C6B4E"); bar(b.b,s.pb,yy+144,s.winner==="b",s.winner==="b"?acc:"#2C6B4E");
-    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}`:`Live · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${s.n>=1&&s.n<5?" · early result":""} · ends in ${left(b.endsAt-Date.now())}`,80,yy+330);
+    const gap=44, pw=(W-160-gap)/2, ph=340, cA=acc, cB=star, lead=s.n?(s.pa>s.pb?"a":s.pb>s.pa?"b":""):"";
+    const panel=(px,letter,label,pct,col,isLead,win)=>{ x.fillStyle=isLead?"#1B5A40":soft; x.beginPath(); x.roundRect(px,yy,pw,ph,28); x.fill();
+      x.lineWidth=isLead?6:2; x.strokeStyle=isLead?col:"#2C6B4E"; x.beginPath(); x.roundRect(px,yy,pw,ph,28); x.stroke();
+      x.fillStyle=col; x.beginPath(); x.roundRect(px+30,yy+28,64,44,14); x.fill(); x.fillStyle=bg; x.font=`800 30px ${D}`; x.textAlign="center"; x.fillText(letter,px+62,yy+60); x.textAlign="left";
+      x.fillStyle=ink; x.font=`800 50px ${D}`; wrap(x,(win?"🏆 ":"")+label,pw-60,3).forEach((l,i)=>x.fillText(l,px+30,yy+128+i*56));
+      x.fillStyle=col; x.font=`800 96px ${D}`; x.fillText(s.n?pct+"%":"–",px+30,yy+ph-34); };
+    panel(80,"A",b.a,s.pa,cA,lead==="a",s.winner==="a"); panel(80+pw+gap,"B",b.b,s.pb,cB,lead==="b",s.winner==="b");
+    { const cx=W/2, cy=yy+ph/2; x.fillStyle=bg; x.beginPath(); x.arc(cx,cy,48,0,Math.PI*2); x.fill(); x.fillStyle=ink; x.beginPath(); x.arc(cx,cy,40,0,Math.PI*2); x.fill(); x.fillStyle=bg; x.font=`800 34px ${D}`; x.textAlign="center"; x.fillText("VS",cx,cy+12); x.textAlign="left"; }
+    { const my=yy+ph+36, mw=W-160, fa=s.n?Math.max(0.04,Math.min(0.96,s.pa/100)):0.5; x.fillStyle=cB; x.beginPath(); x.roundRect(80,my,mw,26,13); x.fill(); x.fillStyle=cA; x.beginPath(); x.roundRect(80,my,mw*fa,26,13); x.fill(); }
+    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}`:`Live · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${s.n>=1&&s.n<5?" · early result":""} · ends in ${left(b.endsAt-Date.now())}`,80,yy+ph+112);
   } else if(kind==="pred"){
     const p=IX.pv.get(id), n=p.yes+p.no, py=n?Math.round(100*p.yes/n):50;
     bar("Yes",py,yy,t.outcome==="yes",t.outcome==="yes"?acc:"#2C6B4E"); bar("No",100-py,yy+144,t.outcome==="no",t.outcome==="no"?acc:"#2C6B4E");
@@ -2235,6 +2245,7 @@ async function makeCard(kind, id){
   x.fillStyle=ink; x.font=`700 46px ${D}`; x.fillText(kind==="battle"&&!battleState(S.battles.get(id)).ended?"Pick a side on TopicTalk":"Join the discussion on TopicTalk",80,H-130);
   const tags=(t?.tags||[]).slice(0,3).map(g=>"#"+g).join("  ");
   x.fillStyle=mut; x.font=`500 32px ${B}`; if(tags) x.fillText(tags,80,H-78);
+  { const host=location.host||"topictalk.duckdns.org"; x.font=`700 32px ${B}`; const hw=x.measureText(host).width, tw=tags?x.measureText(tags).width:0; if(80+tw+40<c.width-80-hw){ x.fillStyle=mut; x.textAlign="right"; x.fillText(host,c.width-80,H-78); x.textAlign="left"; } }
   return c;
 }
 async function openCard(kind,id){
@@ -2245,8 +2256,10 @@ async function openCard(kind,id){
   openModal(`<h2>${L("Share card")}</h2><img class="cardimg" src="${url}" alt="Share card for ${esc(t?.title||"")}">
     <p class="muted" style="margin:0;font-size:13px">Sized for WhatsApp status and Instagram. ${downloads?"":"On a phone, press and hold the image to save it."}</p>
     <textarea id="sh" rows="2" readonly>${esc(txt)}</textarea>
-    <div class="acts"><button class="btn" data-act="copyShare">Copy text</button>${downloads?`<button class="btn pri" data-act="saveCard">Save image</button>`:""}<button class="btn" data-act="closeModal">Done</button></div>`);
-  openCard.canvas=c; openCard.name=`topictalk-${(t?.title||"card").toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)}.png`;
+    <div class="acts">${navigator.share?`<button class="btn pri" data-act="shareNative">Share image</button>`:""}<button class="btn" data-act="copyShare">Copy text</button>${downloads?`<button class="btn${navigator.share?"":" pri"}" data-act="saveCard">Save image</button>`:""}<button class="btn" data-act="closeModal">Done</button></div>`);
+  if(t&&S.me&&(!t.access||t.access==="open")&&!t.groupId){ try{ fetch("/api/card",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({topicId:t.id,png:url})}).catch(()=>{}); }catch{} }
+  openCard.canvas=c; openCard.fname=`topictalk-${(t?.title||"card").toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)}.png`; openCard.file=null;
+  c.toBlob(b=>{ if(b) openCard.file=new File([b],openCard.fname,{type:"image/png"}); },"image/png");
 }
 
 /* ---------- modals ---------- */
@@ -2687,10 +2700,13 @@ document.addEventListener("click", async e=>{
     case "shareTopic": openCard("topic",id); break;
     case "shareBattle": openCard("battle",id); break;
     case "sharePred": openCard("pred",id); break;
+    case "shareNative": { const f=openCard.file, text=$("#sh")?.value||"";
+      try{ if(f&&navigator.canShare&&navigator.canShare({files:[f]})) await navigator.share({files:[f],text}); else await navigator.share({text}); }
+      catch(e){ if(!e||e.name!=="AbortError") toast("Couldn’t open sharing. Use Save image instead."); } break; }
     case "copyShare": { const ta=$("#sh"); try{ await navigator.clipboard.writeText(ta.value); toast("Copied"); }catch{ ta.select(); toast("Select and copy the text"); } break; }
     case "saveCard": {
       const c=openCard.canvas; if(!c||!downloads) break;
-      c.toBlob(async blob=>{ try{ await downloads.save({filename:openCard.name,data:blob}); toast("Saved"); }catch(err){ if(err?.code==="unavailable"||err?.code==="not_granted"){ downloads=null; toast("Saving isn’t available here. Press and hold the image instead."); } else if(err?.code!=="declined") toast("Couldn’t save the image."); } },"image/png");
+      c.toBlob(async blob=>{ try{ await downloads.save({filename:openCard.fname,data:blob}); toast("Saved"); }catch(err){ if(err?.code==="unavailable"||err?.code==="not_granted"){ downloads=null; toast("Saving isn’t available here. Press and hold the image instead."); } else if(err?.code!=="declined") toast("Couldn’t save the image."); } },"image/png");
       break; }
     case "branch": { if(!(await gate())) break; topicModal({branchFrom:id}); break; }
     case "openReview": if(!(await gate())) break; UI.tab="reviews"; UI.rvOpen=true; UI.rvRating=0; schedule(); break;

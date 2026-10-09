@@ -440,6 +440,7 @@ function meFor(uid) {
   const u = q.userById.get(uid); if (!u) return null;
   return { id: uid, username: u.username, isOwner: isAdmin(uid) };
 }
+const CARD_DIR = path.join(DATA_DIR, "cards"); fs.mkdirSync(CARD_DIR, { recursive: true }); const CARDMETA = new Map();
 const STATIC = {};
 for (const [p, f, t] of [["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json"], ["/sw.js", "sw.js", "text/javascript; charset=utf-8"], ["/icon-192.png", "icon-192.png", "image/png"], ["/icon-512.png", "icon-512.png", "image/png"], ["/icon-maskable.png", "icon-maskable.png", "image/png"]])
   STATIC[p] = { t, b: fs.readFileSync(path.join(__dirname, "static", f)) };
@@ -455,6 +456,24 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === "GET" && STATIC[p]) { const f = STATIC[p]; res.writeHead(200, { "Content-Type": f.t, "Cache-Control": p === "/sw.js" ? "no-cache" : "public, max-age=86400", ...SEC }); return res.end(f.b); }
     if (p === "/healthz") return json(res, 200, { ok: true, docs: COLS.reduce((a, c) => a + DOCS[c].size, 0), clients: clients.size });
+    // link previews: /t/<id> gives WhatsApp and others a title and the stored share card, then sends people into the app
+    { const mt = p.match(/^\/t\/([A-Za-z0-9_-]{1,64})$/);
+      if (req.method === "GET" && mt) {
+        const id = mt[1], t = DOCS.topics.get(id), pub = !!t && !t.deletedAt && OPEN(t.access) && !t.groupId;
+        const host = req.headers.host || "localhost", origin = (req.headers["x-forwarded-proto"] || (/^(localhost|127\.)/.test(host) ? "http" : "https")) + "://" + host;
+        let img = origin + "/icon-512.png"; if (pub) { try { const st = fs.statSync(path.join(CARD_DIR, id + ".png")); img = `${origin}/og/${id}.png?v=${Math.floor(st.mtimeMs)}`; } catch {} }
+        const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+        const title = pub ? t.title : "TopicTalk", desc = pub ? `${t.category || "Topic"}${t.location ? " · " + t.location : ""} · Join the discussion on TopicTalk` : "Anything can become a topic. Review it. Talk about it. Branch it.";
+        const dest = `/#t-${id}`;
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache", ...SEC });
+        return res.end(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title><meta name="viewport" content="width=device-width,initial-scale=1"><meta property="og:type" content="website"><meta property="og:site_name" content="TopicTalk"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:image" content="${esc(img)}"><meta property="og:url" content="${esc(origin + "/t/" + id)}"><meta name="twitter:card" content="summary_large_image"><meta http-equiv="refresh" content="0;url=${dest}"></head><body><script>location.replace(${JSON.stringify(dest)})</script><a href="${dest}">Open on TopicTalk</a></body></html>`);
+      }
+      const mo = p.match(/^\/og\/([A-Za-z0-9_-]{1,64})\.png$/);
+      if (req.method === "GET" && mo) {
+        const t = DOCS.topics.get(mo[1]);
+        if (t && !t.deletedAt && OPEN(t.access) && !t.groupId) { try { const b = fs.readFileSync(path.join(CARD_DIR, mo[1] + ".png")); res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=300", ...SEC }); return res.end(b); } catch {} }
+        res.writeHead(404, { "Content-Type": "text/plain" }); return res.end("Not found");
+      } }
     if (!p.startsWith("/api/")) { res.writeHead(404, { "Content-Type": "text/plain" }); return res.end("Not found"); }
 
     const uid = currentUser(req);
@@ -563,6 +582,15 @@ const server = http.createServer(async (req, res) => {
     }
     if (!uid) return json(res, 401, { error: { code: "unauthenticated", message: "Log in to do that." } });
 
+    if (p === "/api/card") {
+      if (!uid) throw new Deny("permission_denied", "Sign in first.");
+      const t = DOCS.topics.get(String(body.topicId || "")); if (!t || t.deletedAt || !OPEN(t.access) || t.groupId) return json(res, 200, { ok: false });
+      const m = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(String(body.png || "")); if (!m) bad("That isn’t a PNG image.");
+      const buf = Buffer.from(m[1], "base64"); if (buf.length > 280 * 1024 || buf.subarray(0, 4).toString("hex") !== "89504e47") bad("That image isn’t valid.");
+      const prev = CARDMETA.get(t.id); if (prev && Date.now() - prev.t < 3600e3 && uid !== t.authorId && !isAdmin(uid)) return json(res, 200, { ok: true, kept: true });
+      fs.writeFileSync(path.join(CARD_DIR, t.id + ".png"), buf); CARDMETA.set(t.id, { t: Date.now(), uid });
+      return json(res, 200, { ok: true });
+    }
     if (p === "/api/write") {
       if (limited("w:" + uid, 150, 6e4)) return json(res, 429, { error: { code: "resource_exhausted", message: "Slow down a little, then try again." } });
       write(uid, body);

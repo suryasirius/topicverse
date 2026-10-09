@@ -26,7 +26,7 @@ const PATCHES = [
    'data-act="editHandle">Edit profile</button>`:""}${isMe&&window.ttLogout?`<button class="btn sm" data-act="ttLogout">Log out</button>`:""}'],
   ['Open TopicTalk, go to Groups and enter the code ${g.invite}.', 'Open ${location.origin}/#groups and enter the code ${g.invite}.'],
   ['  const txt=kind==="battle"?', '  let txt=kind==="battle"?'],
-  ['  openModal(`<h2>${L("Share card")}</h2>', '  txt+=" "+location.origin+"/#t-"+(kind==="battle"?S.battles.get(id).topicId:id);\n  openModal(`<h2>${L("Share card")}</h2>'],
+  ['  openModal(`<h2>${L("Share card")}</h2>', '  txt+=" "+location.origin+"/t/"+(kind==="battle"?S.battles.get(id).topicId:id);\n  openModal(`<h2>${L("Share card")}</h2>'],
   ['TopicTalk prototype ·', 'TopicTalk ·'],
 ];
 
