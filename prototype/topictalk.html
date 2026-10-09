@@ -605,6 +605,13 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .bc2 .bc-acts{display:flex;gap:2px;flex:none;align-items:center}
 .bc2 .bc-btn,.bc2 .bc-acts .act{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 8px;border-radius:999px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700}
 .bc2 .bc-btn:hover,.bc2 .bc-acts .act:hover{background:var(--bg)}
+.bc2.bc-anim .bc-track i{animation:bcgrow .8s cubic-bezier(.2,.9,.2,1)}
+.bc2.bc-anim .bc-knob{animation:bcknob .8s cubic-bezier(.2,.9,.2,1)}
+.bc2.bc-anim .bc-pct{animation:bcpop .5s ease-out}
+@keyframes bcgrow{from{width:50%}}
+@keyframes bcknob{from{left:calc(50% - 9px)}}
+@keyframes bcpop{from{transform:scale(.85);opacity:.4}}
+@media(prefers-reduced-motion:reduce){.bc2 *,.bc2{animation:none!important;transition:none!important}}
 @media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
 /* COMPACT-MOBILE v1: denser, app-like phone layout. Delete this block (or `git checkout before-compact -- prototype/topictalk.html`) to go back. */
 @media(max-width:720px){
@@ -1002,6 +1009,8 @@ function battleState(b){
   const winner = ended ? (v.a>v.b?"a":v.b>v.a?"b":"tie") : null;
   return {v,n,ended,my,pa,pb,winner};
 }
+const cdFmt=ms=>{ ms=Math.max(0,ms); let x=Math.floor(ms/1000); const d=Math.floor(x/86400); x-=d*86400; const h=Math.floor(x/3600); x-=h*3600; const m=Math.floor(x/60), sec=x-m*60, z=n=>(n<10?"0":"")+n; return (d?d+"d ":"")+z(h)+":"+z(m)+":"+z(sec); };
+setInterval(()=>{ if(document.hidden) return; document.querySelectorAll(".bc-cd[data-end]").forEach(e=>{ const ms=+e.dataset.end-Date.now(); e.textContent=ms>0?cdFmt(ms):"Ended"; }); },1000);
 function battleCard(b, o={}){
   const s=battleState(b), show=s.my||s.ended, t=S.topics.get(b.topicId);
   const ck='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -1022,9 +1031,9 @@ function battleCard(b, o={}){
   const chat='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>';
   const where=[t&&t.category,t&&t.location].filter(Boolean).map(esc).join(" · ");
   const q=o.topicLink&&t?`<a class="bc-q" href="#t-${t.id}">${esc(b.question)}</a>`:`<div class="bc-q">${esc(b.question)}</div>`;
-  return `<div class="battle bc2 ${o.inline?"inline":""}" id="b-${b.id}">
+  return `<div class="battle bc2 ${o.inline?"inline":""} ${UI.bAnim===b.id?"bc-anim":""}" id="b-${b.id}">
     <div class="bc-top"><div class="bc-state">${s.ended?`<span class="bc-end">ENDED</span>`:`<i class="bc-dot"></i><span class="bc-live">LIVE</span>`}${where?`<span class="bc-where">· ${where}</span>`:""}</div>
-      <div class="bc-time">${clock}<span>${s.ended?"Final":left(b.endsAt-Date.now())}</span></div></div>
+      <div class="bc-time">${clock}<span class="bc-cd" data-end="${b.endsAt}">${s.ended?"Final":cdFmt(b.endsAt-Date.now())}</span></div></div>
     ${q}
     <div class="bc-sides">${side("a",b.a,s.pa)}${side("b",b.b,s.pb)}<span class="bc-vs">VS</span></div>
     ${bar}
@@ -2391,6 +2400,7 @@ document.addEventListener("click", async e=>{
       const b=S.battles.get(id); if(!b||Date.now()>=b.endsAt) break;
       if(!(await gate())) break;
       if(IX.myB.get(id)===el.dataset.v) break;
+      UI.bAnim=id; setTimeout(()=>{ if(UI.bAnim===id) UI.bAnim=null; },2500);
       await W(()=>db.doc(`bvotes/${id}__${S.me}`).set({battleId:id,side:el.dataset.v,userId:S.me,createdAt:Date.now()}));
       break; }
     case "pvote": {
