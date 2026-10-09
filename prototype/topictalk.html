@@ -1024,6 +1024,7 @@ function vHome(){
   trList.forEach(t=>shown.add(t.id));
   let hotHTML=hotRows(shown); if(hotHTML.split("<a ").length<4) hotHTML=hotRows();
   const hotIds=new Set([...hotHTML.matchAll(/href="#t-([^"~]+)~/g)].map(m=>m[1])); hotIds.forEach(i=>shown.add(i));
+  live.forEach(b=>shown.add(b.topicId)); preds.forEach(t=>shown.add(t.id)); // already shown above, so not repeated under New topics
   let newList=newest2.filter(t=>!shown.has(t.id)).slice(0,5); if(newList.length<3) newList=newest2.slice(0,5);
   const bod=branchOfDay(), bodC=bod&&S.comments.get(bod.originCommentId), bodP=bod&&S.topics.get(bod.parentId);
   return heroHTML() + `
