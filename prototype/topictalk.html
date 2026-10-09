@@ -599,6 +599,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .bc2 .bc-track i.g{background:var(--brand);filter:none}
 .bc2 .bc-knob{position:absolute;top:0;width:18px;height:18px;box-sizing:border-box;border-radius:50%;background:var(--surface);border:2px solid var(--brand);box-shadow:0 1px 4px rgba(21,32,26,.2);transition:left .6s cubic-bezier(.2,.9,.2,1)}
 .bc2 .bc-mom{font-size:12.5px;font-weight:600;color:var(--muted)}
+.bc2 .bc-early{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-right:6px;vertical-align:1px;white-space:nowrap}
 .bc2 .bc-foot{padding-top:10px;border-top:1px solid var(--line);flex-wrap:nowrap}
 .bc2 .bc-by{display:flex;align-items:center;gap:8px;min-width:0;font-size:12px;color:var(--muted)}
 .bc2 .bc-by span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1025,7 +1026,8 @@ function battleCard(b, o={}){
     :(lead?`${esc(lead)} leads by ${vt(diff)}. Bring a friend to flip it.`:"Dead even. Your vote decides it.");
   const knob=Math.min(95,Math.max(5,s.pa));
   const gA=s.my?s.my==="a":s.winner==="a"||(s.pa>=s.pb), gB=s.my?s.my==="b":s.winner==="b"||(s.pb>s.pa);
-  const bar=show?`<div class="bc-meter"><div class="bc-track"><i class="${gA?"g":""}" style="width:${s.pa}%"></i><i class="${gB?"g":""}" style="width:${s.pb}%"></i></div><span class="bc-knob" style="left:calc(${knob}% - 9px)"></span></div><div class="bc-mom">${momentum}</div>`
+  const few=s.n>=1&&s.n<5, early=few?`<span class="bc-early" title="Only ${s.n} ${s.n===1?"vote":"votes"} so far. This can still change.">${s.ended?"Few votes":"Early result"}</span> `:"";
+  const bar=show?`<div class="bc-meter"><div class="bc-track"><i class="${gA?"g":""}" style="width:${s.pa}%"></i><i class="${gB?"g":""}" style="width:${s.pb}%"></i></div><span class="bc-knob" style="left:calc(${knob}% - 9px)"></span></div><div class="bc-mom">${early}${momentum}</div>`
     :`<div class="bc-mom">Pick a side to see how everyone voted.</div>`;
   const clock='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/></svg>';
   const chat='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>';
@@ -2164,7 +2166,7 @@ async function makeCard(kind, id){
   if(kind==="battle"){
     const b=S.battles.get(id), s=battleState(b);
     bar(b.a,s.pa,yy,s.winner==="a",s.winner==="a"?acc:"#2C6B4E"); bar(b.b,s.pb,yy+144,s.winner==="b",s.winner==="b"?acc:"#2C6B4E");
-    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}`:`Live · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"} · ends in ${left(b.endsAt-Date.now())}`,80,yy+330);
+    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}`:`Live · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${s.n>=1&&s.n<5?" · early result":""} · ends in ${left(b.endsAt-Date.now())}`,80,yy+330);
   } else if(kind==="pred"){
     const p=IX.pv.get(id), n=p.yes+p.no, py=n?Math.round(100*p.yes/n):50;
     bar("Yes",py,yy,t.outcome==="yes",t.outcome==="yes"?acc:"#2C6B4E"); bar("No",100-py,yy+144,t.outcome==="no",t.outcome==="no"?acc:"#2C6B4E");
