@@ -381,6 +381,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .sech>a:hover{text-decoration:underline}
 .grid.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tcard h3{font-size:18px;line-height:1.25}
+.tcard .csnip{font-size:13px;color:var(--ink-2,#4C5852);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tcard .csnip b{font-weight:600}
 .tcard .tgs{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tcard:hover{transform:translateY(-2px)}
 .list .hd{font-family:var(--f-display);font-weight:700;font-size:17px;line-height:1.25}
@@ -932,12 +933,19 @@ function topicCard(t, rank){
   const s = stat(t.id), tags=(t.tags||[]).slice(0,3);
   const extra = t.kind==="prediction" ? (()=>{ const p=IX.pv.get(t.id), n=p.yes+p.no; return `<span>${n?Math.round(100*p.yes/n):0}% say yes</span><span>${t.outcome?"Resolved":"Resolves "+fmtDate(t.resolveBy)}</span>`; })()
     : (IX.bByTopic.get(t.id)||[]).some(b=>b.endsAt>Date.now()) ? `<span class="brmark">Live battle</span>` : "";
+  // cards with discussion but no review/vote content show the latest comment, so they don't look empty
+  let snip="";
+  if(!s.reviews && s.comments && t.kind!=="prediction" && t.kind!=="battle"){
+    const lc=(IX.cByTopic.get(t.id)||[]).filter(c=>cLive(c)&&(c.text||"").trim()).sort((a,b)=>b.createdAt-a.createdAt)[0];
+    if(lc) snip=`<div class="csnip"><b>${esc(nameOf(lc.authorId))}:</b> ${esc(lc.text.trim().replace(/\s+/g," ").slice(0,90))}</div>`;
+  }
   return `<article class="tcard"><a href="#t-${t.id}">
     ${t.banner?`<img class="thumb" src="${esc(t.banner)}" alt="" loading="lazy">`:`<div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>`}
     <div class="body">
       <div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
       <h3>${esc(t.title)}</h3>
       <div class="stats">${s.reviews?`<span class="rating">★ ${s.avg.toFixed(1)}</span><span>${s.reviews} review${s.reviews>1?"s":""}</span>`:""}<span>${s.comments} comment${s.comments===1?"":"s"}</span>${s.branches?`<span>${s.branches} branch${s.branches>1?"es":""}</span>`:""}${extra}</div>
+      ${snip}
       ${tags.length?`<div class="tgs">${tags.map(x=>`#${esc(x)}`).join(" ")}</div>`:""}
     </div></a></article>`;
 }
