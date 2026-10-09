@@ -614,6 +614,9 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @keyframes bcpop{from{transform:scale(.85);opacity:.4}}
 @media(prefers-reduced-motion:reduce){.bc2 *,.bc2{animation:none!important;transition:none!important}}
 @media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
+.backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
+.backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+@media(max-width:720px){.bk-tab{display:none}}
 /* ---- HOME-ORG v1: fix width blow-out, compact area list ---- */
 .grid.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tcard,.tcard .body,.tcard .body>*{min-width:0}
@@ -1126,7 +1129,7 @@ function vHome(){
       :`<div class="local"><div class="empty" style="background:var(--surface)"><b>No local discussions yet.</b>Be the first to start one.<div style="margin-top:12px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button></div></div><div class="localfoot"><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`)
      :`<div class="local"><div class="empty" style="background:var(--surface)"><b>Add your city to personalize local discussions.</b>See what people around you are talking about.<div style="margin-top:12px"><button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button></div></div><div class="localfoot"><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`}</section>
   ${(()=>{ const hp2=homePlace(); let rt=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0); const loc=hp2?rt.filter(t=>inPlace(t,hp2)):[]; if(loc.length>=2) rt=loc; rt=rt.sort((a,b)=>rvScore(b)-rvScore(a)).slice(0,3);
-    return `<section class="sec">${SH("⭐ "+(hp2&&rt.length&&rt.every(t=>inPlace(t,hp2))?"Top rated near you":"Top rated"),"Places and things people recommend.",`<a href="#reviews">${L("See all")} →</a>`)}${rt.length?`<div class="list rvlist">${rt.map((t,i)=>{ const s=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}</span></div></a>`; }).join("")}</div>`:`<div class="empty" style="background:var(--surface)"><b>No ratings yet.</b>Rate a place you know and help your town decide.<div style="margin-top:12px"><button class="btn pri sm" data-act="reviewPick">Review something</button></div></div>`}</section>`; })()}
+    return `<section class="sec">${SH("⭐ "+(hp2&&rt.length&&rt.every(t=>inPlace(t,hp2))?"Top rated near you":"Top rated"),"Places and things people recommend.",`<a href="#reviews">${L("See all")} →</a>`)}${rt.length?`<div class="list rvlist">${rt.map((t,i)=>{ const s=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}${s.reviews<3?" · early":""}</span></div></a>`; }).join("")}</div>`:`<div class="empty" style="background:var(--surface)"><b>No ratings yet.</b>Rate a place you know and help your town decide.<div style="margin-top:12px"><button class="btn pri sm" data-act="reviewPick">Review something</button></div></div>`}</section>`; })()}
   ${live.length?`<section class="sec">${SH("🔥 "+L("Live battles"),"Quick debates. Real opinions.",`<a href="#explore" data-act="exGo" data-v="battles">${L("See all")} →</a>`)}<div class="grid b bscroll">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
   <div class="cols">
     <div>
@@ -1456,7 +1459,7 @@ function vTopic(id){
     <div class="thead"><div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>
       <div style="min-width:0"><div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span>${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" style="color:var(--brand-deep);font-weight:600">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}</span></div>
       <h1>${t.deletedAt?`<span class="muted" style="font-style:italic">Topic deleted by creator</span>`:esc(t.title)}</h1></div></div>
-    ${t.deletedAt?`<div class="gbanner">The creator deleted this topic. The discussion stays, but new comments, reviews and votes are closed.</div>`:""}
+    ${t.deletedAt&&t.mergedInto&&S.topics.get(t.mergedInto)?`<div class="gbanner">This page was merged into <a href="#t-${esc(t.mergedInto)}">${esc(S.topics.get(t.mergedInto).title)}</a>.</div>`:t.deletedAt?`<div class="gbanner">The creator deleted this topic. The discussion stays, but new comments, reviews and votes are closed.</div>`:""}
     ${(()=>{ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private";
       if(t.madePublic) return `<div class="gbanner">Started in the group <a href="#g-${esc(g.id)}">${esc(g.name)}</a> and made public${t.publicAt?" "+ago(t.publicAt)+" ago":""}.</div>`;
       const canPub=priv&&(S.me===t.authorId||isAdmin(g.id));
@@ -1474,7 +1477,7 @@ function vTopic(id){
       <button class="btn sm" data-act="openReview">${mine?"Edit review":L("Review")}</button>
       <button class="btn sm" data-act="shareTopic" data-id="${id}">${ICON.share}${L("Share card")}</button>
       ${S.me&&(accOf(t)==="open"||canManageT(t)||(t.membersCanAdd&&tRoleOf(t,S.me)))?`<button class="btn sm" data-act="inviteF" data-id="${id}">Invite friends</button>`:""}
-      ${canManageT(t)?`<button class="btn sm" data-act="privacy" data-id="${id}">Privacy${(()=>{ const n=[...S.joinreqs.values()].filter(r=>r.topicId===id&&r.status==="pending").length; return n?` · ${n} request${n>1?"s":""}`:""; })()}</button>`:""}
+      ${S.isOwner&&!t.deletedAt&&(t.kind==="place"||s.reviews)?`<button class="btn sm" data-act="mergeOpen" data-id="${id}">Merge / remove</button>`:""}${canManageT(t)?`<button class="btn sm" data-act="privacy" data-id="${id}">Privacy${(()=>{ const n=[...S.joinreqs.values()].filter(r=>r.topicId===id&&r.status==="pending").length; return n?` · ${n} request${n>1?"s":""}`:""; })()}</button>`:""}
       ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="bannerEdit" data-id="${id}">${t.banner?"Change banner":"Add banner"}</button>`:""}
       ${S.me&&S.me!==t.authorId&&S.tmembers.has(fKey(id,S.me))?`<button class="btn sm" data-act="leaveT" data-id="${id}">Leave topic</button>`:""}
       ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="delTopic" data-id="${id}">Delete topic</button>`:""}
@@ -1888,7 +1891,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{ if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
+document.addEventListener("input",e=>{ if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   if(ta.tagName==="TEXTAREA"&&ta.dataset.tt){ syncRich(ta); if(ta.classList.contains("rt-in")) acUpdate(ta);
@@ -1949,12 +1952,14 @@ function render(){
   else if(r.startsWith("g-")) html=vGroup(r.slice(2));
   else if(r.startsWith("t-")){ const [tid,cid]=r.slice(2).split("~"); if(changed){ UI.tab=cid&&S.reviews.has(cid)?"reviews":(S.topics.get(tid)?.kind==="place"?"reviews":"discussion"); if(UI.pendingReview===tid){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; } } focusC=cid; html=vTopic(tid); }
   else html=vHome();
-  view.innerHTML=html;
+  { const own=/^\s*<a class="pback"/.test(html)||/^\s*<div class="pback/.test(html);
+    const tab=r==="explore"||r==="alerts"||r==="me";
+    view.innerHTML=(r==="home"||own?"":`<button type="button" class="backbtn${tab?" bk-tab":""}" data-act="goBack" aria-label="Go back">← Back</button>`)+html; }
   for(const id in keep){ const el=document.getElementById(id); if(el) el.value=keep[id]; }
   enhance(view);
   markSeen(); maybeAskHome();
   if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
-  if(changed){ UI.lastRoute=r;
+  if(changed){ if(UI.lastRoute) UI.navN=(UI.navN||0)+1; UI.lastRoute=r;
     const el=focusC&&document.getElementById("c-"+focusC);
     if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); } else window.scrollTo(0,0); }
   document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="explore"&&(r==="groups"||r==="reviews"||r.startsWith("g-")))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
@@ -2351,7 +2356,7 @@ function createMenu(){
    </div><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`);
 }
 function reviewPicker(){
-  UI.rpKind="place"; const hp=homePlace(), ha=homeArea();
+  UI.rpKind="place"; UI.rpDupOk=false; const hp=homePlace(), ha=homeArea();
   openModal(`<h2>What are you reviewing?</h2><p class="muted" style="margin:0">Search first. If it isn’t here yet, add it and be the first to rate it.</p>
    <label class="l">Name<input class="f" id="rp-name" maxlength="80" autocomplete="off" placeholder="e.g. Hotel Saravana, Arakkonam Turf, iPhone 17"></label>
    <div class="list" id="rp-hits"></div>
@@ -2366,15 +2371,21 @@ function reviewPicker(){
    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button></div>`);
   rpHits();
 }
+function mgRender(){ const q=($("#mg-q")?.value||"").trim().toLowerCase(), box=$("#mg-res"); if(!box) return;
+  const ts=LIVE().filter(t=>t.id!==UI.mgFrom&&t.kind!=="battle"&&t.kind!=="prediction"&&(!q||t.title.toLowerCase().includes(q)||simScore(q,t.title)>=.67)).slice(0,8);
+  box.innerHTML=ts.map(t=>`<a href="#" data-act="mergePick" data-id="${esc(t.id)}"><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}<span>${stat(t.id).reviews} reviews</span></div></div></a>`).join("")||`<div class="muted" style="padding:8px">No match.</div>`; }
 function rpHits(){
   const q=($("#rp-name")?.value||"").trim().toLowerCase(), box=$("#rp-hits"); if(!box) return;
   const hp=homePlace();
   const base=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&t.kind!=="question");
-  let ts=q?base.filter(t=>t.title.toLowerCase().includes(q)):base.filter(t=>t.kind==="place"||stat(t.id).reviews).sort((a,b)=>((hp&&inPlace(b,hp))?1:0)-((hp&&inPlace(a,hp))?1:0)||stat(b.id).reviews-stat(a.id).reviews);
+  let ts=q?base.filter(t=>t.title.toLowerCase().includes(q)||simScore(q,t.title)>=.67):base.filter(t=>t.kind==="place"||stat(t.id).reviews).sort((a,b)=>((hp&&inPlace(b,hp))?1:0)-((hp&&inPlace(a,hp))?1:0)||stat(b.id).reviews-stat(a.id).reviews);
   ts=ts.slice(0,6);
   box.innerHTML=ts.map(t=>{ const s=stat(t.id); return `<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${t.kind==="place"?"<span>📍 Place</span>":""}<span>${esc(t.category)}</span>${t.location?`<span>${esc(t.location)}</span>`:""}<span>${s.reviews?"★ "+s.avg.toFixed(1)+" · "+s.reviews+" review"+(s.reviews===1?"":"s"):"No reviews yet"}</span></div></div></a>`; }).join("")||"";
   const nw=$("#rp-new"); if(nw) nw.hidden=q.length<3;
 }
+const NSTOP=new Set(["hotel","restaurant","the","shop","store","mobiles","mobile","salon","and","cafe","centre","center","bakery","sweets","tailors","tailor","clinic","bhavan","in","at","of"]);
+const normTok=x=>String(x||"").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w&&!NSTOP.has(w));
+const simScore=(a,b)=>{ const A=new Set(normTok(a)),B=new Set(normTok(b)); if(!A.size||!B.size) return 0; let i=0; A.forEach(w=>{ if(B.has(w)) i++; }); return i/Math.min(A.size,B.size); };
 const rvScore=t=>{ const s=stat(t.id); return (s.avg*s.reviews+3.5*3)/(s.reviews+3); };
 function vReviews(){
   const hp=homePlace(), near=UI.rvNear??!!hp, kind=UI.rvKind||"all";
@@ -2384,7 +2395,7 @@ function vReviews(){
   const cats=["All",...new Set(items.map(t=>t.category))], cat=cats.includes(UI.rvCat)?UI.rvCat:"All";
   if(cat!=="All") items=items.filter(t=>t.category===cat);
   const rated=items.filter(t=>stat(t.id).reviews).sort((a,b)=>rvScore(b)-rvScore(a)), unrated=items.filter(t=>!stat(t.id).reviews).sort((a,b)=>b.createdAt-a.createdAt);
-  const row=(t,i)=>{ const s=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}</span></div></a>`; };
+  const row=(t,i)=>{ const s=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}${s.reviews<3?" · early":""}</span></div></a>`; };
   return `<div class="sech" style="margin-bottom:6px"><h1 style="font-size:32px;font-weight:800;margin:0">Reviews</h1><button class="btn pri sm" data-act="reviewPick">⭐ Review something</button></div>
   <p class="muted" style="margin:0 0 12px">Honest ratings of places, shops and products${near&&hp?" near "+esc(hp.name):""}. One review per person.</p>
   <div class="tabs" role="tablist">${[["all","All"],["place","Places"],["thing","Products"]].map(([k,l])=>`<button class="${kind===k?"on":""}" data-act="rvKind" data-v="${k}">${l}</button>`).join("")}${hp?`<button class="${near?"on":""}" data-act="rvNear">${near?"📍 Near "+esc(hp.name):"Everywhere"}</button>`:""}</div>
@@ -2411,6 +2422,20 @@ document.addEventListener("click", async e=>{
     case "newPred": if(!(await gate())) break; predModal({groupId:el.dataset.group}); break;
     case "reviewPick": closeModal(false); reviewPicker(); break;
     case "rpKind": { UI.rpKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const l=$("#rp-locl"); if(l) l.hidden=UI.rpKind!=="place"; break; }
+    case "rpForce": UI.rpDupOk=true; $("#rp-err").textContent=""; $("[data-act=rpSave]")?.click(); break;
+    case "mergeOpen": { if(!S.isOwner) break; const t=S.topics.get(id); if(!t) break; UI.mgFrom=id;
+      openModal(`<h2 style="font-size:18px">Merge or remove</h2><p class="muted" style="margin:0">Move the reviews and comments of <b>${esc(t.title)}</b> into the correct page, or remove it if it’s junk.</p>
+       <input class="f" id="mg-q" placeholder="Search the page to keep" autocomplete="off" value="${esc(t.title.split(" ")[0])}"><div class="list" id="mg-res"></div>
+       <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn danger" data-act="mergeRemove" data-id="${esc(id)}">Remove this page</button></div>`); mgRender(); break; }
+    case "mergePick": { const a=S.topics.get(UI.mgFrom), b=S.topics.get(id); if(!a||!b) break;
+      openModal(`<h2 style="font-size:18px">Merge into “${esc(b.title)}”?</h2><p class="muted" style="margin:0">${stat(a.id).reviews} review${stat(a.id).reviews===1?"":"s"} and ${stat(a.id).comments} comment${stat(a.id).comments===1?"":"s"} move from <b>${esc(a.title)}</b>. If someone reviewed both, their review on the kept page stays. “${esc(a.title)}” is then hidden.</p>
+       <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="mergeOk" data-id="${esc(a.id)}" data-to="${esc(b.id)}">Merge</button></div>`); break; }
+    case "mergeOk": { const a=S.topics.get(id), to=el.dataset.to; if(!S.isOwner||!a||!S.topics.get(to)||id===to) break; el.disabled=true;
+      for(const [k,r] of [...S.reviews].filter(([k,r])=>r.topicId===id)){ const tk=`${to}__${r.authorId}`; const body={...r}; delete body.id; body.topicId=to; if(!S.reviews.has(tk)) await W(()=>db.doc("reviews/"+tk).set(body)); await W(()=>db.doc("reviews/"+k).delete()); }
+      for(const c of [...S.comments.values()].filter(c=>c.topicId===id)) await W(()=>db.doc("comments/"+c.id).update({topicId:to}));
+      await W(()=>db.doc("topics/"+id).update({deletedAt:Date.now(),deletedBy:S.me,mergedInto:to})); closeModal(true); toast("Merged"); location.hash="t-"+to; break; }
+    case "mergeRemove": { if(!S.isOwner) break; await W(()=>db.doc("topics/"+id).update({deletedAt:Date.now(),deletedBy:S.me})); closeModal(true); toast("Removed"); location.hash="reviews"; break; }
+    case "goBack": { if((UI.navN||0)>0) history.back(); else location.hash=(/^(reviews|groups|search)$/.test(parseRoute())?"explore":"home"); break; }
     case "rvKind": UI.rvKind=el.dataset.v; schedule(); break;
     case "rvNear": UI.rvNear=!(UI.rvNear??!!homePlace()); schedule(); break;
     case "rvCat": UI.rvCat=el.dataset.v; schedule(); break;
@@ -2418,6 +2443,8 @@ document.addEventListener("click", async e=>{
       const name=($("#rp-name").value||"").trim(), err=$("#rp-err"); let loc="";
       if(name.length<3){ err.textContent="Type the name (at least 3 letters)."; break; }
       if(UI.rpKind==="place"){ const pl=placeOf($("#rp-loc").value); if(!pl){ err.textContent="Choose the area from the list so people nearby can find it."; break; } loc=pl.label; }
+      const near=!UI.rpDupOk&&LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&t.kind!=="question"&&t.title.toLowerCase()!==name.toLowerCase()&&simScore(name,t.title)>=.67&&(UI.rpKind!=="place"||!t.location||t.location===loc)).slice(0,3);
+      if(near.length){ err.innerHTML=`<b>Is it one of these?</b> Rating the existing page keeps reviews in one place.<div class="list" style="margin:6px 0">${near.map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div></a>`).join("")}</div><button class="btn sm" data-act="rpForce">No, it’s a different place. Add it</button>`; break; }
       const dupe=LIVE().find(t=>t.title.toLowerCase()===name.toLowerCase()&&(t.location||"")===loc);
       if(dupe){ closeModal(false); if(location.hash==="#t-"+dupe.id){ UI.tab="reviews"; UI.rvOpen=true; schedule(); } else { UI.pendingReview=dupe.id; location.hash="t-"+dupe.id; } toast("It’s already here. Add your review."); break; }
       if(!(await gate())) break;

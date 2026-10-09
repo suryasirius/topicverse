@@ -216,6 +216,7 @@ function check(op, col, id, prev, next, patch, uid) {
       if (next && !OPEN(next.access) && !["request", "invite", "friends", "selected", "private"].includes(next.access)) bad();
       if (next && !OPEN(next.access) && next.groupId) bad("A topic can be in a group or private, not both.");
       if (!prev && next.parentId) { const par = DOCS.topics.get(next.parentId); if (par && !topicVisible(par, uid)) deny("You can’t branch from a topic you can’t see."); }
+      if (!prev && next.kind === "place" && !admin) { let n = 0; const since = Date.now() - 864e5; for (const t of DOCS.topics.values()) if (t.authorId === uid && t.kind === "place" && t.createdAt > since) n++; if (n >= 5) deny("You can add up to 5 places a day. Try again tomorrow."); }
       if (!prev) { if (next.authorId !== uid) deny(); if (next.groupId && !role(next.groupId, uid) && !admin) deny("Join the group first."); return; }
       if (admin || prev.authorId === uid) { if (!same("authorId")) deny(); return; }
       if (op === "update" && prev.groupId && role(prev.groupId, uid) === "admin" && onlyKeys(patch, ["madePublic", "publicAt"])) return;
@@ -227,7 +228,7 @@ function check(op, col, id, prev, next, patch, uid) {
     case "reviews":
       if ((next || prev).authorId !== uid && !admin) deny();
       if (!prev && !topicVisible(DOCS.topics.get(next.topicId), uid)) deny("You can’t see that topic.");
-      if (!prev && id !== `${next.topicId}__${uid}`) bad(); if (!prev && DOCS.topics.get(next.topicId)?.deletedAt) deny("This topic was deleted."); if (!same("authorId")) deny(); return;
+      if (!prev && id !== `${next.topicId}__${admin ? next.authorId : uid}`) bad(); if (!prev && DOCS.topics.get(next.topicId)?.deletedAt) deny("This topic was deleted."); if (!same("authorId")) deny(); return;
     case "likes": case "follows":
       if (!suffixUid(id, uid) || (next && next.userId !== uid)) deny();
       if (col === "follows" && !prev && !topicVisible(DOCS.topics.get(next.topicId), uid)) deny("You can’t see that topic."); return;
