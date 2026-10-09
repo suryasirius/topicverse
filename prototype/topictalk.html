@@ -565,6 +565,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @media(max-width:640px){.dpair{grid-template-columns:1fr}}
 .dturn{padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);min-width:0}
 .dturn.empty{color:var(--muted);font-size:13.5px;border-style:dashed}
+@media(min-width:721px){.gbtn{display:none!important}}
 /* COMPACT-MOBILE v1: denser, app-like phone layout. Delete this block (or `git checkout before-compact -- prototype/topictalk.html`) to go back. */
 @media(max-width:720px){
 html{zoom:calc(var(--tz,1.07)*.94)}
@@ -633,6 +634,7 @@ main h1[style]{font-size:24px!important}
       <div class="dd" id="dd" hidden></div>
     </div>
     <div class="navr">
+      <a class="ibtn gbtn" href="#groups" aria-label="Groups"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9.5" r="2.5"/><path d="M3 20c.8-3.4 3.2-5 6-5s5.2 1.6 6 5M15 15.3c2.6-.5 5 .8 6 3.7"/></svg></a>
       <button class="lang" id="langBtn" data-act="lang" aria-label="Switch language">தமிழ்</button>
       <a class="navlink hide-m" href="#explore" data-l="Explore">Explore</a>
       <a class="navlink hide-m" href="#groups" data-l="Groups">Groups</a>
@@ -1450,8 +1452,8 @@ function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
   const ns=notifList().sort((a,b)=>b.createdAt-a.createdAt);
   const label={reply:"replied to you",mention:"mentioned you",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request"};
-  return `<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read)?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
-  ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}" href="${n.duelId?"#d-"+esc(n.duelId):n.type==="joined"?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
+  return `<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read||UI.keep?.has(n.id))?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
+  ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}" href="${n.duelId?"#d-"+esc(n.duelId):n.type==="joined"?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
    :emptyBox("You’re all caught up","Replies, @mentions, branches and battles from your comments, and activity on topics you follow show up here.")}`;
 }
 
@@ -1861,6 +1863,11 @@ function render(){
   document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="explore"&&(r==="groups"||r.startsWith("g-")))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
   document.querySelectorAll("[data-l]").forEach(el=>el.textContent=L(el.dataset.l));
   $("#langBtn").textContent=UI.lang==="ta"?"EN":"தமிழ்";
+  // Opening Alerts counts as seeing them: rows stay highlighted for this visit, the badge clears and they are marked read.
+  if(r==="alerts"&&S.me&&typeof db!=="undefined"&&db){
+    const us=notifList().filter(n=>!n.read);
+    if(us.length){ UI.keep=new Set([...(UI.keep||[]),...us.map(n=>n.id)]); for(const n of us){ n.read=true; db.doc("notifs/"+n.id).update({read:true}).catch(()=>{}); } }
+  } else if(r!=="alerts") UI.keep=null;
   const unread=notifList().filter(n=>!n.read).length;
   for(const b of [$("#bell"),$("#bell2")]){ b.hidden=!unread; b.textContent=unread>9?"9+":unread; }
   { const ts=S.handles.get(S.me)?.textSize; if(ts&&ts!==curTS){ applyTS(ts); try{ localStorage.setItem("tt_ts",ts); }catch{} } }
@@ -2622,7 +2629,7 @@ document.addEventListener("click", async e=>{
     case "bmRemove": UI.bn=""; { const w=$("#bm-pre"); if(w) w.innerHTML='<div class="muted">Banner will be removed when you save.</div>'; } break;
     case "bmSave": { if(UI.bn===undefined){ closeModal(false); break; } el.disabled=true; if(await W(()=>db.doc("topics/"+id).update({banner:UI.bn}))){ closeModal(true); toast(UI.bn?"Banner saved":"Banner removed"); schedule(); } else el.disabled=false; break; }
     case "dpRemove": UI.dp=""; { const o=S.handles.get(S.me); const w=$("#h-dp"); if(w){ const keep=o?.avatar; if(o) o.avatar=""; w.innerHTML=avatar(S.me,"lg"); if(o) o.avatar=keep; } } break;
-    case "readAll": for(const n of S.notifs.filter(n=>!n.read)){ try{ await db.doc("notifs/"+n.id).update({read:true}); }catch{} } break;
+    case "readAll": UI.keep=null; for(const n of S.notifs.filter(n=>!n.read)){ try{ await db.doc("notifs/"+n.id).update({read:true}); }catch{} } break;
     case "clearSample": {
       if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Click again to delete all sample content"; el.classList.add("pri"); break; }
       el.disabled=true; el.textContent="Removing…"; let n=0;
