@@ -614,6 +614,16 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @keyframes bcpop{from{transform:scale(.85);opacity:.4}}
 @media(prefers-reduced-motion:reduce){.bc2 *,.bc2{animation:none!important;transition:none!important}}
 @media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
+/* ---- HOME-ORG v1: fix width blow-out, compact area list ---- */
+.grid.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tcard,.tcard .body,.tcard .body>*{min-width:0}
+.tcard .csnip{overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@media(max-width:720px){.grid.g2,.local .grid.g2{grid-template-columns:minmax(0,1fr)}}
+.arealist{background:var(--surface);border-radius:12px;overflow:hidden}
+.arealist>a{padding:10px 12px;align-items:center}
+.arealist .txt{min-width:0}.arealist .txt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.local .arealist>*{padding:10px 12px}
+.sec{margin-top:18px}
 /* ---- PLACES / REVIEWS v1 ---- */
 .rvlist a{display:flex;align-items:center;gap:12px}
 .rvlist .rk{flex:none;width:26px;height:26px;border-radius:50%;background:var(--brand-soft);color:var(--brand-deep);font-weight:800;font-size:13px;display:grid;place-items:center}
@@ -1081,10 +1091,12 @@ function hotRows(skip){
     const t=S.topics.get(c.topicId); if(!t||seen.has(t.id)) continue; seen.add(t.id);
     const st=stat(t.id);
     out.push(`<a href="#t-${t.id}~${c.id}"><div class="tile" style="--h:${catHue(t.category)};width:40px;height:40px;font-size:13px;flex:none">${esc(abbr(t))}</div><div class="txt"><div class="hd">${esc(t.title)}</div><div class="meta"><span>${esc(t.category)}${t.location?" · "+esc(t.location):""}</span><span>${st.comments} comment${st.comments===1?"":"s"}${st.branches?` · ${st.branches} branch${st.branches>1?"es":""}`:""}</span><span>${ago(c.createdAt)}</span></div><div class="q"><b>${esc(nameOf(c.authorId))}:</b> ${esc(c.text)}</div></div></a>`);
-    if(out.length>=6) break;
+    if(out.length>=3) break;
   }
   return out.join("");
 }
+const areaRow=t=>{ const s=stat(t.id); const bits=[t.kind==="battle"?"Battle":t.kind==="prediction"?"Prediction":t.kind==="place"?"📍 Place":t.category, s.reviews?`★ ${s.avg.toFixed(1)}`:"", `${s.comments} comment${s.comments===1?"":"s"}`].filter(Boolean);
+  return `<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px;flex:none">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta">${bits.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div></a>`; };
 function vHome(){
   if (!S.topics.size) return heroHTML() + emptyBox("No topics yet","Start the first one. Anything can become a topic: a phone, a dish, a film, a local issue.",`<button class="btn pri" data-act="newTopic">${L("Start a topic")}</button>`);
   const now=Date.now(), tr = byTrend();
@@ -1110,13 +1122,11 @@ function vHome(){
   const bod=branchOfDay(), bodC=bod&&S.comments.get(bod.originCommentId), bodP=bod&&S.topics.get(bod.parentId);
   return heroHTML() + `
   <section class="sec"><div class="sech"><div><h2>📍 ${L("Your area")}${hp?` · ${esc(ha?ha.name+", ":"")}${esc(hp.name)}`:""}</h2>${hp?`<div class="sub">What’s happening around you</div>`:""}</div>${hp?`<button class="linkb" data-act="plOpen" data-m="home">Change</button>`:""}</div>
-    ${hp?(cityTopics.length?`<div class="local"><div class="grid g2">${cityTopics.map(t=>topicCard(t)).join("")}</div><div class="localfoot"><a href="#city-${enc(hp.id)}">${L("See all")} ${esc(hp.name)} →</a><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`
+    ${hp?(cityTopics.length?`<div class="local"><div class="list feed compact arealist">${cityTopics.map(areaRow).join("")}</div><div class="localfoot"><a href="#city-${enc(hp.id)}">${L("See all")} ${esc(hp.name)} →</a><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`
       :`<div class="local"><div class="empty" style="background:var(--surface)"><b>No local discussions yet.</b>Be the first to start one.<div style="margin-top:12px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button></div></div><div class="localfoot"><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`)
      :`<div class="local"><div class="empty" style="background:var(--surface)"><b>Add your city to personalize local discussions.</b>See what people around you are talking about.<div style="margin-top:12px"><button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button></div></div><div class="localfoot"><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`}</section>
   ${(()=>{ const hp2=homePlace(); let rt=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0); const loc=hp2?rt.filter(t=>inPlace(t,hp2)):[]; if(loc.length>=2) rt=loc; rt=rt.sort((a,b)=>rvScore(b)-rvScore(a)).slice(0,3);
     return `<section class="sec">${SH("⭐ "+(hp2&&rt.length&&rt.every(t=>inPlace(t,hp2))?"Top rated near you":"Top rated"),"Places and things people recommend.",`<a href="#reviews">${L("See all")} →</a>`)}${rt.length?`<div class="list rvlist">${rt.map((t,i)=>{ const s=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}</span></div></a>`; }).join("")}</div>`:`<div class="empty" style="background:var(--surface)"><b>No ratings yet.</b>Rate a place you know and help your town decide.<div style="margin-top:12px"><button class="btn pri sm" data-act="reviewPick">Review something</button></div></div>`}</section>`; })()}
-  ${S.myGroups.size?`<section class="sec"><div class="sech"><h2>Your groups</h2><a href="#groups">All groups</a></div><div class="grid">${[...S.myGroups].map(id=>S.groups.get(id)).filter(Boolean).map(groupCard).join("")}</div></section>`:""}
-  ${(()=>{ const ds=[...S.duels.values()].filter(d=>duelState(d).phase==="voting"&&!IX.myDV.has(d.id)&&d.challengerId!==S.me&&d.opponentId!==S.me).slice(0,2); return ds.length?`<section class="sec">${SH(L("Debates to judge"),"",`<a href="#explore" data-act="exGo" data-v="duels">${L("See all")} →</a>`)}<div class="grid b">${ds.map(duelMini).join("")}</div></section>`:""; })()}
   ${live.length?`<section class="sec">${SH("🔥 "+L("Live battles"),"Quick debates. Real opinions.",`<a href="#explore" data-act="exGo" data-v="battles">${L("See all")} →</a>`)}<div class="grid b bscroll">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
   <div class="cols">
     <div>
@@ -1125,8 +1135,10 @@ function vHome(){
       <section class="sec">${SH(L("Hot discussions"),"Conversations happening right now.")}
         <div class="list feed">${hotHTML||`<div class="muted">No comments yet.</div>`}</div></section>
       ${preds.length?`<section class="sec">${SH(L("Predictions"),"Call it before it happens.",`<a href="#explore" data-act="exGo" data-v="predictions">${L("See all")} →</a>`)}<div class="grid preds" style="grid-template-columns:1fr">${preds.map(t=>`<div><a href="#t-${t.id}" style="display:block;font-family:var(--f-display);font-weight:700;font-size:17px;margin-bottom:8px">${esc(t.title)}</a>${predCard(t)}</div>`).join("")}</div>${preds.length>1?`<a class="morep" href="#explore" data-act="exGo" data-v="predictions">More predictions →</a>`:""}</section>`:""}
+      ${(()=>{ const ds=[...S.duels.values()].filter(d=>duelState(d).phase==="voting"&&!IX.myDV.has(d.id)&&d.challengerId!==S.me&&d.opponentId!==S.me).slice(0,2); return ds.length?`<section class="sec">${SH(L("Debates to judge"),"",`<a href="#explore" data-act="exGo" data-v="duels">${L("See all")} →</a>`)}<div class="grid b">${ds.map(duelMini).join("")}</div></section>`:""; })()}
       <section class="sec">${SH(L("New topics"),"Fresh conversations to join.")}
         <div class="list feed compact">${newList.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>by ${esc(nameOf(t.authorId))}</span><span>${ago(t.createdAt)}</span></div></div></a>`).join("")}</div></section>
+      ${S.myGroups.size?`<section class="sec"><div class="sech"><h2>Your groups</h2><a href="#groups">All groups</a></div><div class="grid">${[...S.myGroups].map(id=>S.groups.get(id)).filter(Boolean).map(groupCard).join("")}</div></section>`:""}
     </div>
     <div>
       ${bod&&bodC&&bodP?`<section class="sec">${SH("🌱 "+L("Branch of the day"),"A comment that became its own conversation.")}<a class="botd" href="#t-${bod.id}">
