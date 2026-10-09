@@ -924,7 +924,7 @@ function duelMini(d){
   const st=duelState(d);
   return `<a class="duelmini" href="#d-${esc(d.id)}"><div class="bhead">${phaseLabel(d,st)}</div>
     <div class="dm-q">“${esc(d.motion)}”</div>
-    <div class="dm-p">${avatar(d.challengerId,"xs")}<b>${esc(nameOf(d.challengerId))}</b><span class="against">against</span><span class="vs">VS</span>${avatar(d.opponentId,"xs")}<b>${esc(nameOf(d.opponentId))}</b><span class="for">for</span>${st.phase==="voting"||st.phase==="done"?`<span class="muted" style="margin-left:auto">${st.n} votes</span>`:""}</div></a>`;
+    <div class="dm-p">${avatar(d.challengerId,"xs")}<b>${esc(nameOf(d.challengerId))}</b><span class="against">against</span><span class="vs">VS</span>${avatar(d.opponentId,"xs")}<b>${esc(nameOf(d.opponentId))}</b><span class="for">for</span>${st.phase==="voting"||st.phase==="done"?`<span class="muted" style="margin-left:auto">${st.n} ${st.n===1?"vote":"votes"}</span>`:""}</div></a>`;
 }
 
 /* ---------- components ---------- */
@@ -964,7 +964,7 @@ function battleCard(b, o={}){
     <div class="bhead">${s.ended?`<span>Battle · ended</span>`:`<span class="live">Live battle · ends in ${left(b.endsAt-Date.now())}</span>`}${o.topicLink&&t?`<a href="#t-${t.id}" style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--brand-deep)">${esc(t.title.length>34?t.title.slice(0,32)+"…":t.title)}</a>`:""}</div>
     <div class="bq">${esc(b.question)}</div>
     <div class="sides">${side("a",b.a,s.pa)}<span class="vs">VS</span>${side("b",b.b,s.pb)}</div>
-    <div class="bfoot"><span>${s.ended?(s.winner==="tie"?`<span class="winner">It’s a tie</span>`:`<span class="winner">🏆 ${esc(s.winner==="a"?b.a:b.b)} wins</span>`)+" · ":""}${s.n.toLocaleString("en-IN")} votes${b.authorId?` · started by ${esc(nameOf(b.authorId))}`:""}</span>
+    <div class="bfoot"><span>${s.ended?(s.winner==="tie"?`<span class="winner">It’s a tie</span>`:`<span class="winner">🏆 ${esc(s.winner==="a"?b.a:b.b)} wins</span>`)+" · ":""}${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${b.authorId?` · started by ${esc(nameOf(b.authorId))}`:""}</span>
       <button class="act" data-act="shareBattle" data-id="${b.id}">${ICON.share} ${L("Share card")}</button></div>
   </div>`;
 }
@@ -979,7 +979,7 @@ function predCard(t){
     <div class="sides">${side("yes",L("Yes"),py)}${side("no",L("No"),pn)}</div>
     ${t.outcome?`<div class="winner">Result: ${t.outcome==="yes"?"YES":"NO"}</div>${my?`<div class="called ${my===t.outcome?"ok":"no"}">${my===t.outcome?"✓ You called it":"You missed this one"}</div>`:""}`:""}
     ${canResolve?`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="muted" style="font-size:13px">The date has passed. What happened?</span><button class="btn sm" data-act="resolve" data-id="${t.id}" data-v="yes">It happened (Yes)</button><button class="btn sm" data-act="resolve" data-id="${t.id}" data-v="no">It didn’t (No)</button></div>`:""}
-    <div class="bfoot"><span>${n.toLocaleString("en-IN")} predictions · no money involved, just your record</span><button class="act" data-act="sharePred" data-id="${t.id}">${ICON.share} ${L("Share card")}</button></div>
+    <div class="bfoot"><span>${n.toLocaleString("en-IN")} ${n===1?"prediction":"predictions"} · no money involved, just your record</span><button class="act" data-act="sharePred" data-id="${t.id}">${ICON.share} ${L("Share card")}</button></div>
   </div>`;
 }
 
@@ -1110,12 +1110,12 @@ function vDuel(id){
   } else if(st.phase==="voting"){
     if(meSide) action=`<div class="dbox"><b>Voting is open.</b> You can’t vote in your own duel. ${st.n} vote${st.n===1?"":"s"} so far; at least ${MIN_VOTES} are needed for a result.</div>`;
     else if(!myVote&&!UI.dReady[id]) action=`<div class="dbox"><b>Who argued better?</b> Judge the arguments, not which side you agree with. Read all three rounds first.<div style="margin-top:10px"><button class="btn pri sm" data-act="duelReady" data-id="${esc(id)}">I’ve read both sides</button></div></div>`;
-    else action=`<div class="dbox"><b>Who argued better?</b><div class="sides" style="margin-top:10px">${["c","o"].map((k,i)=>`${i?`<span class="vs">VS</span>`:""}<button class="side ${myVote===k?"mine":""}" data-act="duelVote" data-id="${esc(id)}" data-v="${k}">${myVote?`<span class="fill" style="width:${k==="c"?st.pc:st.po}%"></span>`:""}<b>${esc(nameOf(duelPlayer(d,k)))}</b>${myVote?`<span class="pct">${k==="c"?st.pc:st.po}%</span>`:`<span class="muted" style="font-size:12.5px">${k==="o"?"For":"Against"}</span>`}${myVote===k?`<span class="you">Your vote</span>`:""}</button>`).join("")}</div><div class="hint" style="margin-top:6px">${st.n} votes · ends in ${left(st.ends-Date.now())} · you can change your vote until then</div></div>`;
+    else action=`<div class="dbox"><b>Who argued better?</b><div class="sides" style="margin-top:10px">${["c","o"].map((k,i)=>`${i?`<span class="vs">VS</span>`:""}<button class="side ${myVote===k?"mine":""}" data-act="duelVote" data-id="${esc(id)}" data-v="${k}">${myVote?`<span class="fill" style="width:${k==="c"?st.pc:st.po}%"></span>`:""}<b>${esc(nameOf(duelPlayer(d,k)))}</b>${myVote?`<span class="pct">${k==="c"?st.pc:st.po}%</span>`:`<span class="muted" style="font-size:12.5px">${k==="o"?"For":"Against"}</span>`}${myVote===k?`<span class="you">Your vote</span>`:""}</button>`).join("")}</div><div class="hint" style="margin-top:6px">${st.n} ${st.n===1?"vote":"votes"} · ends in ${left(st.ends-Date.now())} · you can change your vote until then</div></div>`;
   } else if(st.phase==="done"||st.phase==="forfeit"){
     const msg = st.phase==="forfeit" ? `🏆 ${esc(nameOf(duelPlayer(d,st.winner)))} wins by forfeit. ${esc(nameOf(duelPlayer(d,st.loser)))} didn’t reply within 24 hours.`
       : st.noresult ? `No result. Only ${st.n} vote${st.n===1?"":"s"}; a debate needs at least ${MIN_VOTES}.`
-      : st.winner==="draw" ? `It’s a draw, ${st.pc}% to ${st.po}% from ${st.n} votes.`
-      : `🏆 ${esc(nameOf(duelPlayer(d,st.winner)))} argued better, winning ${Math.max(st.pc,st.po)}% to ${Math.min(st.pc,st.po)}% from ${st.n} votes.`;
+      : st.winner==="draw" ? `It’s a draw, ${st.pc}% to ${st.po}% from ${st.n} ${st.n===1?"vote":"votes"}.`
+      : `🏆 ${esc(nameOf(duelPlayer(d,st.winner)))} argued better, winning ${Math.max(st.pc,st.po)}% to ${Math.min(st.pc,st.po)}% from ${st.n} ${st.n===1?"vote":"votes"}.`;
     action=`<div class="dbox result">${msg}</div>`;
   } else action=`<div class="dbox muted">${st.phase==="declined"?`${esc(nameOf(d.opponentId))} declined this duel.`:"This challenge expired before it was accepted."}</div>`;
   const oc=d.commentId&&S.comments.get(d.commentId);
@@ -1979,8 +1979,8 @@ function topicDigest(t, maxC){
   const lines=[`TOPIC ${t.id}: ${t.title} (${t.category}${t.location?", "+t.location:""})`];
   if(t.desc) lines.push(`Description: ${t.desc.slice(0,300)}`);
   if(rs.length){ const rec=Math.round(100*rs.filter(r=>r.rating>=4).length/rs.length); lines.push(`Reviews: ${st.avg.toFixed(1)}/5 from ${rs.length} reviews, ${rec}% recommend.`); rs.slice(0,8).forEach(r=>lines.push(`- review ${r.rating}/5: ${(r.title||"")} ${(r.text||"").slice(0,160)} Pros: ${r.pros||"-"} Cons: ${r.cons||"-"}`)); }
-  for(const b of IX.bByTopic.get(t.id)||[]){ const s=battleState(b); lines.push(`Battle "${b.question}": ${b.a} ${s.pa}% vs ${b.b} ${s.pb}% (${s.n} votes, ${s.ended?(s.winner==="tie"?"ended in a tie":"ended, winner "+(s.winner==="a"?b.a:b.b)):"still open"})`); }
-  if(t.kind==="prediction"){ const p=IX.pv.get(t.id), n=p.yes+p.no; lines.push(`Prediction: ${n?Math.round(100*p.yes/n):0}% say yes (${n} votes)${t.outcome?", resolved "+t.outcome.toUpperCase():", unresolved"}.`); }
+  for(const b of IX.bByTopic.get(t.id)||[]){ const s=battleState(b); lines.push(`Battle "${b.question}": ${b.a} ${s.pa}% vs ${b.b} ${s.pb}% (${s.n} ${s.n===1?"vote":"votes"}, ${s.ended?(s.winner==="tie"?"ended in a tie":"ended, winner "+(s.winner==="a"?b.a:b.b)):"still open"})`); }
+  if(t.kind==="prediction"){ const p=IX.pv.get(t.id), n=p.yes+p.no; lines.push(`Prediction: ${n?Math.round(100*p.yes/n):0}% say yes (${n} ${n===1?"vote":"votes"})${t.outcome?", resolved "+t.outcome.toUpperCase():", unresolved"}.`); }
   if(t.answer?.text) lines.push(`Previously written community answer: ${t.answer.text}`);
   const cs=(IX.cByTopic.get(t.id)||[]).sort((a,b)=>likes(b)-likes(a)).slice(0,maxC);
   if(cs.length){ lines.push("Comments (id | likes | text):"); cs.forEach(c=>lines.push(`${c.id} | ${likes(c)} | ${c.text.replace(/\s+/g," ").slice(0,280)}`)); }
@@ -2090,11 +2090,11 @@ async function makeCard(kind, id){
   if(kind==="battle"){
     const b=S.battles.get(id), s=battleState(b);
     bar(b.a,s.pa,yy,s.winner==="a",s.winner==="a"?acc:"#2C6B4E"); bar(b.b,s.pb,yy+144,s.winner==="b",s.winner==="b"?acc:"#2C6B4E");
-    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} votes`:`Live · ${s.n.toLocaleString("en-IN")} votes · ends in ${left(b.endsAt-Date.now())}`,80,yy+330);
+    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}`:`Live · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"} · ends in ${left(b.endsAt-Date.now())}`,80,yy+330);
   } else if(kind==="pred"){
     const p=IX.pv.get(id), n=p.yes+p.no, py=n?Math.round(100*p.yes/n):50;
     bar("Yes",py,yy,t.outcome==="yes",t.outcome==="yes"?acc:"#2C6B4E"); bar("No",100-py,yy+144,t.outcome==="no",t.outcome==="no"?acc:"#2C6B4E");
-    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(t.outcome?`Resolved: ${t.outcome.toUpperCase()} · ${n.toLocaleString("en-IN")} predictions`:`${n.toLocaleString("en-IN")} predictions · resolves ${fmtDate(t.resolveBy)}`,80,yy+330);
+    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(t.outcome?`Resolved: ${t.outcome.toUpperCase()} · ${n.toLocaleString("en-IN")} ${n===1?"prediction":"predictions"}`:`${n.toLocaleString("en-IN")} ${n===1?"prediction":"predictions"} · resolves ${fmtDate(t.resolveBy)}`,80,yy+330);
   } else {
     const s=stat(id), rs=IX.rByTopic.get(id)||[];
     if(rs.length){
