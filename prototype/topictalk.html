@@ -2219,11 +2219,11 @@ async function makeCard(kind, id){
       x.lineWidth=isLead?6:2; x.strokeStyle=isLead?col:"#2C6B4E"; x.beginPath(); x.roundRect(px,yy,pw,ph,28); x.stroke();
       x.fillStyle=col; x.beginPath(); x.roundRect(px+30,yy+28,64,44,14); x.fill(); x.fillStyle=bg; x.font=`800 30px ${D}`; x.textAlign="center"; x.fillText(letter,px+62,yy+60); x.textAlign="left";
       x.fillStyle=ink; x.font=`800 50px ${D}`; wrap(x,(win?"🏆 ":"")+label,pw-60,3).forEach((l,i)=>x.fillText(l,px+30,yy+128+i*56));
-      x.fillStyle=col; x.font=`800 96px ${D}`; x.fillText(s.n?pct+"%":"–",px+30,yy+ph-34); };
-    panel(80,"A",b.a,s.pa,cA,lead==="a",s.winner==="a"); panel(80+pw+gap,"B",b.b,s.pb,cB,lead==="b",s.winner==="b");
+      x.fillStyle=col; x.font=`800 96px ${D}`; x.fillText(pct+"%",px+30,yy+ph-34); };
+    panel(80,"A",b.a,s.n?s.pa:0,cA,lead==="a",s.winner==="a"); panel(80+pw+gap,"B",b.b,s.n?s.pb:0,cB,lead==="b",s.winner==="b");
     { const cx=W/2, cy=yy+ph/2; x.fillStyle=bg; x.beginPath(); x.arc(cx,cy,48,0,Math.PI*2); x.fill(); x.fillStyle=ink; x.beginPath(); x.arc(cx,cy,40,0,Math.PI*2); x.fill(); x.fillStyle=bg; x.font=`800 34px ${D}`; x.textAlign="center"; x.fillText("VS",cx,cy+12); x.textAlign="left"; }
     { const my=yy+ph+36, mw=W-160, fa=s.n?Math.max(0.04,Math.min(0.96,s.pa/100)):0.5; x.fillStyle=cB; x.beginPath(); x.roundRect(80,my,mw,26,13); x.fill(); x.fillStyle=cA; x.beginPath(); x.roundRect(80,my,mw*fa,26,13); x.fill(); }
-    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}`:`Live · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${s.n>=1&&s.n<5?" · early result":""} · ends in ${left(b.endsAt-Date.now())}`,80,yy+ph+112);
+    x.fillStyle=mut; x.font=`600 34px ${B}`; x.fillText(s.ended?(s.winner==="tie"?"It’s a tie":"Final result")+` · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}`:s.n===0?`Live · be the first to vote · ends in ${left(b.endsAt-Date.now())}`:`Live · ${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${s.n<5?" · early result":""} · ends in ${left(b.endsAt-Date.now())}`,80,yy+ph+112);
   } else if(kind==="pred"){
     const p=IX.pv.get(id), n=p.yes+p.no, py=n?Math.round(100*p.yes/n):50;
     bar("Yes",py,yy,t.outcome==="yes",t.outcome==="yes"?acc:"#2C6B4E"); bar("No",100-py,yy+144,t.outcome==="no",t.outcome==="no"?acc:"#2C6B4E");
@@ -2697,7 +2697,7 @@ document.addEventListener("click", async e=>{
       if(!(await gate())) break;
       if(await W(()=>db.doc("topics/"+id).update({madePublic:true,publicAt:Date.now()}))) toast("It’s public now, with credit to the group.");
       break; }
-    case "shareTopic": openCard("topic",id); break;
+    case "shareTopic": { const tt=S.topics.get(id), bb=tt&&(IX.bByTopic.get(id)||[])[0]; if(tt&&tt.kind==="battle"&&bb) openCard("battle",bb.id); else openCard("topic",id); break; }
     case "shareBattle": openCard("battle",id); break;
     case "sharePred": openCard("pred",id); break;
     case "shareNative": { const f=openCard.file, text=$("#sh")?.value||"";
