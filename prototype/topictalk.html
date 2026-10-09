@@ -614,7 +614,13 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @keyframes bcpop{from{transform:scale(.85);opacity:.4}}
 @media(prefers-reduced-motion:reduce){.bc2 *,.bc2{animation:none!important;transition:none!important}}
 @media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
-/* COMPACT-MOBILE v1: denser, app-like phone layout. Delete this block (or `git checkout before-compact -- prototype/topictalk.html`) to go back. */
+/* ---- PLACES / REVIEWS v1 ---- */
+.rvlist a{display:flex;align-items:center;gap:12px}
+.rvlist .rk{flex:none;width:26px;height:26px;border-radius:50%;background:var(--brand-soft);color:var(--brand-deep);font-weight:800;font-size:13px;display:grid;place-items:center}
+.rvlist .txt{flex:1;min-width:0}.rvlist .txt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rv-sc{flex:none;text-align:right;line-height:1.25}.rv-sc b{display:block;color:var(--brand-deep);font-size:15px}.rv-sc span{font-size:12px;color:var(--muted)}
+#rp-hits{margin:8px 0}#rp-hits:empty{display:none}
+/* ---- COMPACT-MOBILE v1: denser, app-like phone layout. Delete this block (or `git checkout before-compact -- prototype/topictalk.html`) to go back. */
 @media(max-width:720px){
 html{zoom:calc(var(--tz,1.07)*.94)}
 body{font-size:14.5px;line-height:1.45}
@@ -742,7 +748,7 @@ const enc = s => encodeURIComponent(s);
 const rid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const hueOf = s => { let h=0; for (const c of String(s)) h=(h*31+c.charCodeAt(0))%360; return h; };
 const catHue = c => ({Tech:205,Food:28,Movies:330,Travel:185,Apps:265,Shopping:45,Sports:120,Local:150,Services:95,Finance:60,Gaming:290,Entertainment:350}[c] ?? hueOf(c));
-const abbr = t => t.kind==="question"?"Q?":t.kind==="battle"?"VS":t.kind==="prediction"?"P?":(t.category||"?").slice(0,2);
+const abbr = t => t.kind==="place"?"📍":t.kind==="question"?"Q?":t.kind==="battle"?"VS":t.kind==="prediction"?"P?":(t.category||"?").slice(0,2);
 function ago(t){ const s=(Date.now()-t)/1000; if(s<60) return "just now"; if(s<3600) return Math.floor(s/60)+"m"; if(s<86400) return Math.floor(s/3600)+"h"; if(s<86400*30) return Math.floor(s/86400)+"d"; return new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}); }
 function left(ms){ const s=ms/1000; if(s<3600) return Math.max(1,Math.ceil(s/60))+"m"; if(s<86400) return Math.floor(s/3600)+"h "+Math.floor(s%3600/60)+"m"; return Math.floor(s/86400)+"d "+Math.floor(s%86400/3600)+"h"; }
 const fmtDate = t => new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
@@ -989,7 +995,7 @@ function topicCard(t, rank){
   return `<article class="tcard"><a href="#t-${t.id}">
     ${t.banner?`<img class="thumb" src="${esc(t.banner)}" alt="" loading="lazy">`:`<div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>`}
     <div class="body">
-      <div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
+      <div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${t.kind==="place"?"<span>📍 Place</span>":t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
       <h3>${esc(t.title)}</h3>
       <div class="stats">${s.reviews?`<span class="rating">★ ${s.avg.toFixed(1)}</span><span>${s.reviews} review${s.reviews>1?"s":""}</span>`:""}<span>${s.comments} comment${s.comments===1?"":"s"}</span>${s.branches?`<span>${s.branches} branch${s.branches>1?"es":""}</span>`:""}${extra}</div>
       ${snip}
@@ -1107,6 +1113,8 @@ function vHome(){
     ${hp?(cityTopics.length?`<div class="local"><div class="grid g2">${cityTopics.map(t=>topicCard(t)).join("")}</div><div class="localfoot"><a href="#city-${enc(hp.id)}">${L("See all")} ${esc(hp.name)} →</a><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`
       :`<div class="local"><div class="empty" style="background:var(--surface)"><b>No local discussions yet.</b>Be the first to start one.<div style="margin-top:12px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button></div></div><div class="localfoot"><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`)
      :`<div class="local"><div class="empty" style="background:var(--surface)"><b>Add your city to personalize local discussions.</b>See what people around you are talking about.<div style="margin-top:12px"><button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button></div></div><div class="localfoot"><button class="linkb" data-act="plOpen" data-m="explore">Explore another area →</button></div></div>`}</section>
+  ${(()=>{ const hp2=homePlace(); let rt=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0); const loc=hp2?rt.filter(t=>inPlace(t,hp2)):[]; if(loc.length>=2) rt=loc; rt=rt.sort((a,b)=>rvScore(b)-rvScore(a)).slice(0,3);
+    return `<section class="sec">${SH("⭐ "+(hp2&&rt.length&&rt.every(t=>inPlace(t,hp2))?"Top rated near you":"Top rated"),"Places and things people recommend.",`<a href="#reviews">${L("See all")} →</a>`)}${rt.length?`<div class="list rvlist">${rt.map((t,i)=>{ const s=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}</span></div></a>`; }).join("")}</div>`:`<div class="empty" style="background:var(--surface)"><b>No ratings yet.</b>Rate a place you know and help your town decide.<div style="margin-top:12px"><button class="btn pri sm" data-act="reviewPick">Review something</button></div></div>`}</section>`; })()}
   ${S.myGroups.size?`<section class="sec"><div class="sech"><h2>Your groups</h2><a href="#groups">All groups</a></div><div class="grid">${[...S.myGroups].map(id=>S.groups.get(id)).filter(Boolean).map(groupCard).join("")}</div></section>`:""}
   ${(()=>{ const ds=[...S.duels.values()].filter(d=>duelState(d).phase==="voting"&&!IX.myDV.has(d.id)&&d.challengerId!==S.me&&d.opponentId!==S.me).slice(0,2); return ds.length?`<section class="sec">${SH(L("Debates to judge"),"",`<a href="#explore" data-act="exGo" data-v="duels">${L("See all")} →</a>`)}<div class="grid b">${ds.map(duelMini).join("")}</div></section>`:""; })()}
   ${live.length?`<section class="sec">${SH("🔥 "+L("Live battles"),"Quick debates. Real opinions.",`<a href="#explore" data-act="exGo" data-v="battles">${L("See all")} →</a>`)}<div class="grid b bscroll">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
@@ -1138,7 +1146,7 @@ function vHome(){
 function vExplore(){
   const cats = ["All",...new Set(LIVE().map(t=>t.category))];
   const tabs=[["trending","Trending"],["latest","Latest"],["battles","Battles"],["duels","Debates"],["predictions","Predictions"],["discussed","Most discussed"],["reviewed","Most reviewed"],["branched","Most branched"],["questions","Questions"]];
-  const head=`<div class="sech" style="margin-bottom:6px"><h1 style="font-size:32px;font-weight:800;margin:0">${L("Explore")}</h1><a class="btn sm" href="#groups">${L("Groups")}</a></div>
+  const head=`<div class="sech" style="margin-bottom:6px"><h1 style="font-size:32px;font-weight:800;margin:0">${L("Explore")}</h1><span style="display:flex;gap:6px"><a class="btn sm" href="#reviews">⭐ Reviews</a><a class="btn sm" href="#groups">${L("Groups")}</a></span></div>
   <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button class="${UI.exSort===k?"on":""}" data-act="exSort" data-v="${k}">${l}</button>`).join("")}</div>
   <div class="tagrow catrow" style="margin-bottom:18px">${cats.map(c=>`<button class="chip ${UI.exCat===c?"on":""}" data-act="exCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
   const catOk=t=>UI.exCat==="All"||t?.category===UI.exCat;
@@ -1868,7 +1876,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{ if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
+document.addEventListener("input",e=>{ if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   if(ta.tagName==="TEXTAREA"&&ta.dataset.tt){ syncRich(ta); if(ta.classList.contains("rt-in")) acUpdate(ta);
@@ -1924,9 +1932,10 @@ function render(){
   else if(r.startsWith("tag-")) html=vTag(r.slice(4).toLowerCase());
   else if(r.startsWith("city-")) html=vCity(r.slice(5));
   else if(r==="groups") html=vGroups();
+  else if(r==="reviews") html=vReviews();
   else if(r.startsWith("d-")) html=vDuel(r.slice(2));
   else if(r.startsWith("g-")) html=vGroup(r.slice(2));
-  else if(r.startsWith("t-")){ const [tid,cid]=r.slice(2).split("~"); if(changed){ UI.tab=cid&&S.reviews.has(cid)?"reviews":"discussion"; if(UI.pendingReview===tid){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; } } focusC=cid; html=vTopic(tid); }
+  else if(r.startsWith("t-")){ const [tid,cid]=r.slice(2).split("~"); if(changed){ UI.tab=cid&&S.reviews.has(cid)?"reviews":(S.topics.get(tid)?.kind==="place"?"reviews":"discussion"); if(UI.pendingReview===tid){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; } } focusC=cid; html=vTopic(tid); }
   else html=vHome();
   view.innerHTML=html;
   for(const id in keep){ const el=document.getElementById(id); if(el) el.value=keep[id]; }
@@ -1936,7 +1945,7 @@ function render(){
   if(changed){ UI.lastRoute=r;
     const el=focusC&&document.getElementById("c-"+focusC);
     if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); } else window.scrollTo(0,0); }
-  document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="explore"&&(r==="groups"||r.startsWith("g-")))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
+  document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="explore"&&(r==="groups"||r==="reviews"||r.startsWith("g-")))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
   document.querySelectorAll("[data-l]").forEach(el=>el.textContent=L(el.dataset.l));
   $("#langBtn").textContent=UI.lang==="ta"?"EN":"தமிழ்";
   // Opening Alerts counts as seeing them: rows stay highlighted for this visit, the badge clears and they are marked read.
@@ -2325,15 +2334,51 @@ function createMenu(){
     <button class="choice" data-act="newQuestion"><b>Question</b><span>Ask the community</span></button>
     <button class="choice" data-act="newBattle"><b>A/B battle</b><span>Two sides, one winner</span></button>
     <button class="choice" data-act="newPred"><b>Prediction</b><span>Vote now, see who called it</span></button>
-    <button class="choice" data-act="reviewPick"><b>Review</b><span>Rate something on TopicTalk</span></button>
+    <button class="choice rvc" data-act="reviewPick"><b>Review</b><span>Rate a place, shop or product</span></button>
     <button class="choice" data-act="newGroup"><b>Group</b><span>Debate with friends</span></button>
    </div><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`);
 }
 function reviewPicker(){
-  const ts=byTrend().slice(0,8);
-  openModal(`<h2>What are you reviewing?</h2><p class="muted" style="margin:0">Pick a topic, or start a new one and review it there.</p>
-   <div class="list">${ts.map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>${stat(t.id).reviews} reviews</span></div></div></a>`).join("")}</div>
-   <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="newTopic">New topic</button></div>`);
+  UI.rpKind="place"; const hp=homePlace(), ha=homeArea();
+  openModal(`<h2>What are you reviewing?</h2><p class="muted" style="margin:0">Search first. If it isn’t here yet, add it and be the first to rate it.</p>
+   <label class="l">Name<input class="f" id="rp-name" maxlength="80" autocomplete="off" placeholder="e.g. Hotel Saravana, Arakkonam Turf, iPhone 17"></label>
+   <div class="list" id="rp-hits"></div>
+   <div id="rp-new" hidden>
+    <div class="seg" id="rp-seg"><button class="on" data-act="rpKind" data-v="place">📍 Place or shop</button><button data-act="rpKind" data-v="thing">📦 Product or thing</button></div>
+    <div class="row2" style="margin-top:10px"><label class="l">Category${catSelect("rp-cat","Food")}</label>
+     <label class="l" id="rp-locl">Area<input class="f" id="rp-loc" maxlength="60" list="pl-list" autocomplete="off" placeholder="e.g. ${esc(hp?.name||"Arakkonam")}" value="${esc((ha||hp)?.label||"")}"></label></div>
+    <datalist id="pl-list">${PLACES.list.map(x=>`<option value="${esc(x.label)}">`).join("")}</datalist>
+    <div class="hint" id="rp-err"></div>
+    <button class="btn pri" data-act="rpSave" style="width:100%;margin-top:8px">Add and write the first review</button>
+   </div>
+   <div class="acts"><button class="btn" data-act="closeModal">Cancel</button></div>`);
+  rpHits();
+}
+function rpHits(){
+  const q=($("#rp-name")?.value||"").trim().toLowerCase(), box=$("#rp-hits"); if(!box) return;
+  const hp=homePlace();
+  const base=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&t.kind!=="question");
+  let ts=q?base.filter(t=>t.title.toLowerCase().includes(q)):base.filter(t=>t.kind==="place"||stat(t.id).reviews).sort((a,b)=>((hp&&inPlace(b,hp))?1:0)-((hp&&inPlace(a,hp))?1:0)||stat(b.id).reviews-stat(a.id).reviews);
+  ts=ts.slice(0,6);
+  box.innerHTML=ts.map(t=>{ const s=stat(t.id); return `<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${t.kind==="place"?"<span>📍 Place</span>":""}<span>${esc(t.category)}</span>${t.location?`<span>${esc(t.location)}</span>`:""}<span>${s.reviews?"★ "+s.avg.toFixed(1)+" · "+s.reviews+" review"+(s.reviews===1?"":"s"):"No reviews yet"}</span></div></div></a>`; }).join("")||"";
+  const nw=$("#rp-new"); if(nw) nw.hidden=q.length<3;
+}
+const rvScore=t=>{ const s=stat(t.id); return (s.avg*s.reviews+3.5*3)/(s.reviews+3); };
+function vReviews(){
+  const hp=homePlace(), near=UI.rvNear??!!hp, kind=UI.rvKind||"all";
+  let items=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&(t.kind==="place"||stat(t.id).reviews>0));
+  if(kind==="place") items=items.filter(t=>t.kind==="place"); if(kind==="thing") items=items.filter(t=>t.kind!=="place");
+  if(near&&hp) items=items.filter(t=>inPlace(t,hp));
+  const cats=["All",...new Set(items.map(t=>t.category))], cat=cats.includes(UI.rvCat)?UI.rvCat:"All";
+  if(cat!=="All") items=items.filter(t=>t.category===cat);
+  const rated=items.filter(t=>stat(t.id).reviews).sort((a,b)=>rvScore(b)-rvScore(a)), unrated=items.filter(t=>!stat(t.id).reviews).sort((a,b)=>b.createdAt-a.createdAt);
+  const row=(t,i)=>{ const s=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}</span></div></a>`; };
+  return `<div class="sech" style="margin-bottom:6px"><h1 style="font-size:32px;font-weight:800;margin:0">Reviews</h1><button class="btn pri sm" data-act="reviewPick">⭐ Review something</button></div>
+  <p class="muted" style="margin:0 0 12px">Honest ratings of places, shops and products${near&&hp?" near "+esc(hp.name):""}. One review per person.</p>
+  <div class="tabs" role="tablist">${[["all","All"],["place","Places"],["thing","Products"]].map(([k,l])=>`<button class="${kind===k?"on":""}" data-act="rvKind" data-v="${k}">${l}</button>`).join("")}${hp?`<button class="${near?"on":""}" data-act="rvNear">${near?"📍 Near "+esc(hp.name):"Everywhere"}</button>`:""}</div>
+  <div class="tagrow catrow" style="margin-bottom:16px">${cats.map(c=>`<button class="chip ${cat===c?"on":""}" data-act="rvCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+  ${rated.length?`<div class="list rvlist">${rated.map(row).join("")}</div>`:emptyBox("Nothing rated here yet","Be the first. Pick a place you know and rate it from 1 to 5.",`<button class="btn pri" data-act="reviewPick">Review something</button>`)}
+  ${unrated.length?`<section class="sec"><div class="sech"><h2>Waiting for a first review</h2></div><div class="list">${unrated.slice(0,8).map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}<span>No reviews yet</span></div></div></a>`).join("")}</div></section>`:""}`;
 }
 
 /* ---------- events ---------- */
@@ -2352,7 +2397,23 @@ document.addEventListener("click", async e=>{
     case "writeAnswer": writeAnswer(id); break;
     case "newBattle": if(!(await gate())) break; battleModal({loc:el.dataset.loc||"",groupId:el.dataset.group}); break;
     case "newPred": if(!(await gate())) break; predModal({groupId:el.dataset.group}); break;
-    case "reviewPick": reviewPicker(); break;
+    case "reviewPick": closeModal(false); reviewPicker(); break;
+    case "rpKind": { UI.rpKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const l=$("#rp-locl"); if(l) l.hidden=UI.rpKind!=="place"; break; }
+    case "rvKind": UI.rvKind=el.dataset.v; schedule(); break;
+    case "rvNear": UI.rvNear=!(UI.rvNear??!!homePlace()); schedule(); break;
+    case "rvCat": UI.rvCat=el.dataset.v; schedule(); break;
+    case "rpSave": {
+      const name=($("#rp-name").value||"").trim(), err=$("#rp-err"); let loc="";
+      if(name.length<3){ err.textContent="Type the name (at least 3 letters)."; break; }
+      if(UI.rpKind==="place"){ const pl=placeOf($("#rp-loc").value); if(!pl){ err.textContent="Choose the area from the list so people nearby can find it."; break; } loc=pl.label; }
+      const dupe=LIVE().find(t=>t.title.toLowerCase()===name.toLowerCase()&&(t.location||"")===loc);
+      if(dupe){ closeModal(false); if(location.hash==="#t-"+dupe.id){ UI.tab="reviews"; UI.rvOpen=true; schedule(); } else { UI.pendingReview=dupe.id; location.hash="t-"+dupe.id; } toast("It’s already here. Add your review."); break; }
+      if(!(await gate())) break;
+      const t={title:name.slice(0,120),desc:"",category:$("#rp-cat").value,kind:UI.rpKind==="place"?"place":"topic",tags:["review"],location:loc,authorId:S.me,tagged:[],taggedGroups:[],parentId:null,originCommentId:null,createdAt:Date.now(),groupId:null};
+      const tid=rid("t"); el.disabled=true;
+      if(await W(()=>db.doc("topics/"+tid).set(t))){ closeModal(true); ensureFollow(tid); UI.pendingReview=tid; location.hash="t-"+tid; }
+      else el.disabled=false;
+      break; }
     case "pickReview": e.preventDefault(); closeModal(false); UI.pendingReview=id; if(location.hash==="#t-"+id){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; schedule(); } else location.hash="t-"+id; break;
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); break;
