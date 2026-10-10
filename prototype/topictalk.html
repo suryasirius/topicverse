@@ -614,7 +614,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @keyframes bcpop{from{transform:scale(.85);opacity:.4}}
 @media(prefers-reduced-motion:reduce){.bc2 *,.bc2{animation:none!important;transition:none!important}}
 @media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
-.durc{display:flex;gap:8px;margin-top:8px}.durc[hidden]{display:none}.durc label{flex:1;font-size:12px;color:var(--muted)}.durc input{margin-top:4px;text-align:center}
+.durc{display:flex;gap:8px;margin-top:8px}.durc[hidden]{display:none}.durc+.hint{min-height:0}.durc label{flex:1;font-size:12px;color:var(--muted)}.durc input{margin-top:4px;text-align:center}
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
 .backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
 @media(max-width:720px){.bk-tab{display:none}}
@@ -1916,7 +1916,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{ if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
+document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   if(ta.tagName==="TEXTAREA"&&ta.dataset.tt){ syncRich(ta); if(ta.classList.contains("rt-in")) acUpdate(ta);
@@ -2340,7 +2340,11 @@ function tagSuggest(){
 }
 function durSeg(o={}){ UI.durC=false; const list=o.edit?[["0","None"],["1","+1 h"],["24","+1 day"],["72","+3 days"]]:[["1","1 hour"],["24","24 hours"],["72","3 days"],["168","7 days"]], def=o.edit?"0":"24";
   return `<div class="seg" id="dur">${list.map(([v,l])=>`<button class="${v===def?"on":""}" data-act="dur" data-v="${v}">${l}</button>`).join("")}<button data-act="dur" data-v="c">Custom</button></div>
-  <div class="durc" id="durc" hidden><label>Days<input class="f" type="number" id="dur-d" min="0" max="7" value="0" inputmode="numeric"></label><label>Hours<input class="f" type="number" id="dur-h" min="0" max="23" value="2" inputmode="numeric"></label><label>Minutes<input class="f" type="number" id="dur-m" min="0" max="59" value="0" inputmode="numeric"></label></div>`; }
+  <div class="durc" id="durc" hidden><label>Days<input class="f" type="number" id="dur-d" min="0" max="7" value="0" inputmode="numeric"></label><label>Hours<input class="f" type="number" id="dur-h" min="0" max="23" value="2" inputmode="numeric"></label><label>Minutes<input class="f" type="number" id="dur-m" min="0" max="59" value="0" inputmode="numeric"></label></div><div class="hint" id="durnote"></div>`; }
+function durClamp(el){ const lim={d:7,h:23,m:59}[el.id.slice(4)]; let v=el.value===""?"":Math.max(0,Math.floor(+el.value)||0), capped=false;
+  if(v!==""&&v>lim){ v=lim; capped=true; } if(v!=="") el.value=v;
+  const d=$("#dur-d"),h=$("#dur-h"),m=$("#dur-m"); if(+d.value>=7){ if(+h.value||+m.value){ h.value=0; m.value=0; capped=true; } d.value=7; }
+  const note=$("#durnote"); if(note) note.textContent=capped?"Maximum is 7 days, so we set it to 7 days.":""; }
 function durHours(){ if(!UI.durC) return UI.dur; const n=id=>Math.max(0,Math.floor(+($(id)?.value)||0)); const h=n("#dur-d")*24+n("#dur-h")+n("#dur-m")/60; return Math.min(168,h); }
 function battleModal(o={}){
   const c=o.commentId&&S.comments.get(o.commentId), ct=c&&S.topics.get(c.topicId);
