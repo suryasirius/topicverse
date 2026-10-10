@@ -131,7 +131,7 @@ a.chip:hover,button.chip:hover{color:var(--ink)}
 .tree .n{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 
 /* topic page */
-.tp{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
+.tp>*{min-width:0}.tp{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
 @media(max-width:900px){.tp{grid-template-columns:1fr}}
 .rail{display:flex;flex-direction:column;gap:16px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 80px)}
 @media(max-width:900px){.rail{position:static}}
@@ -614,6 +614,8 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @keyframes bcpop{from{transform:scale(.85);opacity:.4}}
 @media(prefers-reduced-motion:reduce){.bc2 *,.bc2{animation:none!important;transition:none!important}}
 @media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
+.phs{display:flex;gap:8px;flex-wrap:wrap}.phi{position:relative;width:76px;height:76px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}.phi img{width:100%;height:100%;object-fit:cover;display:block}.phi button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:20px;cursor:pointer;padding:0}
+.phstrip{max-width:100%;min-width:0;display:flex;gap:8px;overflow-x:auto;margin:10px 0}.phstrip button{flex:0 0 auto;border:0;padding:0;background:none;cursor:pointer;border-radius:12px;overflow:hidden}.phstrip img{height:120px;width:auto;max-width:200px;object-fit:cover;display:block;border-radius:12px}.phstrip.sm img{height:84px}
 .durc{display:flex;gap:8px;margin-top:8px}.durc[hidden]{display:none}.durc+.hint{min-height:0}.durc label{flex:1;font-size:12px;color:var(--muted)}.durc input{margin-top:4px;text-align:center}
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
 .backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
@@ -1492,6 +1494,7 @@ function vTopic(id){
     ${(()=>{ const gs=(t.taggedGroups||[]).map(g=>S.groups.get(g)).filter(Boolean), us=t.tagged||[]; if(!gs.length&&!us.length) return "";
       return `<div class="withrow">With ${[...gs.map(g=>`<a href="#g-${esc(g.id)}">👥 ${esc(g.name)}</a>`),...us.map(who)].join(", ")}</div>`; })()}
     ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>`:""}
+    ${t.deletedAt?"":phStrip([...(t.media||[]),...(IX.rByTopic.get(id)||[]).flatMap(r=>r.media||[])].slice(0,12))}
     ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
     ${t.kind==="prediction"?`<div style="margin-top:16px">${predCard(t)}</div>`:""}
@@ -1503,6 +1506,7 @@ function vTopic(id){
       <button class="btn sm" data-act="shareTopic" data-id="${id}">${ICON.share}${L("Share card")}</button>
       ${S.me&&(accOf(t)==="open"||canManageT(t)||(t.membersCanAdd&&tRoleOf(t,S.me)))?`<button class="btn sm" data-act="inviteF" data-id="${id}">Invite friends</button>`:""}
       ${S.isOwner&&!t.deletedAt&&(t.kind==="place"||s.reviews)?`<button class="btn sm" data-act="mergeOpen" data-id="${id}">Merge / remove</button>`:""}${canManageT(t)?`<button class="btn sm" data-act="privacy" data-id="${id}">Privacy${(()=>{ const n=[...S.joinreqs.values()].filter(r=>r.topicId===id&&r.status==="pending").length; return n?` · ${n} request${n>1?"s":""}`:""; })()}</button>`:""}
+      ${S.me&&S.me===t.authorId&&(t.media||[]).length<PH_MAX?`<button class="btn sm" data-act="addPhotos" data-id="${id}">📷 Add photos</button>`:""}
       ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="bannerEdit" data-id="${id}">${t.banner?"Change banner":"Add banner"}</button>`:""}
       ${S.me&&S.me!==t.authorId&&S.tmembers.has(fKey(id,S.me))?`<button class="btn sm" data-act="leaveT" data-id="${id}">Leave topic</button>`:""}
       ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="delTopic" data-id="${id}">Delete topic</button>`:""}
@@ -1552,6 +1556,7 @@ function reviewNode(r){
     ${r.title?`<h4>${esc(r.title)}</h4>`:""}
     ${r.text?`<div class="ctext">${rich(r.text)}</div>`:""}
     ${r.pros||r.cons?`<div class="pros">${r.pros?`<div class="p"><b>Pros</b>${esc(r.pros)}</div>`:""}${r.cons?`<div class="c"><b>Cons</b>${esc(r.cons)}</div>`:""}</div>`:""}
+    ${phStrip(r.media,"sm")}
     <div class="actions"><button class="act ${on?"on":""}" data-act="like" data-id="${r.id}" data-kind="review" aria-pressed="${on}">${ICON.up}Helpful · ${n}</button></div></div>`;
 }
 function reviewForm(t,mine){
@@ -1561,6 +1566,7 @@ function reviewForm(t,mine){
     <input class="f" id="rv-title" placeholder="Headline (e.g. Best zoom camera I’ve used)" maxlength="100" value="${esc(mine?.title||"")}">
     <textarea id="rv-text" rows="4" placeholder="What was it like?">${esc(mine?.text||"")}</textarea>
     <div class="row2"><input class="f" id="rv-pros" placeholder="Pros, comma separated" value="${esc(mine?.pros||"")}"><input class="f" id="rv-cons" placeholder="Cons, comma separated" value="${esc(mine?.cons||"")}"></div>
+    ${phBox("rv")}
     <div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn sm" data-act="closeReview">Cancel</button><button class="btn pri sm" data-act="saveReview" data-topic="${t.id}">${mine?"Update review":"Post review"}</button></div></div>`;
 }
 
@@ -1865,6 +1871,17 @@ gifInput.addEventListener("change",async()=>{
   try{ ATT[ta.id]=await prepMedia(f); const box=ta.closest(".box"); attachUI(box,ta.id); syncRich(ta); ta.focus(); }
   catch(err){ toast(err.message||"Couldn’t add that file."); }
 });
+// ---- optional photos on reviews, topics and anything else (up to 3) ----
+const PH={}, PH_MAX=3;
+function phBox(k){ return `<div class="phbox"><div class="phs" id="ph-${k}">${phThumbs(k)}</div><div class="dprow" style="margin-top:4px"><label class="btn sm" style="cursor:pointer">📷 Add photos<input type="file" class="phfile" data-k="${k}" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></label><span class="muted" style="font-size:12px">Optional · up to ${PH_MAX}</span></div><div class="hint" id="ph-err-${k}"></div></div>`; }
+function phThumbs(k){ return (PH[k]||[]).map((a,i)=>`<span class="phi"><img src="${a.data}" alt=""><button type="button" data-act="phRemove" data-k="${k}" data-i="${i}" aria-label="Remove photo">×</button></span>`).join(""); }
+function phRender(k){ const b=document.getElementById("ph-"+k); if(b) b.innerHTML=phThumbs(k); }
+async function phSave(k,extra){ const out=[]; for(const a of (PH[k]||[])){ if(a.mid){ out.push(a.mid); continue; } const mid=rid("m"); if(!(await W(()=>db.doc("media/"+mid).set({data:a.data,w:a.w,h:a.h,type:a.type,by:S.me,createdAt:Date.now(),...extra})))) return null; out.push(mid); } return out; }
+function phStrip(ids,cls){ const l=(ids||[]).map(m=>S.media.get(m)&&[m,S.media.get(m)]).filter(Boolean); return l.length?`<div class="phstrip ${cls||""}">${l.map(([m,x])=>`<button type="button" data-act="viewMedia" data-id="${esc(m)}" aria-label="Open photo"><img src="${x.data}" alt="" loading="lazy"></button>`).join("")}</div>`:""; }
+document.addEventListener("change",async e=>{ const inp=e.target; if(!inp.classList||!inp.classList.contains("phfile")) return; const k=inp.dataset.k, err=document.getElementById("ph-err-"+k); const files=[...inp.files]; inp.value="";
+  PH[k]=PH[k]||[]; if(err) err.textContent="";
+  for(const f of files){ if(PH[k].length>=PH_MAX){ if(err) err.textContent="Up to "+PH_MAX+" photos."; break; } try{ PH[k].push(await prepMedia(f)); }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t add that photo."; } }
+  phRender(k); });
 function mediaHTML(c){
   return (c.media||[]).map(mid=>{ const m=S.media.get(mid); if(!m) return `<div class="cmedia ph">${c.mediaType==="gif"?"GIF":"Image"} loading…</div>`;
     const r=m.w&&m.h?Math.min(1, 320/m.w, 260/m.h):1;
@@ -2286,7 +2303,7 @@ function askHandle(edit){
   return new Promise(r=>modalResolve=r);
 }
 const catSelect=(id,cat)=>`<select class="f" id="${id}">${CATS.map(c=>`<option ${c===cat?"selected":""}>${c}</option>`).join("")}</select>`;
-function topicModal(o={}){
+function topicModal(o={}){ PH.tn=[];
   const b=o.branchFrom&&S.comments.get(o.branchFrom), bt=b&&S.topics.get(b.topicId);
   const cat=o.category||(bt?bt.category:"Tech");
   const tags=o.tags||(bt?(bt.tags||[]).slice(0,3).join(" "):"");
@@ -2303,6 +2320,7 @@ function topicModal(o={}){
     ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
     ${b&&accOf(S.topics.get(b.topicId))!=="open"?`<div class="muted" style="font-size:13px">${LOCK} This branch stays as private as the original topic.</div>`:`<label class="l">Who can see this?<select class="f" id="n-acc"><option value="open">Everyone</option><option value="friends">Friends only</option><option value="selected">Selected people (use Tag friends above)</option><option value="request">Request to join (title is public, you approve)</option><option value="private">Only me</option></select></label>`}
     <div class="l">Banner picture (optional)<div class="dprow"><span id="n-bn" style="flex:1;min-width:0"></span><label class="btn sm" style="cursor:pointer">Choose picture<input type="file" id="n-bfile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="btn sm" data-act="bnRemove">Remove</button></div></div>
+    <div class="l">Photos (optional)${phBox("tn")}</div>
     <div class="hint" id="n-err"></div>
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">${b?"Create branch topic":"Create"}</button></div>`);
   locRender();
@@ -2750,7 +2768,7 @@ document.addEventListener("click", async e=>{
       c.toBlob(async blob=>{ try{ await downloads.save({filename:openCard.fname,data:blob}); toast("Saved"); }catch(err){ if(err?.code==="unavailable"||err?.code==="not_granted"){ downloads=null; toast("Saving isn’t available here. Press and hold the image instead."); } else if(err?.code!=="declined") toast("Couldn’t save the image."); } },"image/png");
       break; }
     case "branch": { if(!(await gate())) break; topicModal({branchFrom:id}); break; }
-    case "openReview": if(!(await gate())) break; UI.tab="reviews"; UI.rvOpen=true; UI.rvRating=0; schedule(); break;
+    case "openReview": { if(!(await gate())) break; const tid0=(location.hash.match(/^#t-([\w-]+)/)||[])[1], mine0=tid0&&S.reviews.get(`${tid0}__${S.me}`); PH.rv=(mine0?.media||[]).map(m=>S.media.get(m)&&{...S.media.get(m),mid:m}).filter(Boolean); UI.tab="reviews"; UI.rvOpen=true; UI.rvRating=0; schedule(); break; }
     case "closeReview": UI.rvOpen=false; schedule(); break;
     case "star": UI.rvRating=+el.dataset.v; render(); break;
     case "saveReview": {
@@ -2760,7 +2778,8 @@ document.addEventListener("click", async e=>{
       const body={topicId:tid,authorId:S.me,rating:UI.rvRating,title:$("#rv-title").value.trim().slice(0,100),text:$("#rv-text").value.trim().slice(0,4000),pros:$("#rv-pros").value.trim().slice(0,300),cons:$("#rv-cons").value.trim().slice(0,300),createdAt:prev?.createdAt||Date.now()};
       if(prev) body.updatedAt=Date.now();
       el.disabled=true;
-      if(await W(()=>db.doc("reviews/"+key).set(body))){ clearField($("#rv-text")); UI.rvOpen=false; UI.rvRating=0; toast(prev?"Review updated":"Review posted"); ensureFollow(tid);
+      { const ids=await phSave("rv",{topicId:tid,reviewId:key}); if(ids===null){ el.disabled=false; break; } body.media=ids; for(const m of (prev?.media||[])) if(!ids.includes(m)){ try{ await db.doc("media/"+m).delete(); }catch{} } }
+      if(await W(()=>db.doc("reviews/"+key).set(body))){ PH.rv=[]; clearField($("#rv-text")); UI.rvOpen=false; UI.rvRating=0; toast(prev?"Review updated":"Review posted"); ensureFollow(tid);
         if(!prev) notify(followersOf(tid).map(u=>[u,"review"]),{topicId:tid,text:(body.title||body.text).slice(0,120)}); schedule(); }
       el.disabled=false; break; }
     case "tagPick": { if(UI.tagged.length>=10){ toast("You can tag up to 10 friends."); break; } if(!UI.tagged.includes(el.dataset.id)) UI.tagged.push(el.dataset.id); const i=$("#n-tagin"); i.value=""; tagRender(); tagSuggest(); i.focus(); break; }
@@ -2782,6 +2801,7 @@ document.addEventListener("click", async e=>{
       if(acc!=="open"&&t.groupId){ err.textContent="Choose a group or a privacy level, not both."; break; }
       if(acc!=="open") t.access=acc; if(UI.bn) t.banner=UI.bn;
       const tid=rid("t"); el.disabled=true;
+      { const ids=await phSave("tn",{topicId:tid}); if(ids===null){ el.disabled=false; break; } if(ids.length) t.media=ids; PH.tn=[]; }
       if(await W(()=>db.doc("topics/"+tid).set(t))){
         if(acc!=="open") for(const u of t.tagged) await W(()=>db.doc("tmembers/"+fKey(tid,u)).set({topicId:tid,userId:u,role:"member",addedBy:S.me,createdAt:Date.now()}));
         closeModal(true); ensureFollow(tid);
@@ -2886,6 +2906,9 @@ document.addEventListener("click", async e=>{
     case "memAdmin": { await W(()=>db.doc("tmembers/"+fKey(id,el.dataset.u)).update({role:el.dataset.r})); setTimeout(()=>privModal(id),200); break; }
     case "leaveT": { if(await W(()=>db.doc("tmembers/"+fKey(id,S.me)).delete())){ toast("You left the topic"); location.hash="#home"; } break; }
     case "bnRemove": UI.bn=""; { const w=$("#n-bn"); if(w) w.innerHTML=""; } break;
+    case "addPhotos": { const t=S.topics.get(id); if(!t) break; PH.tp=[]; UI.phTopic=id; openModal(`<h2>Add photos</h2><p class="muted" style="margin:0;font-size:13px">Up to ${PH_MAX-(t.media||[]).length} more.</p>${phBox("tp")}<div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="savePhotos">Add</button></div>`); break; }
+    case "savePhotos": { const t=S.topics.get(UI.phTopic); if(!t||!PH.tp?.length){ closeModal(false); break; } el.disabled=true; const ids=await phSave("tp",{topicId:t.id}); if(ids===null){ el.disabled=false; break; } const all=[...(t.media||[]),...ids].slice(0,PH_MAX); if(await W(()=>db.doc("topics/"+t.id).update({media:all}))){ PH.tp=[]; closeModal(true); toast("Photos added"); } else el.disabled=false; break; }
+    case "phRemove": { const k=el.dataset.k; (PH[k]||[]).splice(+el.dataset.i,1); phRender(k); break; }
     case "bannerEdit": bannerModal(id); break;
     case "bmRemove": UI.bn=""; { const w=$("#bm-pre"); if(w) w.innerHTML='<div class="muted">Banner will be removed when you save.</div>'; } break;
     case "bmSave": { if(UI.bn===undefined){ closeModal(false); break; } el.disabled=true; if(await W(()=>db.doc("topics/"+id).update({banner:UI.bn}))){ closeModal(true); toast(UI.bn?"Banner saved":"Banner removed"); schedule(); } else el.disabled=false; break; }

@@ -149,7 +149,7 @@ function visible(col, id, d, uid) {
     case "pvotes": return topicVisible(DOCS.topics.get(d.topicId), uid);
     case "bvotes": { const b = DOCS.battles.get(d.battleId); return !b || visible("battles", d.battleId, b, uid); }
     case "dvotes": { const x = DOCS.duels.get(d.duelId); return !x || visible("duels", d.duelId, x, uid); }
-    case "media": { const c = DOCS.comments.get(d.commentId); return c ? visible("comments", d.commentId, c, uid) : d.by === uid; }
+    case "media": { const c = DOCS.comments.get(d.commentId); if (c) return visible("comments", d.commentId, c, uid); const tp = d.topicId && DOCS.topics.get(d.topicId); return tp ? topicVisible(tp, uid) : d.by === uid; }
     case "notifs": return !!uid && d.to === uid;
     case "friends": return !!uid && (d.fromId === uid || d.toId === uid);
     case "tmembers": { const t = DOCS.topics.get(d.topicId); return !!t && !!uid && (isAdmin(uid) || t.authorId === uid || !!tRole(t.id, uid)); }
