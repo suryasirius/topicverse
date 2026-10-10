@@ -2523,7 +2523,7 @@ document.addEventListener("click", async e=>{
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; schedule(); break;
-    case "exGo": UI.exSort=el.dataset.v; break;
+    case "exGo": UI.exSort=el.dataset.v; if(location.hash==="#explore") schedule(); else location.hash="explore"; break;
     case "exCat": UI.exCat=el.dataset.v; schedule(); break;
     case "searchAnywhere": { const pq=parseQ(UI.query); UI.query=pq.words.join(" ")||UI.query; if(typeof q!=="undefined"&&q) q.value=UI.query; schedule(); break; }
     case "suggest": { UI.query=el.dataset.q; if(typeof q!=="undefined"&&q) q.value=UI.query; dd.hidden=true; location.hash="#search"; schedule(); break; }
