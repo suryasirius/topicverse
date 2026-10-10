@@ -223,6 +223,7 @@ function check(op, col, id, prev, next, patch, uid) {
       if (op === "update" && onlyKeys(patch, ["answer"]) && topicVisible(prev, uid)) return;
       deny();
     case "comments": case "battles":
+      if (col === "battles" && next && !admin && next.endsAt > Date.now() + 7 * 864e5 + 6e4) deny("Voting can run for 7 days at most.");
       if (!prev) { if (next.authorId !== uid) deny(); if (!topicVisible(DOCS.topics.get(next.topicId), uid)) deny(); if (DOCS.topics.get(next.topicId)?.deletedAt) deny("This topic was deleted."); return; }
       if (prev.authorId !== uid && !admin) deny(); if (!same("authorId")) deny(); return;
     case "reviews":

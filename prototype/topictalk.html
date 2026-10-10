@@ -614,6 +614,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @keyframes bcpop{from{transform:scale(.85);opacity:.4}}
 @media(prefers-reduced-motion:reduce){.bc2 *,.bc2{animation:none!important;transition:none!important}}
 @media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
+.durc{display:flex;gap:8px;margin-top:8px}.durc[hidden]{display:none}.durc label{flex:1;font-size:12px;color:var(--muted)}.durc input{margin-top:4px;text-align:center}
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
 .backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
 @media(max-width:720px){.bk-tab{display:none}}
@@ -2337,7 +2338,10 @@ function tagSuggest(){
   sug.hidden=!items.length&&!gitems.length;
   sug.innerHTML=gitems.map(g=>`<button type="button" class="aci" data-act="tagPickG" data-id="${esc(g.id)}"><span>👥</span><span><b>${esc(g.name)}</b> <span class="muted">tag all ${(IX.gMem.get(g.id)||[]).length} members</span></span></button>`).join("")+items.map(([id,d])=>`<button type="button" class="aci" data-act="tagPick" data-id="${esc(id)}">${avatar(id,"xs")}<span><b>@${esc(d.handle)}</b> ${idTag(id)}${isSeed(id)?' <span class="sample">sample</span>':""}</span></button>`).join("");
 }
-function durSeg(){ return `<div class="seg" id="dur">${[["1","1 hour"],["24","24 hours"],["72","3 days"]].map(([v,l])=>`<button class="${v==="24"?"on":""}" data-act="dur" data-v="${v}">${l}</button>`).join("")}</div>`; }
+function durSeg(o={}){ UI.durC=false; const list=o.edit?[["0","None"],["1","+1 h"],["24","+1 day"],["72","+3 days"]]:[["1","1 hour"],["24","24 hours"],["72","3 days"],["168","7 days"]], def=o.edit?"0":"24";
+  return `<div class="seg" id="dur">${list.map(([v,l])=>`<button class="${v===def?"on":""}" data-act="dur" data-v="${v}">${l}</button>`).join("")}<button data-act="dur" data-v="c">Custom</button></div>
+  <div class="durc" id="durc" hidden><label>Days<input class="f" type="number" id="dur-d" min="0" max="7" value="0" inputmode="numeric"></label><label>Hours<input class="f" type="number" id="dur-h" min="0" max="23" value="2" inputmode="numeric"></label><label>Minutes<input class="f" type="number" id="dur-m" min="0" max="59" value="0" inputmode="numeric"></label></div>`; }
+function durHours(){ if(!UI.durC) return UI.dur; const n=id=>Math.max(0,Math.floor(+($(id)?.value)||0)); const h=n("#dur-d")*24+n("#dur-h")+n("#dur-m")/60; return Math.min(168,h); }
 function battleModal(o={}){
   const c=o.commentId&&S.comments.get(o.commentId), ct=c&&S.topics.get(c.topicId);
   UI.dur=24;
@@ -2359,7 +2363,7 @@ function editBattleModal(bid){
     <label class="l">Question<input class="f" id="eb-q" maxlength="100" value="${esc(b.question)}"></label>
     <div class="row2"><label class="l">Side A<input class="f" id="eb-a" maxlength="40" value="${esc(b.a)}" ${locked?"disabled":""}></label><label class="l">Side B<input class="f" id="eb-b" maxlength="40" value="${esc(b.b)}" ${locked?"disabled":""}></label></div>
     ${locked?`<p class="muted" style="margin:0;font-size:13px">${s.n} ${s.n===1?"person has":"people have"} voted, so the sides are locked. You can still fix the question or extend the time.</p>`:""}
-    <label class="l">${s.ended?"Reopen voting for":"Add more time"}<div class="seg" id="dur">${[["0","No change"],["1","+1 hour"],["24","+24 hours"],["72","+3 days"]].map(([v,l])=>`<button class="${v==="0"?"on":""}" data-act="dur" data-v="${v}">${l}</button>`).join("")}</div></label>
+    <label class="l">${s.ended?"Reopen voting for":"Add more time"}${durSeg({edit:1})}</label>
     <div class="hint" id="eb-err"></div>
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveEditBattle">Save changes</button></div>`);
 }
@@ -2513,7 +2517,7 @@ document.addEventListener("click", async e=>{
       break; }
     case "pickReview": e.preventDefault(); closeModal(false); UI.pendingReview=id; if(location.hash==="#t-"+id){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; schedule(); } else location.hash="t-"+id; break;
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
-    case "dur": UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); break;
+    case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; schedule(); break;
     case "exGo": UI.exSort=el.dataset.v; break;
     case "exCat": UI.exCat=el.dataset.v; schedule(); break;
@@ -2584,7 +2588,7 @@ document.addEventListener("click", async e=>{
       if(!q){ err.textContent="Write the question."; break; }
       if(!A||!Bv||A.toLowerCase()===Bv.toLowerCase()){ err.textContent="Name two different sides."; break; }
       const base=Math.max(b.endsAt,Date.now()), patch={question:q.slice(0,100),a:A.slice(0,40),b:Bv.slice(0,40)};
-      if(UI.dur) patch.endsAt=base+UI.dur*3.6e6;
+      const dh=durHours(); if(UI.durC&&dh<1/6){ err.textContent="Custom time must be at least 10 minutes."; break; } if(dh&&base>=Date.now()+168*3.6e6-6e4){ err.textContent="Voting can run for 7 days at most."; break; } if(dh) patch.endsAt=Math.min(base+dh*3.6e6,Date.now()+168*3.6e6);
       el.disabled=true;
       const ok=await W(()=>db.doc("battles/"+b.id).update(patch));
       if(ok&&!b.commentId){ const t=S.topics.get(b.topicId); if(t&&t.title!==patch.question) await W(()=>db.doc("topics/"+t.id).update({title:patch.question})); }
@@ -2604,7 +2608,8 @@ document.addEventListener("click", async e=>{
         if(!(await W(()=>db.doc("topics/"+tid).set(t)))){ el.disabled=false; break; }
         ensureFollow(tid); notifyGroup(t.groupId,tid,t.title);
       }
-      const b={topicId:tid,commentId:c?c.id:null,question:q.slice(0,100),a:A.slice(0,40),b:Bv.slice(0,40),authorId:S.me,createdAt:now,endsAt:now+(UI.dur||24)*3.6e6,seedA:0,seedB:0};
+      if(UI.durC&&durHours()<1/6){ err.textContent="Custom time must be at least 10 minutes."; break; }
+      const b={topicId:tid,commentId:c?c.id:null,question:q.slice(0,100),a:A.slice(0,40),b:Bv.slice(0,40),authorId:S.me,createdAt:now,endsAt:now+(durHours()||24)*3.6e6,seedA:0,seedB:0};
       if(await W(()=>db.doc("battles/"+bid).set(b))){
         closeModal(true); toast("Battle is live. Share it so people vote.");
         if(c) notify([[c.authorId,"battle"],...followersOf(tid).map(u=>[u,"newbattle"])],{topicId:tid,commentId:c.id,text:`${b.a} vs ${b.b}`});
