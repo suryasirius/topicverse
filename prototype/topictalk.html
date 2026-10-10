@@ -1497,7 +1497,8 @@ function vTopic(id){
     ${battles.map(b=>`<div style="margin-top:16px">${battleCard(b)}</div>`).join("")}
     ${t.deletedAt?"":`<div class="tbar">
       <button class="btn sm ${following?"":"pri"}" data-act="follow" data-id="${id}">${following?L("Following"):L("Follow")} · ${s.followers}</button>
-      <button class="btn sm" data-act="openReview">${mine?"Edit review":L("Review")}</button>
+      ${t.kind==="battle"&&battles[0]&&(t.authorId===S.me||S.isOwner)?`<button class="btn sm" data-act="editBattle" data-id="${battles[0].id}">Edit battle</button>`:""}
+      ${t.kind==="battle"?"":`<button class="btn sm" data-act="openReview">${mine?"Edit review":L("Review")}</button>`}
       <button class="btn sm" data-act="shareTopic" data-id="${id}">${ICON.share}${L("Share card")}</button>
       ${S.me&&(accOf(t)==="open"||canManageT(t)||(t.membersCanAdd&&tRoleOf(t,S.me)))?`<button class="btn sm" data-act="inviteF" data-id="${id}">Invite friends</button>`:""}
       ${S.isOwner&&!t.deletedAt&&(t.kind==="place"||s.reviews)?`<button class="btn sm" data-act="mergeOpen" data-id="${id}">Merge / remove</button>`:""}${canManageT(t)?`<button class="btn sm" data-act="privacy" data-id="${id}">Privacy${(()=>{ const n=[...S.joinreqs.values()].filter(r=>r.topicId===id&&r.status==="pending").length; return n?` · ${n} request${n>1?"s":""}`:""; })()}</button>`:""}
@@ -2351,6 +2352,17 @@ function battleModal(o={}){
     <div class="hint" id="bt-err"></div>
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveBattle" data-comment="${esc(o.commentId||"")}">Start battle</button></div>`);
 }
+function editBattleModal(bid){
+  const b=S.battles.get(bid); if(!b) return; const s=battleState(b), locked=s.n>0;
+  UI.edBid=bid; UI.dur=0;
+  openModal(`<h2>Edit battle</h2>
+    <label class="l">Question<input class="f" id="eb-q" maxlength="100" value="${esc(b.question)}"></label>
+    <div class="row2"><label class="l">Side A<input class="f" id="eb-a" maxlength="40" value="${esc(b.a)}" ${locked?"disabled":""}></label><label class="l">Side B<input class="f" id="eb-b" maxlength="40" value="${esc(b.b)}" ${locked?"disabled":""}></label></div>
+    ${locked?`<p class="muted" style="margin:0;font-size:13px">${s.n} ${s.n===1?"person has":"people have"} voted, so the sides are locked. You can still fix the question or extend the time.</p>`:""}
+    <label class="l">${s.ended?"Reopen voting for":"Add more time"}<div class="seg" id="dur">${[["0","No change"],["1","+1 hour"],["24","+24 hours"],["72","+3 days"]].map(([v,l])=>`<button class="${v==="0"?"on":""}" data-act="dur" data-v="${v}">${l}</button>`).join("")}</div></label>
+    <div class="hint" id="eb-err"></div>
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveEditBattle">Save changes</button></div>`);
+}
 function predModal(o={}){
   const min=new Date(Date.now()+86400000).toISOString().slice(0,10);
   openModal(`<h2>Make a prediction</h2><p class="muted" style="margin:0;font-size:13px">People vote Yes or No now. When the date passes, you mark what happened and everyone’s “called it” record updates. No money involved.</p>
@@ -2565,6 +2577,19 @@ document.addEventListener("click", async e=>{
         notify((IX.pVoters.get(id)||[]).map(v=>[v.userId,"resolved"]),{topicId:id,text:"Result: "+el.dataset.v.toUpperCase()}); }
       break; }
     case "settle": { if(!(await gate())) break; battleModal({commentId:id}); break; }
+    case "editBattle": editBattleModal(id); break;
+    case "saveEditBattle": {
+      const b=S.battles.get(UI.edBid); if(!b) break; const s=battleState(b), err=$("#eb-err");
+      const q=$("#eb-q").value.trim(), A=s.n?b.a:$("#eb-a").value.trim(), Bv=s.n?b.b:$("#eb-b").value.trim();
+      if(!q){ err.textContent="Write the question."; break; }
+      if(!A||!Bv||A.toLowerCase()===Bv.toLowerCase()){ err.textContent="Name two different sides."; break; }
+      const base=Math.max(b.endsAt,Date.now()), patch={question:q.slice(0,100),a:A.slice(0,40),b:Bv.slice(0,40)};
+      if(UI.dur) patch.endsAt=base+UI.dur*3.6e6;
+      el.disabled=true;
+      const ok=await W(()=>db.doc("battles/"+b.id).update(patch));
+      if(ok&&!b.commentId){ const t=S.topics.get(b.topicId); if(t&&t.title!==patch.question) await W(()=>db.doc("topics/"+t.id).update({title:patch.question})); }
+      if(ok){ closeModal(true); toast("Battle updated"); } else el.disabled=false;
+      break; }
     case "saveBattle": {
       const q=$("#bt-q").value.trim()||"Who’s right?", A=$("#bt-a").value.trim(), Bv=$("#bt-b").value.trim(), err=$("#bt-err");
       if(!A||!Bv){ err.textContent="Name both sides."; break; }
