@@ -51,7 +51,7 @@ const q = {
 };
 
 // ---------- documents in memory ----------
-const COLS = ["topics", "comments", "reviews", "likes", "follows", "handles", "battles", "bvotes", "pvotes", "groups", "gmembers", "duels", "dvotes", "media", "notifs", "friends", "ufollows", "tmembers", "joinreqs", "reports", "blocks"];
+const COLS = ["topics", "comments", "reviews", "likes", "follows", "handles", "battles", "bvotes", "pvotes", "groups", "gmembers", "duels", "dvotes", "media", "notifs", "friends", "ufollows", "tmembers", "joinreqs", "reports", "blocks", "gmsgs"];
 const DOCS = Object.fromEntries(COLS.map(c => [c, new Map()]));
 function seedIfEmpty() {
   if (q.count.get().n > 0 || !fs.existsSync(SEED_DIR)) return;
@@ -149,7 +149,8 @@ function visible(col, id, d, uid) {
     case "pvotes": return topicVisible(DOCS.topics.get(d.topicId), uid);
     case "bvotes": { const b = DOCS.battles.get(d.battleId); return !b || visible("battles", d.battleId, b, uid); }
     case "dvotes": { const x = DOCS.duels.get(d.duelId); return !x || visible("duels", d.duelId, x, uid); }
-    case "media": { const c = DOCS.comments.get(d.commentId); if (c) return visible("comments", d.commentId, c, uid); const tp = d.topicId && DOCS.topics.get(d.topicId); return tp ? topicVisible(tp, uid) : d.by === uid; }
+    case "gmsgs": return !!uid && !!role(d.groupId, uid);
+    case "media": { const gm = d.gmsgId && DOCS.gmsgs.get(d.gmsgId); if (gm) return visible("gmsgs", d.gmsgId, gm, uid); const c = DOCS.comments.get(d.commentId); if (c) return visible("comments", d.commentId, c, uid); const tp = d.topicId && DOCS.topics.get(d.topicId); return tp ? topicVisible(tp, uid) : d.by === uid; }
     case "notifs": return !!uid && d.to === uid;
     case "friends": return !!uid && (d.fromId === uid || d.toId === uid);
     case "tmembers": { const t = DOCS.topics.get(d.topicId); return !!t && !!uid && (isAdmin(uid) || t.authorId === uid || !!tRole(t.id, uid)); }
@@ -158,18 +159,32 @@ function visible(col, id, d, uid) {
     default: return true;
   }
 }
+// pictures are not sent inside /api/all: each one becomes a link the browser loads when it's on screen and then keeps in its cache
+const HC = new Map();
+const imgHash = s => { let v = HC.get(s); if (!v) { v = crypto.createHash("sha1").update(s).digest("hex").slice(0, 12); if (HC.size > 20000) HC.clear(); HC.set(s, v); } return v; };
+const isData = v => typeof v === "string" && v.startsWith("data:");
 function outDoc(col, id, d, uid) {
+  if (col === "media" && isData(d.data)) return { ...d, data: `/api/img/m/${id}?v=${imgHash(d.data)}` };
+  if (col === "handles" && isData(d.avatar)) return { ...d, avatar: `/api/img/a/${id}?v=${imgHash(d.avatar)}` };
+  if (col === "topics" && isData(d.banner) && topicVisible(d, uid)) return { ...d, banner: `/api/img/b/${id}?v=${imgHash(d.banner)}` };
   if (col === "topics" && !topicVisible(d, uid)) return { id, title: d.title, category: d.category, authorId: d.authorId, createdAt: d.createdAt, access: d.access, stub: true, mcount: memberCount(id) };
   // a group's invite code is only for its members
   if (col === "groups" && d.invite && !role(id, uid) && !isAdmin(uid)) { const { invite, ...rest } = d; return rest; }
   return d;
+}
+// group chat: the snapshot carries the newest messages of each group; older ones come from /api/gmsgs
+const GMSG_PAGE = 100;
+function newestPerGroup(arr, n) {
+  const by = new Map(); for (const x of arr) { const g = x.data.groupId; if (!by.has(g)) by.set(g, []); by.get(g).push(x); }
+  const out = []; for (const l of by.values()) { l.sort((a, b) => a.data.createdAt - b.data.createdAt); out.push(...l.slice(-n)); }
+  return out;
 }
 function snapshotFor(uid) {
   const cols = {};
   for (const col of COLS) {
     const arr = [];
     for (const [id, d] of DOCS[col]) if (visible(col, id, d, uid)) arr.push({ id, data: outDoc(col, id, d, uid) });
-    cols[col] = arr;
+    cols[col] = col === "gmsgs" ? newestPerGroup(arr, GMSG_PAGE) : arr;
   }
   return cols;
 }
@@ -311,6 +326,27 @@ function check(op, col, id, prev, next, patch, uid) {
       if (prev.challengerId !== uid && prev.opponentId !== uid && !admin) deny(); if (!same("challengerId") || !same("opponentId")) deny(); return;
     case "media":
       if ((next || prev).by !== uid && !admin) deny(); return;
+    case "gmsgs": {
+      const d = next || prev, gid = d.groupId;
+      if (op === "delete") { if (prev.authorId === uid || role(gid, uid) === "admin") return; deny(); }
+      if (!role(gid, uid)) deny("Join the group first.");
+      if (prev) {
+        // a retried send of the same message is fine; otherwise only "delete for everyone" (clears the text)
+        if (op === "set" && prev.authorId === uid && next.authorId === uid && prev.text === next.text && prev.groupId === next.groupId) { next.createdAt = prev.createdAt; return; }
+        if (op === "update" && (prev.authorId === uid || role(gid, uid) === "admin") && onlyKeys(patch, ["deletedAt", "text", "media"]) && patch.text === "" && typeof patch.deletedAt === "number" && (!patch.media || (Array.isArray(patch.media) && !patch.media.length))) return;
+        deny();
+      }
+      if (next.authorId !== uid) deny();
+      if (!onlyKeys(next, ["groupId", "authorId", "text", "createdAt", "replyTo", "media"])) bad();
+      if (typeof next.text !== "string" || next.text.length > 2000) bad("Keep messages under 2000 characters.");
+      const media = next.media || [];
+      if (!Array.isArray(media) || media.length > 3) bad("Up to 3 photos per message.");
+      for (const m of media) { const md = DOCS.media.get(m); if (!md || md.by !== uid || md.gmsgId !== id) bad("That photo isn’t ready yet."); }
+      if (!next.text.trim() && !media.length) bad("Type a message first.");
+      if (next.replyTo != null) { const r = DOCS.gmsgs.get(next.replyTo); if (typeof next.replyTo !== "string" || !r || r.groupId !== gid) bad("That message is gone."); }
+      next.createdAt = Date.now();
+      return;
+    }
     case "notifs":
       if (!prev) { if (next.from !== uid) deny(); return; }
       if (op === "delete") { if (prev.to !== uid) deny(); return; }
@@ -382,6 +418,7 @@ function afterWrite(col, id, prev, next) {
     reloadFor(c => c.uid === d.blockerId || c.uid === d.blockedId);
   }
   if (col === "tmembers") { const mu = id.slice(id.lastIndexOf("__") + 2); reloadFor(c => c.uid === mu); }
+  if (col === "gmsgs" && next && !prev) for (const m of next.media || []) { const md = DOCS.media.get(m); if (md) broadcast("media", m, md, null); }
   if (col === "friends") { const d = next || prev; if (!prev || !next || next.status !== prev.status) reloadFor(c => c.uid === d.fromId || c.uid === d.toId); }
 }
 function write(uid, { op, col, id, data }) {
@@ -391,8 +428,9 @@ function write(uid, { op, col, id, data }) {
   if (op !== "delete" && (!data || typeof data !== "object" || Array.isArray(data))) bad();
   const size = op === "delete" ? 0 : Buffer.byteLength(JSON.stringify(data));
   if (size > (col === "media" ? 280 * 1024 : 64 * 1024)) bad("That’s too large to save.");
-  if (op !== "delete") validate(col, data);
   const prev = DOCS[col].get(id) || null;
+  if (data && prev) for (const [c, f] of [["topics", "banner"], ["handles", "avatar"], ["media", "data"]]) if (col === c && typeof data[f] === "string" && data[f].startsWith("/api/img/")) data[f] = prev[f];
+  if (op !== "delete") validate(col, data);
   if (col === "notifs" && !prev && data && blockedPair(data.from, data.to)) return;
   if (op === "update" && !prev) bad("That no longer exists.");
   if (op === "delete" && !prev) return;
@@ -481,6 +519,19 @@ const server = http.createServer(async (req, res) => {
     const uid = currentUser(req);
     if (req.method === "GET" && p === "/api/config") return json(res, 200, { emailSignup: mail.enabled() });
     if (req.method === "GET" && p === "/api/all") return json(res, 200, { me: meFor(uid), cols: snapshotFor(uid) });
+    { const mi = p.match(/^\/api\/img\/([mab])\/([A-Za-z0-9_\-.~:@+]{1,200})$/);
+      if (req.method === "GET" && mi) {
+        const [, k, id] = mi; let src = null;
+        if (k === "m") { const d = DOCS.media.get(id); if (d && visible("media", id, d, uid)) src = d.data; }
+        else if (k === "b") { const t = DOCS.topics.get(id); if (t && !t.deletedAt && topicVisible(t, uid)) src = t.banner; }
+        else { const hd = DOCS.handles.get(id); if (hd) src = hd.avatar; }
+        const m = isData(src) && /^data:(image\/(?:gif|png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(src);
+        if (!m) { res.writeHead(404, { "Content-Type": "text/plain", "Cache-Control": "no-store", ...SEC }); return res.end("Not found"); }
+        const etag = '"' + imgHash(src) + '"';
+        const head = { "Cache-Control": "private, max-age=31536000, immutable", ETag: etag, ...SEC };
+        if (req.headers["if-none-match"] === etag) { res.writeHead(304, head); return res.end(); }
+        res.writeHead(200, { "Content-Type": m[1], ...head }); return res.end(Buffer.from(m[2], "base64"));
+      } }
     if (req.method === "GET" && p === "/api/stream") {
       res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive", "X-Accel-Buffering": "no" });
       res.write("retry: 3000\n\n");
@@ -608,6 +659,15 @@ const server = http.createServer(async (req, res) => {
       if (limited("w:" + uid, 150, 6e4)) return json(res, 429, { error: { code: "resource_exhausted", message: "Slow down a little, then try again." } });
       write(uid, body);
       return json(res, 200, { ok: true });
+    }
+    if (p === "/api/gmsgs") {
+      const gid = String(body.groupId || ""), before = +body.before || Date.now() + 1;
+      if (!role(gid, uid)) deny("Join the group first.");
+      const older = []; for (const [id, d] of DOCS.gmsgs) if (d.groupId === gid && d.createdAt < before) older.push({ id, data: d });
+      older.sort((a, b) => b.data.createdAt - a.data.createdAt);
+      const page = older.slice(0, 100), ids = new Set(page.flatMap(x => x.data.media || []));
+      const media = [...ids].map(m => DOCS.media.get(m) && { id: m, data: outDoc("media", m, DOCS.media.get(m), uid) }).filter(Boolean);
+      return json(res, 200, { msgs: page, media, more: older.length > 100 });
     }
     if (p === "/api/join") {
       if (limited("join:" + uid, 20, 6e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many tries. Wait a few minutes." } });
