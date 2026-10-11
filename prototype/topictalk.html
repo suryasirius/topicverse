@@ -1550,7 +1550,7 @@ function vTopic(id){
     ${t.banner&&!t.deletedAt?`<div class="banner"><img src="${esc(t.banner)}" alt=""></div>`:""}
     ${chain.length?`<div class="lineage"><span>Branched from</span>${chain.map(p=>`<a href="#t-${p.id}">${esc(p.deletedAt?"Deleted topic":p.title)}</a>`).join("<span>›</span>")}</div>`:""}
     <div class="thead"><div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>
-      <div style="min-width:0"><div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span>${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" style="color:var(--brand-deep);font-weight:600">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}</span></div>
+      <div style="min-width:0"><div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span>${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" style="color:var(--brand-deep);font-weight:600">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}${t.editedAt?" · edited":""}</span></div>
       <h1>${t.deletedAt?`<span class="muted" style="font-style:italic">Topic deleted by creator</span>`:esc(t.title)}</h1></div></div>
     ${t.deletedAt&&t.mergedInto&&S.topics.get(t.mergedInto)?`<div class="gbanner">This page was merged into <a href="#t-${esc(t.mergedInto)}">${esc(S.topics.get(t.mergedInto).title)}</a>.</div>`:t.deletedAt?`<div class="gbanner">The creator deleted this topic. The discussion stays, but new comments, reviews and votes are closed.</div>`:""}
     ${(()=>{ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private";
@@ -1576,6 +1576,7 @@ function vTopic(id){
       ${S.me&&S.me===t.authorId&&(t.media||[]).length<PH_MAX?`<button class="btn sm" data-act="addPhotos" data-id="${id}">📷 Add photos</button>`:""}
       ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="bannerEdit" data-id="${id}">${t.banner?"Change banner":"Add banner"}</button>`:""}
       ${S.me&&S.me!==t.authorId&&S.tmembers.has(fKey(id,S.me))?`<button class="btn sm" data-act="leaveT" data-id="${id}">Leave topic</button>`:""}
+      ${S.me&&S.me===t.authorId&&t.kind!=="battle"&&!t.deletedAt?`<button class="btn sm" data-act="editTopic" data-id="${id}">✏️ Edit</button>`:""}
       ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="delTopic" data-id="${id}">Delete topic</button>`:""}
       ${S.me?`<button class="btn sm" data-act="muteT" data-id="${id}">${MUTED.has(id)?"🔕 Muted":"Mute alerts"}</button>`:""}${S.me&&S.me!==t.authorId?`<button class="btn sm" data-act="rpT" data-id="${id}">Report</button>`:""}
     </div>`}
@@ -2733,6 +2734,25 @@ document.addEventListener("click", async e=>{
       break; }
     case "settle": { if(!(await gate())) break; battleModal({commentId:id}); break; }
     case "editBattle": editBattleModal(id); break;
+    case "editTopic": { const t=S.topics.get(id); if(!t||t.authorId!==S.me) break;
+      const pv=t.kind==="prediction"?IX.pv.get(id):null, locked=pv&&(pv.yes+pv.no)>0;
+      openModal(`<h2>Edit ${t.kind==="place"?"place":t.kind==="question"?"question":t.kind==="prediction"?"prediction":"topic"}</h2>
+        <label class="l">${t.kind==="question"?"Your question":t.kind==="place"?"Name":"Title"}<input class="f" id="et-title" maxlength="120" value="${esc(t.title)}" ${locked?"disabled":""}></label>
+        ${locked?`<p class="muted" style="margin:-4px 0 0;font-size:12.5px">People have already voted, so the question is locked.</p>`:""}
+        <label class="l">Description (optional)<textarea id="et-desc" rows="4" maxlength="2000">${esc(t.desc||"")}</textarea></label>
+        <div class="row2"><label class="l">Category${catSelect("et-cat",t.category)}</label><label class="l">Hashtags<input class="f" id="et-tags" value="${esc((t.tags||[]).join(" "))}"></label></div>
+        <div class="hint" id="et-err"></div>
+        <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveEditTopic" data-id="${id}">Save changes</button></div>`); break; }
+    case "saveEditTopic": { const t=S.topics.get(id); if(!t||t.authorId!==S.me) break; const err=$("#et-err");
+      let title=$("#et-title").value.trim(), desc=$("#et-desc").value.trim();
+      { const tl=videoLinks(title); if(tl.length){ const rest=title.replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim(); if(!desc.includes(tl[0].url)) desc=(tl[0].url+"\n"+desc).trim(); title=rest.length>=3?rest:(tl[0].prov==="yt"?"YouTube video":tl[0].kind==="p"?"Instagram post":"Instagram reel"); } }
+      if(title.length<3){ err.textContent="Give it a title of at least 3 characters."; break; }
+      if(title.toLowerCase()!==t.title.toLowerCase()&&[...S.topics.values()].some(x=>x.id!==t.id&&!x.deletedAt&&x.title.toLowerCase()===title.toLowerCase()&&(x.location||"")===(t.location||""))){ err.textContent="Another topic already has that title."; break; }
+      const patch={title:title.slice(0,120),desc:desc.slice(0,2000),category:$("#et-cat").value,tags:[...new Set([...parseTags($("#et-tags").value),...tagsIn(desc)])].slice(0,8)};
+      const same=patch.title===t.title&&patch.desc===(t.desc||"")&&patch.category===t.category&&patch.tags.join()===(t.tags||[]).join();
+      if(same){ closeModal(false); break; }
+      patch.editedAt=Date.now(); el.disabled=true;
+      if(await W(()=>db.doc("topics/"+t.id).update(patch))){ closeModal(true); toast("Saved"); } else el.disabled=false; break; }
     case "saveEditBattle": {
       const b=S.battles.get(UI.edBid); if(!b) break; const s=battleState(b), err=$("#eb-err");
       const q=$("#eb-q").value.trim(), A=s.n?b.a:$("#eb-a").value.trim(), Bv=s.n?b.b:$("#eb-b").value.trim();
