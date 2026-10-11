@@ -702,6 +702,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @media(max-width:720px){.home2 .hbattles{margin-inline:-14px;padding-inline:14px;scroll-padding-inline:14px}.home2 .hbattles>.battle{flex:0 0 84%}}
 @media(max-width:420px){.top .gbtn{display:none}.top .lang{padding:0 9px;font-size:12.5px;height:32px}}
 .bc-why{border:0;background:none;padding:0;color:var(--brand-deep);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.bc-mom3{display:flex;flex-direction:column;align-items:flex-start;gap:3px}.bc-mom3 .bc-ml{display:flex;align-items:center;gap:6px}.bc-mom3 .bc-early{margin:0}.bc-mom3 .bc-ml2{color:var(--ink);font-weight:600}.bc-mom3 .bc-why{margin-top:1px}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -1195,13 +1196,14 @@ function battleCard(b, o={}){
   const lead=s.v.a===s.v.b?null:(s.v.a>s.v.b?b.a:b.b), diff=Math.abs(s.v.a-s.v.b);
   const vt=n=>n+(n===1?" vote":" votes");
   const momentum=s.ended?(s.winner==="tie"?"Ended in a tie.":`${esc(s.winner==="a"?b.a:b.b)} won by ${vt(diff)}.`)
-    :(lead?`${esc(lead)} leads by ${vt(diff)}.`:"Dead even.")+(s.my&&!s.ended?` <button type="button" class="bc-why" data-act="bWhy" data-id="${b.id}">Say why →</button>`:s.ended?"":" Your vote decides it.");
+    :(lead?`${esc(lead)} leads by ${vt(diff)}`:"Dead even");
+  const whyBtn=s.my&&!s.ended?`<button type="button" class="bc-why" data-act="bWhy" data-id="${b.id}">Say why →</button>`:"";
   const knob=Math.min(95,Math.max(5,s.pa));
   const gA=s.my?s.my==="a":s.winner==="a"||(s.pa>=s.pb), gB=s.my?s.my==="b":s.winner==="b"||(s.pb>s.pa);
   const few=s.n>=1&&s.n<5, early=s.n?`<span class="bc-early" title="${few?`Only ${s.n} ${s.n===1?"vote":"votes"} so far. This can still change.`:s.ended?"Voting has closed.":"Voting is still open. This can change."}">${s.ended?(few?"Few votes":"Final result"):(few?"Early result":"Live result")}</span> `:"";
   const fa=show?Math.max(5,Math.min(95,s.pa)):50, bolt='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="#F2B544" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
   const ff=`<div class="bc-ff${show?"":" off"}" aria-hidden="true"><div class="g" style="width:${fa}%"></div><div class="sh"></div><i class="sp" style="left:${fa}%">${bolt}</i></div>`;
-  const bar=show?`${ff}<div class="bc-mom">${early}<b class="bc-tot">${vt(s.n)}</b> · ${momentum}</div>`
+  const bar=show?`${ff}<div class="bc-mom bc-mom3"><div class="bc-ml">${early}<b class="bc-tot">${vt(s.n)}</b></div><div class="bc-ml2">${momentum}</div>${whyBtn}</div>`
     :`${ff}<div class="bc-mom">${s.ended?`Final result · ${vt(s.n)}`:s.n?"Vote to see the result":"No votes yet · be the first to vote"}</div>`;
   const clock='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/></svg>';
   const chat='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>';
