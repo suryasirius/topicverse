@@ -638,6 +638,24 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .wthumb{border:0;background:none;padding:0;text-align:left;cursor:pointer;font:inherit}.wthumb:hover .wimg i{transform:scale(1.1)}.wimg i{transition:transform .2s}
 .wplayer{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}.wplayer.portrait{aspect-ratio:9/16;max-height:70vh;width:auto;margin:0 auto}.wplayer.ig{aspect-ratio:auto;height:min(620px,70vh);background:#fff;border:1px solid var(--line)}.wplayer iframe{width:100%;height:100%;border:0;display:block}
 .wimg{overflow:hidden}.wimg.igf{background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)}.wimg.igf iframe{position:absolute;left:50%;top:-54px;width:100%;min-width:326px;height:calc(100% + 600px);transform:translateX(-50%);border:0;pointer-events:none;background:#fff}.wimg i{position:relative;z-index:1}
+/* HOME v2 */
+.home2{max-width:720px;margin:0 auto}
+.hcomp{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 10px;margin:4px 0 0}
+.hcin{flex:1;min-width:0;text-align:left;border:0;background:none;font:inherit;font-size:14.5px;color:var(--muted);padding:8px 4px;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htabs{position:sticky;top:var(--toph,58px);z-index:15;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;background:var(--bg);border-bottom:1px solid var(--line);margin:8px 0 10px;padding:0 2px}.htabs::-webkit-scrollbar{display:none}
+.htabs button{flex:none;border:0;background:none;font:600 14.5px var(--f-body,inherit);color:var(--muted);padding:11px 10px;border-bottom:2.5px solid transparent;cursor:pointer;white-space:nowrap}
+.htabs button.on{color:var(--ink);border-bottom-color:var(--brand)}
+.harea{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13.5px;margin:2px 0 10px}.harea .linkb{font-size:13.5px}
+.hpill{background:var(--brand-soft);color:var(--brand-deep);border-radius:999px;padding:2px 8px;font-size:11.5px;font-weight:800;margin-left:6px}
+.hsec{margin:6px 0 14px}.hsec .sech,.hstrip .sech{margin-bottom:8px}.hsec .sech h2,.hstrip .sech h2{font-size:17px}
+.home2 .hbattles{display:flex!important;overflow-x:auto;gap:12px;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}.home2 .hbattles::-webkit-scrollbar{display:none}.home2 .hbattles>.battle{flex:0 0 min(86%,330px);scroll-snap-align:start}
+.hfeed{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.home2{min-width:0}.fitem{min-width:0}.fcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
+.fsnip{margin:4px 0 0;font-size:14px;line-height:1.45;color:#33423c;overflow-wrap:anywhere}.fsnip b{color:var(--ink)}
+.fban img{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:8px}
+.ffoot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:13px}.ffoot .fshare{margin-left:auto}.fstar{color:#B7791F;font-weight:800}.fstar small{color:var(--muted);font-weight:500}
+.hstrip{margin:2px 0}.hmini{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}.hmini::-webkit-scrollbar{display:none}
+.hrv{flex:0 0 auto;min-width:170px;max-width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-decoration:none;color:var(--ink)}.hrv b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hrv span{color:#B7791F;font-weight:800;font-size:13px}.hrv small{color:var(--muted)}
+.hmore{display:block;width:100%;margin:14px 0}.hdisc .tagrow{gap:6px}.hbgrid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -1191,7 +1209,62 @@ function hotRows(skip){
 }
 const areaRow=t=>{ const s=stat(t.id); const bits=[t.kind==="battle"?"Battle":t.kind==="prediction"?"Prediction":t.kind==="place"?"📍 Place":t.category, s.reviews?`★ ${s.avg.toFixed(1)}`:"", `${s.comments} comment${s.comments===1?"":"s"}`].filter(Boolean);
   return `<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px;flex:none">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta">${bits.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div></a>`; };
+/* ---------- HOME v2: tabs + one feed (old page kept as vHomeClassic) ---------- */
+function lastAct(t){ let m=t.createdAt; for(const c of (IX.cByTopic.get(t.id)||[])) if(!c.deletedAt&&c.createdAt>m) m=c.createdAt; for(const r of (IX.rByTopic.get(t.id)||[])) { const x=r.updatedAt||r.createdAt; if(x>m) m=x; } return m; }
+function fCard(t){
+  if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[])[0]; if(b) return `<div class="fitem">${battleCard(b,{topicLink:true})}</div>`; }
+  const st=stat(t.id), vl=videoLinks((t.title||"")+" "+(t.desc||"")), ph=(t.media||[]).filter(m=>S.media.has(m)), br=descCount(t.id)-0;
+  const cap=String(t.desc||"").replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim();
+  const lc=(IX.cByTopic.get(t.id)||[]).filter(c=>!c.deletedAt&&c.text).sort((a,b)=>b.createdAt-a.createdAt)[0];
+  const snip=cap?`<p class="fsnip">${esc(cap.slice(0,140))}${cap.length>140?"…":""}</p>`:lc?`<p class="fsnip"><b>${esc(nameOf(lc.authorId))}:</b> ${esc(lc.text.replace(/https?:\/\/\S+/g,"").slice(0,110))}${lc.text.length>110?"…":""}</p>`:"";
+  const media=vl[0]?videoCardFor(vl[0]):ph[0]?`<button type="button" class="wphoto" data-act="viewMedia" data-id="${esc(ph[0])}" aria-label="Open photo"><img src="${S.media.get(ph[0]).data}" alt="" loading="lazy">${ph.length>1?`<span class="wmore">+${ph.length-1}</span>`:""}</button>`:t.banner?`<a class="fban" href="#t-${t.id}"><img src="${esc(t.banner)}" alt="" loading="lazy"></a>`:"";
+  const kind=t.kind==="question"?"Question":t.kind==="place"?"📍 Place":t.kind==="prediction"?"Prediction":"";
+  const meta=[kind,esc(t.category),t.location?"📍 "+esc(t.location):"",ago(lastAct(t))].filter(Boolean).join(" · ");
+  return `<article class="fitem fcard"><div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${meta}</div></div></div>
+    <a class="wtitle" href="#t-${t.id}">${esc(cleanTitle(t))}</a>${snip}${media}
+    <div class="ffoot"><a class="btn sm${st.comments?"":" pri"}" href="#t-${t.id}">💬 ${st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Discuss"}</a>${st.reviews?`<span class="fstar">★ ${st.avg.toFixed(1)} <small>(${st.reviews})</small></span>`:""}${br?`<span class="muted">${br} branch${br===1?"":"es"}</span>`:""}${(vl[0]||ph[0])?`<button type="button" class="btn sm" data-act="wBattle" data-id="${t.id}">⚔️ Battle</button>`:""}<button type="button" class="act fshare" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button></div></article>`;
+}
+function topRatedList(n){ const hp=homePlace(); let rt=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0); const loc=hp?rt.filter(t=>inPlace(t,hp)):[]; const near=loc.length>=2; if(near) rt=loc; return {near,list:rt.sort((a,b)=>rvScore(b)-rvScore(a)).slice(0,n)}; }
 function vHome(){
+  if (!S.topics.size) return heroHTML() + emptyBox("No topics yet","Start the first one. Anything can become a topic: a phone, a dish, a film, a local issue.",`<button class="btn pri" data-act="newTopic">${L("Start a topic")}</button>`);
+  const tab=UI.htab||"fy", hp=homePlace(), ha=homeArea(), now=Date.now();
+  const tabs=[["fy","For you"],["nb","📍 "+(hp?esc(hp.name):"Nearby")],["wt","▶ Watch"],["bt","⚔️ Battles"],["rv","⭐ Reviews"]];
+  const head=`<div class="hcomp">${S.me?avatar(S.me,"xs"):""}<button type="button" class="hcin" data-act="newTopic">Start a topic or ask something…</button><button type="button" class="btn sm" data-act="wShare" aria-label="Share a video or photo" title="Share a video or photo">▶<span class="hide-m">&nbsp;Video / photo</span></button><button type="button" class="btn pri sm" data-act="create">＋ Post</button></div>
+  <nav class="htabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" aria-selected="${tab===k}" class="${tab===k?"on":""}" data-act="hTab" data-v="${k}">${l}</button>`).join("")}</nav>`;
+  let body="";
+  if(tab==="fy"){
+    const newN=hp?LIVE().filter(t=>inPlace(t,hp)&&now-t.createdAt<864e5).length:0;
+    const area=hp?`<div class="harea"><button type="button" class="linkb" data-act="hTab" data-v="nb">📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b>${newN?`<span class="hpill">${newN} new</span>`:""}</button><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button></div>`
+      :`<div class="harea"><span class="muted">Add your city to see what’s happening near you.</span><button type="button" class="linkb" data-act="plOpen" data-m="home">Choose city</button></div>`;
+    const live=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)).sort((a,b)=>{ const x=IX.bv.get(a.id),y=IX.bv.get(b.id); return (y.a+y.b)-(x.a+x.b)||b.createdAt-a.createdAt; }).slice(0,6);
+    const liveIds=new Set(live.map(b=>b.topicId));
+    const all=LIVE().filter(t=>t.kind!=="prediction"&&!(t.kind==="battle"&&liveIds.has(t.id))).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1)).map(x=>x[0]);
+    const n=UI.fyN||10, items=all.slice(0,n), tr=topRatedList(6);
+    const strip=tr.list.length?`<section class="hstrip">${SH("⭐ "+(tr.near?"Top rated near you":"Top rated"),"",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}</small></a>`; }).join("")}</div></section>`:"";
+    const feed=items.map((t,i)=>fCard(t)+(i===2?strip:"")).join("")+(items.length<3?strip:"");
+    const tagCount=new Map(); for(const t of LIVE()) (t.tags||[]).forEach(x=>tagCount.set(x,(tagCount.get(x)||0)+1));
+    const tags=[...tagCount].sort((a,b)=>b[1]-a[1]).slice(0,8), bod=branchOfDay();
+    body=area+(live.length?`<section class="hsec">${SH("🔥 "+L("Live battles"),"",`<button type="button" class="linkb" data-act="hTab" data-v="bt">${L("See all")} →</button>`)}<div class="grid b bscroll hbattles">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:"")
+      +`<div class="hfeed">${feed}</div>`+(all.length>n?`<button type="button" class="btn hmore" data-act="fyMore">Load more posts</button>`:"")
+      +`<section class="hsec hdisc">${SH("Discover","")}<div class="tagrow">${tags.map(([g])=>`<a class="chip" href="#tag-${enc(g)}">#${esc(g)}</a>`).join("")}${bod?`<a class="chip" href="#t-${bod.id}">🌱 Branch of the day</a>`:""}<a class="chip" href="#explore" data-act="exGo" data-v="predictions">🔮 Predictions</a><a class="chip" href="#explore" data-act="exGo" data-v="duels">⚖️ Debates</a><a class="chip" href="#groups">👥 Groups</a></div></section>`;
+  } else if(tab==="nb"){
+    if(!hp) body=emptyBox("Choose your city","See topics, battles and places from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`);
+    else { const list=LIVE().filter(t=>inPlace(t,hp)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+      body=`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
+        +(list.length?`<div class="hfeed">${list.slice(0,UI.fyN||10).map(fCard).join("")}</div>${list.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}<a class="morep" href="#city-${enc(hp.id)}">Open the ${esc(hp.name)} page →</a>`
+          :emptyBox("No local discussions yet","Be the first to start one.",`<button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button>`)); }
+  } else if(tab==="wt"){ body=vWatch(()=>true); }
+  else if(tab==="bt"){
+    const bs=[...S.battles.values()].filter(b=>S.topics.has(b.topicId)).sort((a,b)=>(b.endsAt>now)-(a.endsAt>now)||b.createdAt-a.createdAt);
+    body=`<div class="harea"><span class="muted">Two sides, one winner. Live first.</span><button type="button" class="btn pri sm" data-act="newBattle">＋ Start a battle</button></div>`+(bs.length?`<div class="grid b hbgrid">${bs.slice(0,UI.fyN||10).map(b=>battleCard(b,{topicLink:true})).join("")}</div>${bs.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}`:emptyBox("No battles yet","Start one and share it so people vote."));
+  } else if(tab==="rv"){
+    const tr=topRatedList(20);
+    body=`<div class="harea"><span class="muted">${tr.near?"Places and things people recommend near you.":"Places and things people recommend."}</span><button type="button" class="btn pri sm" data-act="reviewPick">⭐ Write a review</button></div>`
+      +(tr.list.length?`<div class="list rvlist">${tr.list.map((t,i)=>{ const s2=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s2.avg.toFixed(1)}</b><span>${s2.reviews} review${s2.reviews===1?"":"s"}</span></div></a>`; }).join("")}</div><a class="morep" href="#reviews">All reviews →</a>`:emptyBox("No reviews yet","Rate a place, shop or product you know.",`<button class="btn pri sm" data-act="reviewPick">Write the first review</button>`));
+  }
+  return `<div class="home2">${head}${body}</div>`;
+}
+function vHomeClassic(){
   if (!S.topics.size) return heroHTML() + emptyBox("No topics yet","Start the first one. Anything can become a topic: a phone, a dish, a film, a local issue.",`<button class="btn pri" data-act="newTopic">${L("Start a topic")}</button>`);
   const now=Date.now(), tr = byTrend();
   const latestC = [...S.comments.values()].filter(cLive).sort((a,b)=>b.createdAt-a.createdAt).slice(0,6);
@@ -2075,7 +2148,7 @@ window.addEventListener("resize",()=>{ acClose(); epClose(); document.querySelec
 
 /* ---------- render ---------- */
 let rq=0;
-function schedule(){ if(rq) return; rq=requestAnimationFrame(()=>{ rq=0; render(); }); }
+function schedule(){ if(rq) return; rq=requestAnimationFrame(()=>{ rq=0; render(); const hd=document.querySelector("header.top"); if(hd) document.documentElement.style.setProperty("--toph",hd.offsetHeight+"px"); }); }
 const parseRoute = () => { try{ return decodeURIComponent(location.hash.slice(1)||"home"); }catch{ return "home"; } };
 function render(){
   buildIndex();
@@ -2657,6 +2730,8 @@ document.addEventListener("click", async e=>{
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
+    case "hTab": UI.htab=el.dataset.v; UI.fyN=10; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); } break;
+    case "fyMore": UI.fyN=(UI.fyN||10)+10; schedule(); break;
     case "wFilter": UI.wf=el.dataset.v; UI.wN=5; schedule(); break;
     case "wMore": UI.wN=(UI.wN||5)+5; schedule(); break;
     case "wDiscuss": ev("watch_discuss"); closeModal(false); location.hash="t-"+id; break;
