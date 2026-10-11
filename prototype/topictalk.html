@@ -626,6 +626,14 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .bc2 .bc-ff .sp{position:absolute;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);transition:left .6s cubic-bezier(.3,1.3,.5,1);display:grid;place-items:center;filter:drop-shadow(0 0 5px #fff9)}
 .bc2 .bc-ff.off{background:#E1E8E4}.bc2 .bc-ff.off .g{background:#CBD6D0}.bc2 .bc-ff.off .sp{opacity:.55}
 .bc2.bc-anim .bc-ff .g{animation:bcgrow .8s cubic-bezier(.2,.9,.2,1)}
+/* VIDEO LINKS v1 */
+.vwrap{margin:8px 0}.vcard{position:relative;display:block;width:100%;max-width:480px;aspect-ratio:16/9;border:0;border-radius:14px;overflow:hidden;background:#0d1b14;cursor:pointer;padding:0}
+.vcard img{width:100%;height:100%;object-fit:cover;display:block}.vph.ig{position:absolute;inset:0;background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)}
+.vplayb{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.62);display:grid;place-items:center;transition:transform .2s}.vcard:hover .vplayb{transform:translate(-50%,-50%) scale(1.08)}
+.vlab{position:absolute;left:10px;bottom:8px;color:#fff;font:700 12px "Schibsted Grotesk",system-ui;background:rgba(0,0,0,.55);padding:3px 9px;border-radius:999px}
+.vcard.short{aspect-ratio:9/16;max-width:240px}.vopen{display:block;margin-top:4px;font-size:12.5px;color:var(--muted);text-decoration:none}
+.vplay{position:relative;max-width:480px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000}.vplay.portrait{aspect-ratio:9/16;max-width:300px}.vplay.ig{aspect-ratio:auto;max-width:400px;background:#fff;border:1px solid var(--line)}.vplay iframe{width:100%;height:100%;border:0;display:block}
+.ctext a.ext{color:var(--brand-deep);word-break:break-all}
 .durc{display:flex;gap:8px;margin-top:8px}.durc[hidden]{display:none}.durc+.hint{min-height:0}.durc label{flex:1;font-size:12px;color:var(--muted)}.durc input{margin-top:4px;text-align:center}
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
 .backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
@@ -820,7 +828,32 @@ const TAGRE = /(^|[\s(])#([\p{L}\p{M}\p{N}_]{2,40})/gu;
 function rich(text){
   return esc(text)
     .replace(TAGRE,(m,p,t)=>`${p}<a class="tag" href="#tag-${enc(t.toLowerCase())}">#${t}</a>`)
-    .replace(/(^|[\s(])@([A-Za-z0-9_]{2,24})/g,(m,p,h)=>{ const id=handleToId(h); return id?`${p}<a class="mention" href="#u-${esc(id)}">@${h}</a>`:`${p}@${h}`; });
+    .replace(/(^|[\s(])@([A-Za-z0-9_]{2,24})/g,(m,p,h)=>{ const id=handleToId(h); return id?`${p}<a class="mention" href="#u-${esc(id)}">@${h}</a>`:`${p}@${h}`; })
+    .replace(/(^|[\s(])(https?:\/\/[^\s<]{3,300})/g,(m,p,u)=>{ const tail=u.match(/[.,;:!?)]+$/); const clean=tail?u.slice(0,-tail[0].length):u; return `${p}<a href="${clean}" target="_blank" rel="noopener noreferrer nofollow" class="ext">${clean.replace(/^https?:\/\/(www\.)?/,"").slice(0,48)}${clean.length>60?"…":""}</a>${tail?tail[0]:""}`; });
+}
+// ---- video links: YouTube / Instagram play inside our pages, nothing is stored but the link ----
+function videoLinks(text){
+  const out=[], seen=new Set();
+  for(const m of String(text||"").matchAll(/https?:\/\/[^\s<>"']+/g)){
+    let u; try{ u=new URL(m[0].replace(/[.,;:!?)]+$/,"")); }catch{ continue; }
+    const h=u.hostname.replace(/^(www|m)\./,""), parts=u.pathname.split("/").filter(Boolean); let v=null;
+    if(h==="youtu.be"&&/^[\w-]{11}$/.test(parts[0]||"")) v={prov:"yt",id:parts[0],t:+(u.searchParams.get("t")||0)||0};
+    else if(h==="youtube.com"||h==="music.youtube.com"){
+      if(parts[0]==="watch"&&/^[\w-]{11}$/.test(u.searchParams.get("v")||"")) v={prov:"yt",id:u.searchParams.get("v"),t:+(u.searchParams.get("t")||0)||0};
+      else if(/^(shorts|embed|live)$/.test(parts[0]||"")&&/^[\w-]{11}$/.test(parts[1]||"")) v={prov:"yt",id:parts[1],short:parts[0]==="shorts"};
+    } else if(h==="instagram.com"){
+      const i=parts.findIndex(x=>/^(p|reel|reels|tv)$/.test(x)); if(i>=0&&/^[\w-]{5,20}$/.test(parts[i+1]||"")) v={prov:"ig",id:parts[i+1],kind:parts[i]==="p"?"p":"reel"};
+    }
+    if(v&&!seen.has(v.prov+v.id)){ seen.add(v.prov+v.id); v.url=u.href; out.push(v); }
+    if(out.length>=2) break;
+  }
+  return out;
+}
+function videoCards(text){
+  return videoLinks(text).map(v=>{
+    const k=v.prov+":"+v.id, yt=v.prov==="yt";
+    const th=yt?`<img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy">`:`<span class="vph ig"></span>`;
+    return `<div class="vwrap" data-vk="${esc(k)}"><button type="button" class="vcard${v.short?" short":""}" data-act="playVideo" data-prov="${v.prov}" data-vid="${esc(v.id)}" data-t="${v.t||0}" data-kind="${v.kind||""}" data-short="${v.short?1:0}" aria-label="Play video">${th}<span class="vplayb"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#fff"/></svg></span><span class="vlab">${yt?"YouTube":"Instagram"} · tap to play</span></button><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on ${yt?"YouTube":"Instagram"} ↗</a></div>`; }).join("");
 }
 const tagsIn = t => [...String(t).matchAll(TAGRE)].map(m=>m[2].toLowerCase());
 const mentionsIn = t => [...String(t).matchAll(/(?:^|[\s(])@([A-Za-z0-9_]{2,24})/g)].map(m=>handleToId(m[1])).filter(Boolean);
@@ -1505,7 +1538,7 @@ function vTopic(id){
     ${parent&&oc?`<div class="origin">Started from ${who(oc.authorId)}’s comment in <a href="#t-${parent.id}~${oc.id}" style="color:var(--brand-deep);font-weight:600">${esc(parent.title)}</a>: <q>${esc(oc.text.slice(0,180))}${oc.text.length>180?"…":""}</q></div>`:""}
     ${(()=>{ const gs=(t.taggedGroups||[]).map(g=>S.groups.get(g)).filter(Boolean), us=t.tagged||[]; if(!gs.length&&!us.length) return "";
       return `<div class="withrow">With ${[...gs.map(g=>`<a href="#g-${esc(g.id)}">👥 ${esc(g.name)}</a>`),...us.map(who)].join(", ")}</div>`; })()}
-    ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>`:""}
+    ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>${videoCards(t.desc)}`:""}
     ${t.deletedAt?"":phStrip([...(t.media||[]),...(IX.rByTopic.get(id)||[]).flatMap(r=>r.media||[])].slice(0,12))}
     ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
@@ -1548,6 +1581,7 @@ function commentNode(c,t,depth,otherIds){
     <div class="head">${who(c.authorId)}${c.authorId===t.authorId?'<span class="op">OP</span>':""}${otherIds&&otherIds.has(c.id)?'<span class="otherchip">Other side</span>':""}<span class="muted">· ${ago(c.createdAt)}${c.editedAt&&!del?" · edited":""}</span>${outs.length?`<span class="op" title="Topics started from this comment">Sparked ${outs.length} topic${outs.length>1?"s":""}</span>`:""}</div>
     ${par?`<div class="replyto">↪ replying to @${esc(nameOf(par.authorId))}</div>`:""}
     ${del?`<div class="ctext muted" style="font-style:italic">Comment deleted</div>`:(c.text?`<div class="ctext${isEmojiOnly(c.text)?" big":""}">${rich(c.text)}</div>`:"")}
+    ${del?"":videoCards(c.text)}
     ${del?"":mediaHTML(c)}
     ${outs.map(b=>`<a class="bout" href="#t-${b.id}">${ICON.branch.replace("<svg",'<svg width="14" height="14"')}Became a topic: ${esc(b.title)} ↗</a>`).join(" ")}
     ${bts.map(b=>battleCard(b,{inline:true})).join("")}
@@ -1566,7 +1600,7 @@ function reviewNode(r){
   return `<div class="rv"><div class="head" style="display:flex;gap:8px;align-items:center;font-size:13.5px">${avatar(r.authorId)}<div>${who(r.authorId)}<div class="muted" style="font-size:12px">${ago(r.createdAt)}${r.updatedAt?" · edited":""}</div></div></div>
     <div class="stars" style="margin-top:8px">${stars(r.rating)}</div>
     ${r.title?`<h4>${esc(r.title)}</h4>`:""}
-    ${r.text?`<div class="ctext">${rich(r.text)}</div>`:""}
+    ${r.text?`<div class="ctext">${rich(r.text)}</div>${videoCards(r.text)}`:""}
     ${r.pros||r.cons?`<div class="pros">${r.pros?`<div class="p"><b>Pros</b>${esc(r.pros)}</div>`:""}${r.cons?`<div class="c"><b>Cons</b>${esc(r.cons)}</div>`:""}</div>`:""}
     ${phStrip(r.media,"sm")}
     <div class="actions"><button class="act ${on?"on":""}" data-act="like" data-id="${r.id}" data-kind="review" aria-pressed="${on}">${ICON.up}Helpful · ${n}</button></div></div>`;
@@ -1963,6 +1997,7 @@ function toolAct(b){ const ta=b.closest(".composer")?.querySelector("textarea");
   else if(b.dataset.tool==="gif"){ gifTarget=ta; gifInput.click(); } }
 document.addEventListener("mousedown",e=>{ const b=e.target.closest(".tbtn"); if(!b) return; e.preventDefault(); toolAct(b); });
 document.addEventListener("click",e=>{ const v=e.target.closest("[data-go]"); if(v){ e.preventDefault(); location.hash=v.dataset.go; return; } const a=e.target.closest("a[data-nids]"); if(a&&!e.target.closest("[data-act]")&&typeof db!=="undefined"&&db) for(const id of a.dataset.nids.split(",")){ const n=S.notifs.find(x=>x.id===id); if(n&&!n.read) db.doc("notifs/"+id).update({read:true}).catch(()=>{}); } });
+document.addEventListener("click",()=>{ UI.vClick=Date.now(); },true);
 document.addEventListener("click",e=>{ const b=e.target.closest(".tbtn"); if(b&&e.detail===0) toolAct(b); });
 document.addEventListener("keydown",e=>{
   if(TY.ac && e.target===TY.ac.ta && !e.isComposing){
@@ -1983,6 +2018,7 @@ const parseRoute = () => { try{ return decodeURIComponent(location.hash.slice(1)
 function render(){
   buildIndex();
   const r=parseRoute(), changed=r!==UI.lastRoute;
+  if(!changed && view.querySelector(".vplay iframe") && Date.now()-(UI.vClick||0)>1500){ clearTimeout(UI.vDefer); UI.vDefer=setTimeout(schedule,8000); return; }
   { const ae=document.activeElement;
     if(!changed && ((ae && view.contains(ae) && /^(TEXTAREA|INPUT)$/.test(ae.tagName) && (TY.composing || Date.now()-TY.last<1400)) || !epEl.hidden)){
       clearTimeout(TY.defer); TY.defer=setTimeout(schedule,900); return; } }
@@ -2920,6 +2956,11 @@ document.addEventListener("click", async e=>{
     case "bnRemove": UI.bn=""; { const w=$("#n-bn"); if(w) w.innerHTML=""; } break;
     case "addPhotos": { const t=S.topics.get(id); if(!t) break; PH.tp=[]; UI.phTopic=id; openModal(`<h2>Add photos</h2><p class="muted" style="margin:0;font-size:13px">Up to ${PH_MAX-(t.media||[]).length} more.</p>${phBox("tp")}<div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="savePhotos">Add</button></div>`); break; }
     case "savePhotos": { const t=S.topics.get(UI.phTopic); if(!t||!PH.tp?.length){ closeModal(false); break; } el.disabled=true; const ids=await phSave("tp",{topicId:t.id}); if(ids===null){ el.disabled=false; break; } const all=[...(t.media||[]),...ids].slice(0,PH_MAX); if(await W(()=>db.doc("topics/"+t.id).update({media:all}))){ PH.tp=[]; closeModal(true); toast("Photos added"); } else el.disabled=false; break; }
+    case "playVideo": { const d=el.dataset, w=el.closest(".vwrap"); if(!w) break; let src, cls="vplay", h="";
+      if(d.prov==="yt"){ src=`https://www.youtube-nocookie.com/embed/${encodeURIComponent(d.vid)}?autoplay=1&rel=0&playsinline=1${+d.t?"&start="+(+d.t):""}`; if(d.short==="1") cls+=" portrait"; }
+      else { src=`https://www.instagram.com/${d.kind==="p"?"p":"reel"}/${encodeURIComponent(d.vid)}/embed/`; cls+=" ig"; h=' style="height:560px"'; }
+      const open=w.querySelector(".vopen")?.outerHTML||"";
+      w.innerHTML=`<div class="${cls}"${h}><iframe src="${src}" title="Video" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe></div>${open}`; break; }
     case "phRemove": { const k=el.dataset.k; (PH[k]||[]).splice(+el.dataset.i,1); phRender(k); break; }
     case "bannerEdit": bannerModal(id); break;
     case "bmRemove": UI.bn=""; { const w=$("#bm-pre"); if(w) w.innerHTML='<div class="muted">Banner will be removed when you save.</div>'; } break;
