@@ -1216,7 +1216,7 @@ function battleCard(b, o={}){
     <div class="bc-sides">${side("a",b.a,s.pa)}${side("b",b.b,s.pb)}<span class="bc-vs">VS</span></div>
     ${bar}
     <div class="bfoot bc-foot"><span class="bc-by">${b.authorId?avatar(b.authorId,"xs"):""}<span>${show?(b.authorId?`by ${esc(nameOf(b.authorId))}`:""):`${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${b.authorId?` · by ${esc(nameOf(b.authorId))}`:""}`}</span></span>
-      <span class="bc-acts">${t?`<button type="button" class="bc-btn" data-act="bWhy" data-id="${b.id}" title="Open the discussion">${chat} ${stat(t.id).comments?`${stat(t.id).comments} comment${stat(t.id).comments===1?"":"s"}`:"Discuss"}</button>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}<span class="bc-sl"> ${L("Share card")}</span></button></span></div>
+      <span class="bc-acts">${t?`<button type="button" class="bc-btn" data-act="bDisc" data-id="${b.id}" title="Open the discussion">${chat} ${stat(t.id).comments?`${stat(t.id).comments} comment${stat(t.id).comments===1?"":"s"}`:"Discuss"}</button>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}<span class="bc-sl"> ${L("Share card")}</span></button></span></div>
   </div>`;
 }
 function predCard(t){
@@ -2894,6 +2894,7 @@ document.addEventListener("click", async e=>{
         notify((IX.pVoters.get(id)||[]).map(v=>[v.userId,"resolved"]),{topicId:id,text:"Result: "+el.dataset.v.toUpperCase()}); }
       break; }
     case "settle": { if(!(await gate())) break; battleModal({commentId:id}); break; }
+    case "bDisc": { const b=S.battles.get(id); if(!b) break; UI.tab="discussion"; const h="t-"+b.topicId+(b.commentId?"~"+b.commentId:""); if(location.hash==="#"+h) schedule(); else location.hash=h; break; }
     case "bWhy": { const b=S.battles.get(id); if(!b) break; const side=IX.myB.get(b.id), pick=side?(side==="a"?b.a:b.b):"";
       UI.whyPrefill={tid:b.topicId, text:pick?`I picked ${pick} because `:"", cid:b.commentId||""};
       if(location.hash==="#t-"+b.topicId) applyWhy(); else location.hash="t-"+b.topicId; break; }
