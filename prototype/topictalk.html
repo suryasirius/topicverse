@@ -852,8 +852,9 @@ function videoLinks(text){
 function videoCards(text){
   return videoLinks(text).map(v=>{
     const k=v.prov+":"+v.id, yt=v.prov==="yt";
+    if(!yt) return `<div class="vwrap" data-vk="${esc(k)}"><div class="vplay ig" style="height:600px"><iframe src="https://www.instagram.com/${v.kind==="p"?"p":"reel"}/${encodeURIComponent(v.id)}/embed/" title="Instagram post" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe></div><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on Instagram ↗</a></div>`;
     const th=yt?`<img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy">`:`<span class="vph ig"></span>`;
-    return `<div class="vwrap" data-vk="${esc(k)}"><button type="button" class="vcard${v.short?" short":""}" data-act="playVideo" data-prov="${v.prov}" data-vid="${esc(v.id)}" data-t="${v.t||0}" data-kind="${v.kind||""}" data-short="${v.short?1:0}" aria-label="Play video">${th}<span class="vplayb"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#fff"/></svg></span><span class="vlab">${yt?"YouTube":"Instagram"} · tap to play</span></button><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on ${yt?"YouTube":"Instagram"} ↗</a></div>`; }).join("");
+    return `<div class="vwrap" data-vk="${esc(k)}"><button type="button" class="vcard${v.short?" short":""}" data-act="playVideo" data-prov="${v.prov}" data-vid="${esc(v.id)}" data-t="${v.t||0}" data-kind="${v.kind||""}" data-short="${v.short?1:0}" aria-label="Play video">${th}<span class="vplayb"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#fff"/></svg></span><span class="vlab">${yt?"YouTube · tap to play":v.kind==="p"?"Instagram post · tap to view":"Instagram reel · tap to play"}</span></button><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on ${yt?"YouTube":"Instagram"} ↗</a></div>`; }).join("");
 }
 const tagsIn = t => [...String(t).matchAll(TAGRE)].map(m=>m[2].toLowerCase());
 const mentionsIn = t => [...String(t).matchAll(/(?:^|[\s(])@([A-Za-z0-9_]{2,24})/g)].map(m=>handleToId(m[1])).filter(Boolean);
@@ -2018,7 +2019,7 @@ const parseRoute = () => { try{ return decodeURIComponent(location.hash.slice(1)
 function render(){
   buildIndex();
   const r=parseRoute(), changed=r!==UI.lastRoute;
-  if(!changed && view.querySelector(".vplay iframe") && Date.now()-(UI.vClick||0)>1500){ clearTimeout(UI.vDefer); UI.vDefer=setTimeout(schedule,8000); return; }
+  if(!changed && view.querySelector(".vplay:not(.ig) iframe") && Date.now()-(UI.vClick||0)>1500){ clearTimeout(UI.vDefer); UI.vDefer=setTimeout(schedule,8000); return; }
   { const ae=document.activeElement;
     if(!changed && ((ae && view.contains(ae) && /^(TEXTAREA|INPUT)$/.test(ae.tagName) && (TY.composing || Date.now()-TY.last<1400)) || !epEl.hidden)){
       clearTimeout(TY.defer); TY.defer=setTimeout(schedule,900); return; } }
