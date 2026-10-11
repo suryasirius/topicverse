@@ -656,6 +656,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .hstrip{margin:2px 0}.hmini{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}.hmini::-webkit-scrollbar{display:none}
 .hrv{flex:0 0 auto;min-width:170px;max-width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-decoration:none;color:var(--ink)}.hrv b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hrv span{color:#B7791F;font-weight:800;font-size:13px}.hrv small{color:var(--muted)}
 .hmore{display:block;width:100%;margin:14px 0}.hdisc .tagrow{gap:6px}.hbgrid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.sp-mode .cardimg{max-height:min(42vh,340px);width:auto;max-width:100%;margin:0 auto;display:block}.sp-mode .seg,.sp-mode #sh,.sp-mode .seg+p{display:none}.sp-sub{margin:-6px 0 2px;font-size:14px}.spst{border-color:#25D366!important;color:#128C4A!important}.spig{border-color:#E1306C!important;color:#C13584!important}.spwa{background:#25D366!important;border-color:#25D366!important;color:#fff!important}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -2455,7 +2456,7 @@ async function makeCard(kind, id, fmt){
   { const host=location.host||"topictalk.duckdns.org"; x.font=`700 32px ${B}`; const hw=x.measureText(host).width, tw=tags?x.measureText(tags).width:0; if(80+tw+40<c.width-80-hw){ x.fillStyle=mut; x.textAlign="right"; x.fillText(host,c.width-80,H-78); x.textAlign="left"; } }
   return c;
 }
-async function openCard(kind,id,fmt){
+async function openCard(kind,id,fmt,prompt){
   fmt=fmt||"feed"; openCard.kind=kind; openCard.id=id; openCard.fmt=fmt;
   const c=await makeCard(kind,id,fmt); const url=c.toDataURL("image/png");
   const t=kind==="battle"?S.topics.get(S.battles.get(id).topicId):S.topics.get(id);
@@ -2466,6 +2467,12 @@ async function openCard(kind,id,fmt){
     <p class="muted" style="margin:0;font-size:13px">${fmt==="story"?"Full-screen 9:16 for Instagram Stories and WhatsApp Status. Add the link as a sticker.":"4:5 for Instagram posts and WhatsApp chats."} ${downloads?"":"On a phone, press and hold the image to save it."}</p>
     <textarea id="sh" rows="2" readonly>${esc(txt)}</textarea>
     <div class="acts">${navigator.share?`<button class="btn pri" data-act="shareNative">Share image</button>`:""}<button class="btn" data-act="copyShare">Copy text &amp; link</button>${downloads?`<button class="btn${navigator.share?"":" pri"}" data-act="saveCard">Save image</button>`:""}<button class="btn" data-act="closeModal">Done</button></div>`);
+  if(prompt){ const m=$("#modal"), h=m&&m.querySelector("h2");
+    if(h){ h.textContent=prompt.title; h.insertAdjacentHTML("afterend",`<p class="muted sp-sub">${esc(prompt.sub)}</p>`); m.querySelector(".modal")?.classList.add("sp-mode"); }
+    const wa="https://wa.me/?text="+encodeURIComponent($("#sh")?.value||"");
+    const acts=m&&m.querySelector(".acts"); if(acts){ acts.querySelector('[data-act="shareNative"]')?.remove(); acts.insertAdjacentHTML("afterbegin",`<a class="btn pri spwa" href="${esc(wa)}" target="_blank" rel="noopener noreferrer">WhatsApp chat</a><button class="btn spst" data-act="spStatus">🟢 WhatsApp Status</button><button class="btn spig" data-act="spStory">📸 Instagram Story</button><button class="btn spig" data-act="spPost">🖼️ Instagram post</button>`); acts.querySelectorAll(".btn.pri:not(.spwa)").forEach(b=>b.classList.remove("pri")); const done=acts.querySelector('[data-act="closeModal"]'); if(done) done.textContent="Not now"; const cp=acts.querySelector('[data-act="copyShare"]'); if(cp) cp.textContent="Copy link"; }
+    $("#modal .scrim")?.classList.add("sheetm");
+    openCard.storyFile=null; openCard.storyCanvas=null; makeCard(kind,id,"story").then(sc=>{ openCard.storyCanvas=sc; sc.toBlob(b=>{ if(b) openCard.storyFile=new File([b],"topictalk-story.png",{type:"image/png"}); },"image/png"); }).catch(()=>{}); }
   if(fmt==="feed"&&t&&S.me&&(!t.access||t.access==="open")&&!t.groupId){ try{ fetch("/api/card",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({topicId:t.id,png:url})}).catch(()=>{}); }catch{} }
   openCard.canvas=c; openCard.fname=`topictalk-${fmt}-${(t?.title||"card").toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)}.png`; openCard.file=null;
   c.toBlob(b=>{ if(b) openCard.file=new File([b],openCard.fname,{type:"image/png"}); },"image/png");
@@ -2859,7 +2866,8 @@ document.addEventListener("click", async e=>{
       if(UI.durC&&durHours()<1/6){ err.textContent="Custom time must be at least 10 minutes."; break; }
       const b={topicId:tid,commentId:c?c.id:null,question:q.slice(0,100),a:A.slice(0,40),b:Bv.slice(0,40),authorId:S.me,createdAt:now,endsAt:now+(durHours()||24)*3.6e6,seedA:0,seedB:0};
       if(await W(()=>db.doc("battles/"+bid).set(b))){
-        closeModal(true); toast("Battle is live. Share it so people vote."); if(UI.fromWatch){ ev("watch_battle_created"); UI.fromWatch=false; }
+        closeModal(true); if(UI.fromWatch){ ev("watch_battle_created"); UI.fromWatch=false; }
+        setTimeout(()=>openCard("battle",bid,"feed",{title:"⚔️ Your battle is live!",sub:"Battles get votes when friends see them. Share it now."}),650);
         if(c) notify([[c.authorId,"battle"],...followersOf(tid).map(u=>[u,"newbattle"])],{topicId:tid,commentId:c.id,text:`${b.a} vs ${b.b}`});
         if(!c) location.hash="t-"+tid; else schedule();
       } else el.disabled=false;
@@ -2985,6 +2993,13 @@ document.addEventListener("click", async e=>{
     case "cardFmt": closeModal(); openCard(openCard.kind,openCard.id,el.dataset.f); break;
     case "shareBattle": openCard("battle",id); break;
     case "sharePred": openCard("pred",id); break;
+    case "spStatus": case "spStory": case "spPost": {
+      const story=a!=="spPost", file=story?openCard.storyFile:openCard.file, cv=story?openCard.storyCanvas:openCard.canvas, text=$("#sh")?.value||"";
+      const hint=a==="spStatus"?"Image saved. In WhatsApp tap Updates → Status ＋ and pick it. The link is copied, add it as text.":a==="spStory"?"Image saved. In Instagram tap ＋ → Story and pick it. The link is copied: add it with a Link sticker.":"Image saved. In Instagram tap ＋ → Post and pick it. The link is copied for the caption or your bio.";
+      try{ await navigator.clipboard.writeText(text); }catch{}
+      if(file&&navigator.canShare&&navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file]}); toast(a==="spStatus"?"Pick WhatsApp, then “My status”. The link is copied.":"Pick Instagram, then "+(a==="spStory"?"Story":"Feed")+". The link is copied."); break; }catch(e2){ if(e2&&e2.name==="AbortError") break; } }
+      if(cv){ try{ const a=document.createElement("a"); a.href=cv.toDataURL("image/png"); a.download=story?"topictalk-story.png":openCard.fname; document.body.append(a); a.click(); a.remove(); }catch{} }
+      toast(hint); break; }
     case "shareNative": { const f=openCard.file, text=$("#sh")?.value||"";
       try{ if(f&&navigator.canShare&&navigator.canShare({files:[f]})) await navigator.share({files:[f],text}); else await navigator.share({text}); }
       catch(e){ if(!e||e.name!=="AbortError") toast("Couldn’t open sharing. Use Save image instead."); } break; }
@@ -3005,7 +3020,7 @@ document.addEventListener("click", async e=>{
       if(prev) body.updatedAt=Date.now();
       el.disabled=true;
       { const ids=await phSave("rv",{topicId:tid,reviewId:key}); if(ids===null){ el.disabled=false; break; } body.media=ids; for(const m of (prev?.media||[])) if(!ids.includes(m)){ try{ await db.doc("media/"+m).delete(); }catch{} } }
-      if(await W(()=>db.doc("reviews/"+key).set(body))){ PH.rv=[]; clearField($("#rv-text")); UI.rvOpen=false; UI.rvRating=0; toast(prev?"Review updated":"Review posted"); ensureFollow(tid);
+      if(await W(()=>db.doc("reviews/"+key).set(body))){ PH.rv=[]; if(!prev) setTimeout(()=>openCard("topic",tid,"feed",{title:"⭐ Review posted!",sub:"Share it so friends who know this place add their rating."}),650); clearField($("#rv-text")); UI.rvOpen=false; UI.rvRating=0; toast(prev?"Review updated":"Review posted"); ensureFollow(tid);
         if(!prev) notify(followersOf(tid).map(u=>[u,"review"]),{topicId:tid,text:(body.title||body.text).slice(0,120)}); schedule(); }
       el.disabled=false; break; }
     case "tagPick": { if(UI.tagged.length>=10){ toast("You can tag up to 10 friends."); break; } if(!UI.tagged.includes(el.dataset.id)) UI.tagged.push(el.dataset.id); const i=$("#n-tagin"); i.value=""; tagRender(); tagSuggest(); i.focus(); break; }
@@ -3042,6 +3057,7 @@ document.addEventListener("click", async e=>{
           tg.size&&notify([...tg].map(u=>[u,"tagged"]),{topicId:tid,text:t.title}); }
         notifyGroup(t.groupId,tid,t.title);
         if(UI.fromWatch){ ev("watch_topic_created"); UI.fromWatch=false; }
+        if(videoLinks(t.title+" "+t.desc).length||(t.media||[]).length) setTimeout(()=>openCard("topic",tid,"feed",{title:"🎬 Posted!",sub:"Share it so people join the conversation."}),650);
         location.hash="t-"+tid;
       } else el.disabled=false;
       break; }
