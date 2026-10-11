@@ -1557,7 +1557,7 @@ function vTopic(id){
     ${parent&&oc?`<div class="origin">Started from ${who(oc.authorId)}’s comment in <a href="#t-${parent.id}~${oc.id}" style="color:var(--brand-deep);font-weight:600">${esc(parent.title)}</a>: <q>${esc(oc.text.slice(0,180))}${oc.text.length>180?"…":""}</q></div>`:""}
     ${(()=>{ const gs=(t.taggedGroups||[]).map(g=>S.groups.get(g)).filter(Boolean), us=t.tagged||[]; if(!gs.length&&!us.length) return "";
       return `<div class="withrow">With ${[...gs.map(g=>`<a href="#g-${esc(g.id)}">👥 ${esc(g.name)}</a>`),...us.map(who)].join(", ")}</div>`; })()}
-    ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>${videoCards(t.desc)}`:""}
+    ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>`:""}${t.deletedAt?"":videoCards((t.title||"")+" "+(t.desc||""))}
     ${t.deletedAt?"":phStrip([...(t.media||[]),...(IX.rByTopic.get(id)||[]).flatMap(r=>r.media||[])].slice(0,12))}
     ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
@@ -1950,10 +1950,11 @@ document.addEventListener("change",async e=>{ const inp=e.target; if(!inp.classL
 // ---- WATCH: topics that carry a video or photo ----
 function ev(e){ if(!S.me) return; try{ fetch("/api/ev",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({e})}).catch(()=>{}); }catch{} }
 function watchItems(){
-  const out=[]; for(const t of LIVE()){ const vl=videoLinks(t.desc), ph=(t.media||[]).filter(m=>S.media.has(m)); if(vl.length||ph.length) out.push({t,vl,ph}); }
+  const out=[]; for(const t of LIVE()){ const vl=videoLinks((t.title||"")+" "+(t.desc||"")), ph=(t.media||[]).filter(m=>S.media.has(m)); if(vl.length||ph.length) out.push({t,vl,ph}); }
   return out.sort((a,b)=>b.t.createdAt-a.t.createdAt||(a.t.id<b.t.id?-1:1));
 }
 const wIsVideo=it=>it.vl.some(v=>v.prov==="yt"||v.kind==="reel"), wIsPhoto=it=>it.ph.length>0||it.vl.some(v=>v.prov==="ig"&&v.kind==="p");
+function cleanTitle(t){ const x=String(t.title||"").replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim(); if(x.length>=2) return x; const v=videoLinks(t.title)[0]; return v?(v.prov==="yt"?"YouTube video":v.kind==="p"?"Instagram post":"Instagram reel"):(t.title||""); }
 function wThumb(it){ const v=it.vl[0]; if(v&&v.prov==="yt") return `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`; if(!v&&it.ph[0]) return S.media.get(it.ph[0]).data; return ""; }
 function wCard(it){
   const t=it.t, st=stat(t.id), v=it.vl[0];
@@ -1961,7 +1962,7 @@ function wCard(it){
   const cap=String(t.desc||"").replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim();
   const src=v?(v.prov==="yt"?"YouTube":"Instagram"):"TopicTalk upload";
   return `<article class="wcard"><div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${[t.location?"📍 "+esc(t.location):"",ago(t.createdAt)].filter(Boolean).join(" · ")}</div></div><span class="wsrc">${src}</span></div>
-    <a class="wtitle" href="#t-${t.id}">${esc(t.title)}</a>
+    <a class="wtitle" href="#t-${t.id}">${esc(cleanTitle(t))}</a>
     ${media}
     ${cap?`<p class="wcap">${esc(cap.slice(0,160))}${cap.length>160?"…":""}</p>`:""}
     <div class="wacts"><a class="btn pri sm" href="#t-${t.id}" data-act="wDiscuss" data-id="${t.id}">💬 Discuss${st.comments?` · ${st.comments}`:""}</a><button type="button" class="btn sm" data-act="wBattle" data-id="${t.id}">⚔️ Start a battle</button><button type="button" class="act" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button></div></article>`;
@@ -1982,7 +1983,7 @@ function vWatch(catOk){
 function watchStrip(){
   const items=watchItems().slice(0,4); if(!items.length) return "";
   return `<section class="sec">${SH("▶ Watch","Videos and photos people are talking about.",`<a href="#explore" data-act="exGo" data-v="watch">See all →</a>`)}<div class="wstrip">${items.map(it=>{ const th=wThumb(it), v=it.vl[0];
-    return `<a class="wthumb" href="#t-${it.t.id}"><span class="wimg${th?"":" ig"}"${th?` style="background-image:url('${esc(th)}')"`:""}>${v?`<i>▶</i>`:""}</span><b>${esc(it.t.title)}</b></a>`; }).join("")}</div></section>`;
+    return `<a class="wthumb" href="#t-${it.t.id}"><span class="wimg${th?"":" ig"}"${th?` style="background-image:url('${esc(th)}')"`:""}>${v?`<i>▶</i>`:""}</span><b>${esc(cleanTitle(it.t))}</b></a>`; }).join("")}</div></section>`;
 }
 function mediaHTML(c){
   return (c.media||[]).map(mid=>{ const m=S.media.get(mid); if(!m) return `<div class="cmedia ph">${c.mediaType==="gif"?"GIF":"Image"} loading…</div>`;
@@ -2906,7 +2907,8 @@ document.addEventListener("click", async e=>{
     case "tagDropG": UI.taggedG=UI.taggedG.filter(x=>x!==el.dataset.id); tagRender(); break;
     case "tagDrop": UI.tagged=UI.tagged.filter(x=>x!==el.dataset.id); tagRender(); break;
     case "saveTopic": {
-      const title=$("#n-title").value.trim(), err=$("#n-err");
+      let title=$("#n-title").value.trim(); const err=$("#n-err");
+      { const tl=videoLinks(title); if(tl.length){ const rest=title.replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim(); const dEl=$("#n-desc"); if(dEl&&!dEl.value.includes(tl[0].url)) dEl.value=(tl[0].url+"\n"+dEl.value).trim(); title=rest.length>=3?rest:(tl[0].prov==="yt"?"YouTube video":tl[0].kind==="p"?"Instagram post":"Instagram reel"); } }
       let loc=""; if(UI.locMode==="place"){ const pl=placeOf($("#n-loc")?.value||UI.locVal); if(!pl){ err.textContent="Choose a place from the list, or pick Everywhere."; break; } loc=pl.label; }
       if(title.length<3){ err.textContent="Give it a title of at least 3 characters."; break; }
       const dupe=[...S.topics.values()].find(t=>t.title.toLowerCase()===title.toLowerCase());
