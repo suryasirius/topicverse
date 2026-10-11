@@ -637,6 +637,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 
 .wthumb{border:0;background:none;padding:0;text-align:left;cursor:pointer;font:inherit}.wthumb:hover .wimg i{transform:scale(1.1)}.wimg i{transition:transform .2s}
 .wplayer{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}.wplayer.portrait{aspect-ratio:9/16;max-height:70vh;width:auto;margin:0 auto}.wplayer.ig{aspect-ratio:auto;height:min(620px,70vh);background:#fff;border:1px solid var(--line)}.wplayer iframe{width:100%;height:100%;border:0;display:block}
+.wimg{overflow:hidden}.wimg.igf{background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)}.wimg.igf iframe{position:absolute;left:50%;top:-54px;width:100%;min-width:326px;height:calc(100% + 600px);transform:translateX(-50%);border:0;pointer-events:none;background:#fff}.wimg i{position:relative;z-index:1}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -1985,7 +1986,8 @@ function vWatch(catOk){
 function watchStrip(){
   const items=watchItems().slice(0,4); if(!items.length) return "";
   return `<section class="sec">${SH("▶ Watch","Videos and photos people are talking about.",`<a href="#explore" data-act="exGo" data-v="watch">See all →</a>`)}<div class="wstrip">${items.map(it=>{ const th=wThumb(it), v=it.vl[0];
-    return `<button type="button" class="wthumb" data-act="wPlay" data-id="${it.t.id}" aria-label="Play ${esc(cleanTitle(it.t))}"><span class="wimg${th?"":" ig"}"${th?` style="background-image:url('${esc(th)}')"`:""}>${v?`<i>▶</i>`:""}</span><b>${esc(cleanTitle(it.t))}</b></button>`; }).join("")}</div></section>`;
+    const igf=!th&&v&&v.prov==="ig"?`<iframe src="https://www.instagram.com/${v.kind==="p"?"p":"reel"}/${encodeURIComponent(v.id)}/embed/" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" title="" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin"></iframe>`:"";
+    return `<button type="button" class="wthumb" data-act="wPlay" data-id="${it.t.id}" aria-label="Play ${esc(cleanTitle(it.t))}"><span class="wimg${igf?" igf":th?"":" ig"}"${th?` style="background-image:url('${esc(th)}')"`:""}>${igf}${v?`<i>▶</i>`:""}</span><b>${esc(cleanTitle(it.t))}</b></button>`; }).join("")}</div></section>`;
 }
 function mediaHTML(c){
   return (c.media||[]).map(mid=>{ const m=S.media.get(mid); if(!m) return `<div class="cmedia ph">${c.mediaType==="gif"?"GIF":"Image"} loading…</div>`;
