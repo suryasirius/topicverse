@@ -627,12 +627,12 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .bc2 .bc-ff.off{background:#E1E8E4}.bc2 .bc-ff.off .g{background:#CBD6D0}.bc2 .bc-ff.off .sp{opacity:.55}
 .bc2.bc-anim .bc-ff .g{animation:bcgrow .8s cubic-bezier(.2,.9,.2,1)}
 /* VIDEO LINKS v1 */
-.vwrap{margin:8px 0}.vcard{position:relative;display:block;width:100%;max-width:480px;aspect-ratio:16/9;border:0;border-radius:14px;overflow:hidden;background:#0d1b14;cursor:pointer;padding:0}
+.vwrap{margin:8px 0}.vcard{position:relative;display:block;width:100%;max-width:480px;aspect-ratio:16/9;border:0;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#0d1b14,#1c3a2c);cursor:pointer;padding:0}
 .vcard img{width:100%;height:100%;object-fit:cover;display:block}.vph.ig{position:absolute;inset:0;background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)}
 .vplayb{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;background:rgba(0,0,0,.62);display:grid;place-items:center;transition:transform .2s}.vcard:hover .vplayb{transform:translate(-50%,-50%) scale(1.08)}
 .vlab{position:absolute;left:10px;bottom:8px;color:#fff;font:700 12px "Schibsted Grotesk",system-ui;background:rgba(0,0,0,.55);padding:3px 9px;border-radius:999px}
 .vcard.short{aspect-ratio:9/16;max-width:240px}.vopen{display:block;margin-top:4px;font-size:12.5px;color:var(--muted);text-decoration:none}
-.vplay{position:relative;max-width:480px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000}.vplay.portrait{aspect-ratio:9/16;max-width:300px}.vplay.ig{aspect-ratio:auto;max-width:400px;background:#fff;border:1px solid var(--line)}.vplay iframe{width:100%;height:100%;border:0;display:block}
+.vplay{position:relative;max-width:480px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000}.vplay.portrait{aspect-ratio:9/16;max-width:300px}.vplay.ig{aspect-ratio:auto;max-width:400px;background:var(--surface);border:1px solid var(--line);position:relative}.vplay.ig::before{content:"Loading Instagram post… If it stays empty, use “Open on Instagram” below.";position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--muted);font-size:13px;line-height:1.4}.vplay.ig iframe{position:relative;background:transparent}.vplay iframe{width:100%;height:100%;border:0;display:block}
 .ctext a.ext{color:var(--brand-deep);word-break:break-all}
 
 .wthumb{border:0;background:none;padding:0;text-align:left;cursor:pointer;font:inherit}.wthumb:hover .wimg i{transform:scale(1.1)}.wimg i{transition:transform .2s}
@@ -1274,7 +1274,19 @@ function fCard(t){
     ${hasM?`<div class="fmact"><a class="btn pri sm" href="#t-${t.id}" data-act="wDiscuss" data-id="${t.id}">💬 Discuss on TopicTalk</a><button type="button" class="btn sm" data-act="wBattle" data-id="${t.id}">⚔️ Battle on this topic</button></div>`:""}
     <div class="ffoot">${hasM?`<a class="fq" href="#t-${t.id}">💬 ${st.comments} comment${st.comments===1?"":"s"}</a>`:`<a class="btn sm${st.comments?"":" pri"}" href="#t-${t.id}">💬 ${st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Discuss"}</a>`}${st.reviews?`<span class="fstar">★ ${st.avg.toFixed(1)} <small>(${st.reviews})</small></span>`:""}${br?`<span class="fq">⑂ ${br} branch${br===1?"":"es"}</span>`:""}<button type="button" class="act fshare" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button></div></article>`;
 }
-function topRatedList(n){ const hp=homePlace(); let rt=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0); const loc=hp?rt.filter(t=>inPlace(t,hp)):[]; const near=loc.length>=2; if(near) rt=loc; return {near,list:rt.sort((a,b)=>rvScore(b)-rvScore(a)).slice(0,n)}; }
+function mixFeed(list){
+  const typ=t=>t.kind==="battle"?"B":(videoLinks((t.title||"")+" "+(t.desc||"")).length||(t.media||[]).length)?"M":"T";
+  const rest=list.map(t=>[t,typ(t)]), out=[];
+  while(rest.length){ const last=out.length?out[out.length-1][1]:null; let i=-1;
+    if(out.length<2) i=rest.findIndex((x,j)=>j<8&&x[1]==="T");
+    if(i<0) i=rest.findIndex(x=>x[1]==="T"||x[1]!==last);
+    if(i<0) i=0; out.push(rest.splice(i,1)[0]); }
+  return out.map(x=>x[0]);
+}
+function topRatedList(n,mode){ const hp=homePlace(); const all=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0); const loc=hp?all.filter(t=>inPlace(t,hp)):[], other=all.filter(t=>!loc.includes(t));
+  const srt=a=>a.sort((x,y)=>rvScore(y)-rvScore(x)).slice(0,n);
+  if(mode==="split") return {near:srt(loc),other:srt(other)};
+  return loc.length?{near:true,list:srt(loc)}:{near:false,list:srt(other)}; }
 function vHome(){
   if (!S.topics.size) return heroHTML() + emptyBox("No topics yet","Start the first one. Anything can become a topic: a phone, a dish, a film, a local issue.",`<button class="btn pri" data-act="newTopic">${L("Start a topic")}</button>`);
   const tab=UI.htab||"fy", hp=homePlace(), ha=homeArea(), now=Date.now();
@@ -1289,9 +1301,9 @@ function vHome(){
     const live=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)).sort((a,b)=>{ const x=IX.bv.get(a.id),y=IX.bv.get(b.id); return (y.a+y.b)-(x.a+x.b)||b.createdAt-a.createdAt; }).slice(0,6);
     const liveIds=new Set(live.map(b=>b.topicId));
     const all=LIVE().filter(t=>t.kind!=="prediction"&&!(t.kind==="battle"&&liveIds.has(t.id))).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1)).map(x=>x[0]);
-    { const mixed=[], pend=[]; for(const t of all){ if(t.kind==="battle"&&mixed.length&&mixed[mixed.length-1].kind==="battle"){ pend.push(t); continue; } mixed.push(t); if(t.kind!=="battle"&&pend.length) mixed.push(pend.shift()); } all.length=0; all.push(...mixed,...pend); }
+    { const m=mixFeed(all); all.length=0; all.push(...m); }
     const n=UI.fyN||10, items=all.slice(0,n), tr=topRatedList(6);
-    const strip=tr.list.length?`<section class="hstrip">${SH("⭐ "+(tr.near?"Top rated near you":"Top rated"),"",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}</small></a>`; }).join("")}</div></section>`:"";
+    const strip=tr.list.length?`<section class="hstrip">${SH(tr.near?"⭐ Top rated near you":"⭐ Popular reviews","",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}</small></a>`; }).join("")}</div></section>`:"";
     const feed=items.map((t,i)=>fCard(t)+(i===2?strip:"")).join("")+(items.length<3?strip:"");
     const tagCount=new Map(); for(const t of LIVE()) (t.tags||[]).forEach(x=>tagCount.set(x,(tagCount.get(x)||0)+1));
     const tags=[...tagCount].sort((a,b)=>b[1]-a[1]).slice(0,8), bod=branchOfDay();
@@ -1309,9 +1321,12 @@ function vHome(){
     const bs=[...S.battles.values()].filter(b=>S.topics.has(b.topicId)).sort((a,b)=>(b.endsAt>now)-(a.endsAt>now)||b.createdAt-a.createdAt);
     body=`<div class="harea"><span class="muted">Two sides, one winner. Live first.</span><button type="button" class="btn pri sm" data-act="newBattle">＋ Start a battle</button></div>`+(bs.length?`<div class="grid b hbgrid">${bs.slice(0,UI.fyN||10).map(b=>battleCard(b,{topicLink:true})).join("")}</div>${bs.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}`:emptyBox("No battles yet","Start one and share it so people vote."));
   } else if(tab==="rv"){
-    const tr=topRatedList(20);
-    body=`<div class="harea"><span class="muted">${tr.near?"Places and things people recommend near you.":"Places and things people recommend."}</span><button type="button" class="btn pri sm" data-act="reviewPick">⭐ Write a review</button></div>`
-      +(tr.list.length?`<div class="list rvlist">${tr.list.map((t,i)=>{ const s2=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s2.avg.toFixed(1)}</b><span>${s2.reviews} review${s2.reviews===1?"":"s"}</span></div></a>`; }).join("")}</div><a class="morep" href="#reviews">All reviews →</a>`:emptyBox("No reviews yet","Rate a place, shop or product you know.",`<button class="btn pri sm" data-act="reviewPick">Write the first review</button>`));
+    const sp=topRatedList(20,"split"), row=(t,i)=>{ const s2=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s2.avg.toFixed(1)}</b><span>${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</span></div></a>`; };
+    body=`<div class="harea"><span class="muted">Places and things people recommend.</span><button type="button" class="btn pri sm" data-act="reviewPick">⭐ Write a review</button></div>`
+      +(hp?`<section class="hsec">${SH("📍 Top rated near you",esc(hp.name))}${sp.near.length?`<div class="list rvlist">${sp.near.map(row).join("")}</div>`:emptyBox("No local reviews yet",`Rate a place in ${esc(hp.name)} you know.`,`<button class="btn pri sm" data-act="reviewPick">Review a local place</button>`)}</section>`:"")
+      +(sp.other.length?`<section class="hsec">${SH("⭐ Popular reviews","Products, places and things from everywhere")}<div class="list rvlist">${sp.other.map(row).join("")}</div></section>`:"")
+      +(!sp.near.length&&!sp.other.length&&!hp?emptyBox("No reviews yet","Rate a place, shop or product you know.",`<button class="btn pri sm" data-act="reviewPick">Write the first review</button>`):"")
+      +`<a class="morep" href="#reviews">All reviews →</a>`;
   }
   return `<div class="home2"><div class="hmain">${head}${body}</div><aside class="hside">${homeSide()}</aside></div>`;
 }
