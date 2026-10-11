@@ -1914,6 +1914,8 @@ const DRAFT_IDS = /^(newc|r-.+|duel-text|rv-text)$/;
 const draftKey = ta => "tt-draft:"+(location.hash||"#home").split("~")[0]+":"+ta.id;
 function loadDraft(ta){ try{ return localStorage.getItem(draftKey(ta))||""; }catch{ return ""; } }
 function saveDraft(ta){ try{ const v=ta.value; if(v.trim()) localStorage.setItem(draftKey(ta),v); else localStorage.removeItem(draftKey(ta)); }catch{} }
+async function endTyping(ta){ if(ta&&document.activeElement===ta){ ta.blur(); await new Promise(r=>setTimeout(r,60)); } TY.composing=false; }
+function markPosted(id,text){ UI.justPosted={id,text:String(text||"").trim(),t:Date.now()}; }
 function clearField(ta){ if(!ta) return; ta.value=""; try{ localStorage.removeItem(draftKey(ta)); }catch{} syncRich(ta); }
 function hlRich(text){
   return esc(text)
@@ -1945,7 +1947,7 @@ function enhance(root){
       const back=document.createElement("div"); back.className="rt-back"; back.setAttribute("aria-hidden","true");
       ta.parentNode.insertBefore(wrap,ta); wrap.append(back,ta);
       ta.classList.add("rt-in");
-      if(ta.id && DRAFT_IDS.test(ta.id) && !ta.value){ const d=loadDraft(ta); if(d){ ta.value=d; wrap.dataset.draft="1"; } }
+      if(ta.id && DRAFT_IDS.test(ta.id) && !ta.value){ const d=loadDraft(ta), jp=UI.justPosted; if(d&&jp&&jp.id===ta.id&&d.trim()===jp.text){ try{ localStorage.removeItem(draftKey(ta)); }catch{} } else if(d){ ta.value=d; wrap.dataset.draft="1"; } }
       // WhatsApp-style composer: [😊  text  📎] (send)
       const box=wrap.closest(".composer .box");
       if(box && !box.querySelector(".wa")){
@@ -2177,6 +2179,7 @@ let draftT=0;
 document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
+  { const jp=UI.justPosted; if(jp&&ta.id===jp.id&&Date.now()-jp.t<3000&&jp.text&&ta.value.trim()===jp.text){ ta.value=""; try{ localStorage.removeItem(draftKey(ta)); }catch{} syncRich(ta); return; } }
   if(ta.tagName==="TEXTAREA"&&ta.dataset.tt){ syncRich(ta); if(ta.classList.contains("rt-in")) acUpdate(ta);
     const chip=ta.closest(".composer")?.querySelector(".dchip"); if(chip) chip.remove();
     if(ta.id&&DRAFT_IDS.test(ta.id)){ clearTimeout(draftT); draftT=setTimeout(()=>saveDraft(ta),350); } }
@@ -2241,7 +2244,7 @@ function render(){
   { const own=/^\s*<a class="pback"/.test(html)||/^\s*<div class="pback/.test(html);
     const tab=r==="explore"||r==="alerts"||r==="me";
     view.innerHTML=(r==="home"||own?"":`<button type="button" class="backbtn${tab?" bk-tab":""}" data-act="goBack" aria-label="Go back">← Back</button>`)+html; }
-  for(const id in keep){ const el=document.getElementById(id); if(el) el.value=keep[id]; }
+  for(const id in keep){ const jp=UI.justPosted; if(jp&&id===jp.id&&Date.now()-jp.t<3000&&String(keep[id]).trim()===jp.text) continue; const el=document.getElementById(id); if(el) el.value=keep[id]; }
   enhance(view);
   markSeen(); maybeAskHome();
   if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
@@ -2838,8 +2841,8 @@ document.addEventListener("click", async e=>{
     case "pickCity": UI.city=el.dataset.v; try{ localStorage.setItem("tt-city",UI.city); }catch{} schedule(); break;
     case "lang": UI.lang=UI.lang==="ta"?"en":"ta"; try{ localStorage.setItem("tt-lang",UI.lang); }catch{} render(); break;
     case "reply": UI.replyOpen.has(id)?UI.replyOpen.delete(id):UI.replyOpen.add(id); render(); { const t=document.getElementById("r-"+id); t&&t.focus(); } break;
-    case "postComment": { const ta=$("#newc"); const lbl=el.innerHTML, wa=el.classList.contains("wa-send"); el.disabled=true; el.classList.add("busy"); if(!wa) el.textContent="Posting"; if(await postComment(el.dataset.topic,null,ta.value,"newc")){ const t2=$("#newc")||ta; clearField(t2); if(t2!==ta) clearField(ta); const bx=t2.closest(".box"); if(bx) attachUI(bx,"newc"); } el.disabled=false; el.classList.remove("busy"); el.innerHTML=lbl; break; }
-    case "postReply": { UI.more.add(id); const ta=document.getElementById("r-"+id); const c=S.comments.get(id); el.disabled=true; if(c&&await postComment(c.topicId,id,ta.value,"r-"+id)){ UI.replyOpen.delete(id); clearField(ta); const t2=document.getElementById("r-"+id); if(t2&&t2!==ta) clearField(t2); schedule(); } el.disabled=false; break; }
+    case "postComment": { const ta=$("#newc"); const lbl=el.innerHTML, wa=el.classList.contains("wa-send"); el.disabled=true; el.classList.add("busy"); if(!wa) el.textContent="Posting"; await endTyping(ta); const txt0=ta.value; if(await postComment(el.dataset.topic,null,txt0,"newc")){ markPosted("newc",txt0); clearTimeout(draftT); const t2=$("#newc")||ta; clearField(t2); if(t2!==ta) clearField(ta); const bx=t2.closest(".box"); if(bx) attachUI(bx,"newc"); } el.disabled=false; el.classList.remove("busy"); el.innerHTML=lbl; break; }
+    case "postReply": { UI.more.add(id); const ta=document.getElementById("r-"+id); const c=S.comments.get(id); el.disabled=true; await endTyping(ta); const txt0=ta.value; if(c&&await postComment(c.topicId,id,txt0,"r-"+id)){ markPosted("r-"+id,txt0); clearTimeout(draftT); UI.replyOpen.delete(id); clearField(ta); const t2=document.getElementById("r-"+id); if(t2&&t2!==ta) clearField(t2); schedule(); } el.disabled=false; break; }
     case "like": {
       if(!(await gate())) break;
       const key=`${id}__${S.me}`, ref=db.doc("likes/"+key);
