@@ -699,6 +699,15 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .home2 .hbattles .bc-mom{font-size:12px}
 .home2 .hbattles .bc-foot{padding-top:8px}
 .bc-tot{color:var(--ink);font-weight:700}
+/* GROUP v2 */
+.ghead{display:flex;align-items:flex-start;gap:14px;margin-bottom:12px}.ghead>.tile{flex:none;width:60px;height:60px;font-size:21px;border-radius:16px}
+.gh-t{flex:1;min-width:0}.gh-t h1{font-size:28px;margin:0 0 4px;overflow-wrap:anywhere}.gh-d{margin:6px 0 0;font-size:14.5px;line-height:1.45}.gh-add{margin-top:6px;font-size:13.5px}.gh-edit{flex:none}
+.gacts{margin-bottom:16px;flex-wrap:wrap}
+.gstart{border:1px dashed var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;background:var(--surface)}.gstart b{font-size:15px}.gstart ol{margin:8px 0 0;padding-left:20px;display:grid;gap:6px;font-size:14px}
+.gchips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px 12px;padding:0 14px}.gchips::-webkit-scrollbar{display:none}.gchips .chip{white-space:nowrap}.gchips small{opacity:.7;margin-left:2px}
+.gsec{margin-bottom:14px}.gfeed{margin-top:4px}
+.ginv p{margin:0 0 10px;font-size:13.5px}.ginv-c{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px}.ginv-c .code{font-size:16px;letter-spacing:.12em;padding:2px 8px;margin:0}.ginv-c .act{margin-left:auto}
+@media(max-width:480px){.ghead>.tile{width:48px;height:48px;font-size:17px;border-radius:13px}.gh-t h1{font-size:23px}}
 /* REVIEWS v2 */
 .rvhead{display:grid;gap:10px;margin:2px 0 12px}.rvhead>div:first-child{display:grid;gap:2px}.rvhead>div:first-child b{font-size:16px}.rvhead .muted{font-size:13px}
 .rvbar{display:flex;gap:8px}.rvbar .f{flex:1;min-width:0;margin:0;border-radius:999px;padding-left:16px}.rvbar .btn{flex:none;border-radius:999px}
@@ -1594,32 +1603,66 @@ function vGroup(gid){
   if(!g) return S.ready.groups?emptyBox("Group not found","It may have been deleted.",`<a class="btn" href="#groups">All groups</a>`):`<p class="muted">Loading…</p>`;
   const member=memberOf(gid), admin=isAdmin(gid), priv=g.visibility==="private";
   const mem=(IX.gMem.get(gid)||[]).sort((a,b)=>(b.role==="admin")-(a.role==="admin")||a.joinedAt-b.joinedAt);
-  const head=`<div class="phead"><div class="tile" style="--h:${hueOf(g.name)};width:64px;height:64px;font-size:22px;border-radius:16px">${esc(g.name.slice(0,2).toUpperCase())}</div><div style="min-width:0">
-      <div class="meta"><span>${priv?LOCK+" Private group":"Public group"}</span>${g.city?`<span>📍 ${esc(g.city)}</span>`:""}<span>${mem.length} member${mem.length===1?"":"s"}</span></div>
-      <h1 style="font-size:30px">${esc(g.name)}</h1>${g.desc?`<p style="margin:4px 0 0">${esc(g.desc)}</p>`:""}</div></div>`;
-  if(priv&&!member) return head+`<div class="empty" style="margin-top:20px"><b>This group is private</b>Only members can see its topics. Ask a member for the invite code.<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><input class="f" id="join-code" maxlength="8" placeholder="Invite code" style="max-width:160px;text-transform:uppercase"><button class="btn pri sm" data-act="joinCode">Join</button></div><div class="hint" id="join-err" style="text-align:center"></div></div>`;
-  const ts=(IX.tByGroup.get(gid)||[]).sort((a,b)=>IX.trend.get(b.id)-IX.trend.get(a.id));
-  const now=Date.now(), bs=[...S.battles.values()].filter(b=>ts.some(t=>t.id===b.topicId)&&b.endsAt>now);
-  const best=ts.flatMap(t=>IX.cByTopic.get(t.id)||[]).sort((a,b)=>likes(b)-likes(a)).slice(0,3);
-  // leaderboard: called-it on group predictions, then activity
+  const owner=mem.find(m=>m.role==="admin");
+  const head=`<div class="ghead"><div class="tile" style="--h:${hueOf(g.name)}">${esc(g.name.slice(0,2).toUpperCase())}</div><div class="gh-t">
+      <h1>${esc(g.name)}</h1>
+      <div class="meta"><span>${priv?LOCK+" Private group":"🌐 Public group"}</span>${g.city?`<span>📍 ${esc(g.city)}</span>`:""}<span>${mem.length} member${mem.length===1?"":"s"}</span>${owner?`<span>by ${esc(nameOf(owner.userId))}</span>`:""}</div>
+      ${g.desc?`<p class="gh-d">${esc(g.desc)}</p>`:admin?`<button type="button" class="linkb gh-add" data-act="editGroup" data-id="${esc(gid)}">＋ Add a short description</button>`:""}
+    </div>${admin?`<button type="button" class="btn sm gh-edit" data-act="editGroup" data-id="${esc(gid)}">Edit</button>`:""}</div>`;
+  if(priv&&!member) return head+`<div class="empty" style="margin-top:20px"><b>This group is private</b>Only members can see its topics, battles and members. Ask a member for the invite link or code.<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><input class="f" id="join-code" maxlength="8" placeholder="Invite code" style="max-width:160px;text-transform:uppercase"><button class="btn pri sm" data-act="joinCode">Join</button></div><div class="hint" id="join-err" style="text-align:center"></div></div>`;
+  const ts=(IX.tByGroup.get(gid)||[]).filter(t=>!t.deletedAt);
+  const now=Date.now(), gbs=[...S.battles.values()].filter(b=>ts.some(t=>t.id===b.topicId));
+  const live=gbs.filter(b=>b.endsAt>now).sort((a,b)=>b.createdAt-a.createdAt), strip=live.slice(0,2), stripIds=new Set(strip.map(b=>b.topicId));
+  const preds=ts.filter(t=>t.kind==="prediction").sort((a,b)=>b.createdAt-a.createdAt);
+  const disc=ts.filter(t=>t.kind!=="prediction"&&t.kind!=="battle");
+  const byAct=a=>a.map(t=>[t,lastAct(t)]).sort((x,y)=>y[1]-x[1]).map(x=>x[0]);
+  const f=["all","ds","bt","pr"].includes(UI.gf)&&UI.gfG===gid?UI.gf:"all";
+  const chips=[["all","All",0],["ds","💬 Discussions",disc.length],["bt","⚔️ Battles",gbs.length],["pr","🔮 Predictions",preds.length]].filter(x=>x[0]==="all"||x[2]);
+  const n=UI.fyN||10;
+  let feed="";
+  if(f==="all"){ const list=byAct(ts.filter(t=>!stripIds.has(t.id)));
+    feed=(strip.length?`<section class="gsec">${SH("🔥 "+L("Live battles"),"",live.length>2?`<button type="button" class="linkb" data-act="gFilter" data-v="bt" data-id="${esc(gid)}">See all ${live.length} →</button>`:"")}<div class="grid b hbgrid btlive">${strip.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:"")
+      +(list.length?`<div class="hfeed gfeed">${list.slice(0,n).map(t=>t.kind==="prediction"?predCard(t):fCard(t)).join("")}</div>${list.length>n?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}`:"");
+  } else if(f==="ds") feed=`<div class="hfeed gfeed">${byAct(disc).slice(0,n).map(fCard).join("")}</div>`;
+  else if(f==="bt") feed=battleSections(gbs,{none:"No live battles in this group right now."});
+  else if(f==="pr") feed=`<div class="grid b">${preds.map(predCard).join("")}</div>`;
+  const small=mem.length<3;
+  const start=member&&(small||!ts.length)?`<div class="gstart"><b>${ts.length?"Get more people in":"Get the group going"}</b>
+      <ol><li><button type="button" class="linkb" data-act="copyInvite" data-id="${esc(gid)}">Invite friends</button> <span class="muted">with a WhatsApp link</span></li>
+      <li><button type="button" class="linkb" data-act="newTopic" data-group="${esc(gid)}">Start a topic</button> <span class="muted">a question, an opinion, a plan</span></li>
+      <li><button type="button" class="linkb" data-act="newBattle" data-group="${esc(gid)}">Start a battle</button> <span class="muted">two sides, everyone votes</span></li></ol></div>`:"";
+  const best=ts.flatMap(t=>IX.cByTopic.get(t.id)||[]).filter(c=>cLive(c)&&likes(c)>0).sort((a,b)=>likes(b)-likes(a)).slice(0,3);
   const score=new Map(); const add=(u,k,v)=>{ if(!score.has(u)) score.set(u,{called:0,calls:0,posts:0}); score.get(u)[k]+=v; };
   ts.forEach(t=>{ (IX.cByTopic.get(t.id)||[]).forEach(c=>add(c.authorId,"posts",1)); add(t.authorId,"posts",1);
     if(t.kind==="prediction"&&t.outcome) (IX.pVoters.get(t.id)||[]).forEach(v=>{ add(v.userId,"calls",1); if(v.side===t.outcome) add(v.userId,"called",1); }); });
-  const board=[...score].filter(([u])=>mem.some(m=>m.userId===u)).sort((a,b)=>b[1].called-a[1].called||b[1].posts-a[1].posts).slice(0,5);
+  const board=small?[]:[...score].filter(([u])=>mem.some(m=>m.userId===u)).sort((a,b)=>b[1].called-a[1].called||b[1].posts-a[1].posts).slice(0,5);
+  const invite=member&&(priv||admin)?`<div class="panel ginv"><h3>Invite friends</h3><p class="muted">Send the link. They open it, log in, and they’re in. Or they can enter the code on the Groups page.</p>
+      <button type="button" class="btn pri sm" data-act="copyInvite" data-id="${esc(gid)}" style="width:100%">🔗 Share invite link</button>
+      <div class="ginv-c"><span class="muted">Code</span><b class="code">${esc(g.invite||"")}</b>${admin?`<button type="button" class="act" data-act="newInvite" data-id="${esc(gid)}" title="Make a new code. The old link and code stop working.">New code</button>`:""}</div></div>`
+    :!priv?`<div class="panel ginv"><h3>Invite friends</h3><p class="muted">Anyone can join this public group.</p><button type="button" class="btn sm" data-act="copyInvite" data-id="${esc(gid)}" style="width:100%">🔗 Share group link</button></div>`:"";
   return head+`
-   <div class="tbar" style="margin-bottom:22px">
+   <div class="tbar gacts">
      ${member?`<button class="btn pri sm" data-act="newTopic" data-group="${esc(gid)}">New topic</button><button class="btn sm" data-act="newBattle" data-group="${esc(gid)}">New battle</button><button class="btn sm" data-act="newPred" data-group="${esc(gid)}">New prediction</button>`:`<button class="btn pri sm" data-act="joinGroup" data-id="${esc(gid)}">Join group</button>`}
    </div>
    <div class="tp"><div>
-     ${bs.length?`<section class="sec"><div class="sech"><h2>${L("Live battles")}</h2></div><div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
-     <section class="sec"><div class="sech"><h2>Topics</h2></div>${ts.length?`<div class="grid" style="grid-template-columns:1fr">${ts.map(t=>topicCard(t)).join("")}</div>`:emptyBox("No topics yet","Start the first debate in this group.",member?`<button class="btn pri sm" data-act="newTopic" data-group="${esc(gid)}">New topic</button>`:"")}</section>
-     ${best.length?`<section class="sec"><div class="sech"><h2>Best of the group</h2></div><div class="list">${best.map(c=>{ const t=S.topics.get(c.topicId); return `<a href="#t-${t.id}~${c.id}">${avatar(c.authorId)}<div class="txt"><div class="meta"><b style="color:var(--ink)">${esc(nameOf(c.authorId))}</b><span>in ${esc(t.title)}</span><span>${likes(c)} likes</span></div><div class="q">${esc(c.text)}</div></div></a>`; }).join("")}</div></section>`:""}
+     ${start}
+     ${chips.length>1?`<div class="tagrow gchips" role="group" aria-label="Show">${chips.map(([k,l,c])=>`<button type="button" class="chip ${f===k?"on":""}" aria-pressed="${f===k}" data-act="gFilter" data-v="${k}" data-id="${esc(gid)}">${l}${c?` <small>${c}</small>`:""}</button>`).join("")}</div>`:""}
+     ${ts.length?feed:emptyBox("No topics yet","Start the first conversation in this group.",member?`<button class="btn pri sm" data-act="newTopic" data-group="${esc(gid)}">New topic</button>`:"")}
+     ${f==="all"&&best.length?`<section class="sec"><div class="sech"><h2>Best of the group</h2></div><div class="list">${best.map(c=>{ const t=S.topics.get(c.topicId); return `<a href="#t-${t.id}~${c.id}">${avatar(c.authorId)}<div class="txt"><div class="meta"><b style="color:var(--ink)">${esc(nameOf(c.authorId))}</b><span>in ${esc(t.title)}</span><span>${likes(c)} like${likes(c)===1?"":"s"}</span></div><div class="q">${esc(c.text)}</div></div></a>`; }).join("")}</div></section>`:""}
    </div><aside class="rail">
-     ${member&&priv||admin?`<div class="panel"><h3>Invite friends</h3><p class="muted" style="margin:0 0 8px;font-size:13.5px">Share this code. They enter it on the Groups page to join.</p><div class="code">${esc(g.invite||"")}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px"><button class="btn sm" data-act="copyCode" data-id="${esc(gid)}">Copy invite message</button>${admin?`<button class="btn sm" data-act="newInvite" data-id="${esc(gid)}">New code</button>`:""}</div></div>`:""}
-     <div class="panel"><h3>Leaderboard</h3>${board.length?`<div class="list" style="border:0">${board.map(([u,v],i)=>`<a href="#u-${esc(u)}" style="padding:8px 0;align-items:center"><span class="muted" style="width:16px;font-variant-numeric:tabular-nums">${i+1}</span>${avatar(u,"xs")}<div class="txt"><b style="font-size:14px">${esc(nameOf(u))}</b><div class="meta">${v.calls?`<span>called ${v.called}/${v.calls}</span>`:""}<span>${v.posts} post${v.posts===1?"":"s"}</span></div></div></a>`).join("")}</div>`:`<p class="muted" style="margin:0;font-size:14px">Post and make predictions to get on the board.</p>`}</div>
+     ${invite}
+     ${board.length?`<div class="panel"><h3>Most active</h3><div class="list" style="border:0">${board.map(([u,v])=>`<a href="#u-${esc(u)}" style="padding:8px 0;align-items:center">${avatar(u,"xs")}<div class="txt"><b style="font-size:14px">${esc(nameOf(u))}</b><div class="meta">${v.calls?`<span>called ${v.called}/${v.calls}</span>`:""}<span>${v.posts} post${v.posts===1?"":"s"}</span></div></div></a>`).join("")}</div></div>`:""}
      <div class="panel"><h3>Members · ${mem.length}</h3><div class="list" style="border:0">${mem.map(m=>`<div style="padding:7px 0;align-items:center">${avatar(m.userId,"xs")}<div class="txt"><a href="#u-${esc(m.userId)}" style="font-weight:600;font-size:14px">${esc(nameOf(m.userId))}</a>${m.role==="admin"?' <span class="op">ADMIN</span>':""}${isSeed(m.userId)?' <span class="sample">sample</span>':""}</div>${admin&&m.userId!==S.me?`<button class="act" data-act="removeMember" data-id="${esc(m.id)}">Remove</button>`:""}</div>`).join("")}</div>
+       ${small&&member?`<p class="muted" style="font-size:13px;margin:8px 0 0">Invite at least 2 friends. Battles and predictions are more fun with more people.</p>`:""}
        ${member?`<div style="margin-top:10px"><button class="act" data-act="leaveGroup" data-id="${esc(gid)}">Leave group</button></div>`:""}</div>
    </aside></div>`;
+}
+function vJoin(code){
+  code=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8);
+  const g=[...S.groups.values()].find(x=>(x.invite||"").toUpperCase()===code);
+  if(g&&memberOf(g.id)) return `<div class="empty"><b>You’re already in ${esc(g.name)}</b><div style="margin-top:12px"><a class="btn pri sm" href="#g-${esc(g.id)}">Open the group</a></div></div>`;
+  return `<div class="empty jcard"><b>You’ve been invited to a group on TopicTalk</b>Talk, vote in battles and make predictions with your friends. ${S.me?"":"Log in or sign up first, then tap Join."}
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><input class="f" id="join-code" maxlength="8" value="${esc(code)}" style="max-width:160px;text-transform:uppercase" aria-label="Invite code"><button class="btn pri sm" data-act="joinCode">Join the group</button></div><div class="hint" id="join-err" style="text-align:center"></div></div>`;
 }
 function vCity(slug){
   const pl=PLACES.byId.get(slug)||PLACES.byId.get(slugCity(slug)); const hp=homePlace();
@@ -2425,6 +2468,7 @@ function render(){
   else if(r==="watch"){ UI.exSort="watch"; html=vExplore(); }
   else if(r.startsWith("d-")) html=vDuel(r.slice(2));
   else if(r.startsWith("g-")) html=vGroup(r.slice(2));
+  else if(r.startsWith("join-")) html=vJoin(r.slice(5));
   else if(r.startsWith("t-")){ const [tid,cid]=r.slice(2).split("~"); if(changed){ UI.tab=cid&&S.reviews.has(cid)?"reviews":(S.topics.get(tid)?.kind==="place"?"reviews":"discussion"); if(UI.pendingReview===tid){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; } } focusC=cid; html=vTopic(tid); }
   else html=vHome();
   { const own=/^\s*<a class="pback"/.test(html)||/^\s*<div class="pback/.test(html);
@@ -3241,6 +3285,30 @@ document.addEventListener("click", async e=>{
     case "newInvite": {
       const g=S.groups.get(id); if(!g||!isAdmin(id)) break;
       if(await W(()=>db.doc("groups/"+id).update({invite:newCode()}))) toast("New code made. The old one no longer works.");
+      break; }
+    case "gFilter": UI.gf=el.dataset.v; UI.gfG=id; UI.fyN=10; UI.btEndAll=false; schedule(); break;
+    case "copyInvite": {
+      const g=S.groups.get(id); if(!g) break; const priv=g.visibility==="private";
+      if(priv&&!g.invite){ toast("Only members can share the invite."); break; }
+      const link=priv?`${location.origin}/#join-${g.invite}`:`${location.origin}/#g-${id}`;
+      const msg=priv?`Join my group “${g.name}” on TopicTalk: ${link}\n(or open Groups and enter the code ${g.invite})`:`Join “${g.name}” on TopicTalk: ${link}`;
+      openModal(`<h2>Invite friends</h2><p class="muted" style="margin:0">${priv?"Anyone with this link can join, so share it only with people you want in. Make a new code any time to stop old links working.":"Share the link to bring people in."}</p>
+        <textarea class="f" id="sh" rows="3" readonly>${esc(msg)}</textarea>
+        <div class="acts"><button class="btn" data-act="closeModal">Done</button><button class="btn" data-act="copyInviteTxt">Copy</button><a class="btn pri" href="https://wa.me/?text=${enc(msg)}" target="_blank" rel="noopener">WhatsApp</a></div>`);
+      break; }
+    case "copyInviteTxt": { const t=$("#sh"); if(!t) break; try{ await navigator.clipboard.writeText(t.value); toast("Copied. Paste it in WhatsApp or anywhere."); }catch{ t.select(); toast("Select and copy the text."); } break; }
+    case "editGroup": {
+      const g=S.groups.get(id); if(!g||!isAdmin(id)) break;
+      openModal(`<h2>Edit group</h2>
+        <label class="l">What’s it about?<input class="f" id="eg-desc" maxlength="160" value="${esc(g.desc||"")}" placeholder="e.g. Turf bookings, match debates, weekend plans"></label>
+        <label class="l">City (optional)<input class="f" id="eg-city" maxlength="40" value="${esc(g.city||"")}" placeholder="e.g. Arakkonam"></label>
+        <div class="hint" id="eg-err"></div>
+        <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveEditGroup" data-id="${esc(id)}">Save</button></div>`);
+      break; }
+    case "saveEditGroup": {
+      if(!isAdmin(id)) break; el.disabled=true;
+      if(await W(()=>db.doc("groups/"+id).update({desc:$("#eg-desc").value.trim().slice(0,160),city:$("#eg-city").value.trim().slice(0,40)}))){ closeModal(true); toast("Group updated"); }
+      else el.disabled=false;
       break; }
     case "copyCode": {
       const g=S.groups.get(id); const msg=`Join my group “${g.name}” on TopicTalk. Open TopicTalk, go to Groups and enter the code ${g.invite}.`;
