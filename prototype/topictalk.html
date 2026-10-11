@@ -699,6 +699,15 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .home2 .hbattles .bc-mom{font-size:12px}
 .home2 .hbattles .bc-foot{padding-top:8px}
 .bc-tot{color:var(--ink);font-weight:700}
+/* SEARCH v2 */
+.srh{font-size:26px;font-weight:800;margin:0 0 8px;overflow-wrap:anywhere}
+.sq{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px}.sqp{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:var(--brand-soft);color:var(--brand-deep);font-size:13px;font-weight:700}.sqx{color:var(--muted);font-weight:700}.sqa{flex-basis:100%;font-size:13px;color:var(--muted)}
+.srtabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px 14px;padding:0 14px}.srtabs::-webkit-scrollbar{display:none}.srtabs .chip{white-space:nowrap}.srtabs small{opacity:.7;font-weight:600;margin-left:2px}
+.srsec{margin-top:22px}.srsec .sech .linkb{white-space:nowrap}
+.ttype{color:var(--ink);font-weight:700}
+.srvs{display:grid;gap:10px}.srv{display:grid;gap:6px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);text-decoration:none}.srv:hover{border-color:var(--brand)}
+.srv-h{display:flex;align-items:baseline;gap:8px;min-width:0}.srv-h b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.srv-st{color:#E5A93B;letter-spacing:1px;flex:none;font-size:13px}.srv-st i{font-style:normal;color:var(--line)}
+.srv-t{font-size:14px;line-height:1.45;color:color-mix(in srgb,var(--ink) 82%,var(--muted))}.srv-m{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);min-width:0}.srv-m span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* BATTLES PAGE v1 */
 .btbar{flex-wrap:wrap;gap:10px}.btchips{margin:0;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.btchips::-webkit-scrollbar{display:none}.btchips .chip{white-space:nowrap}
 .btsec{display:flex;align-items:baseline;gap:8px;margin:18px 0 10px}.btsec h3{margin:0;font-family:var(--f-display);font-size:17px;font-weight:800}.btsec .muted{font-size:13px}.btsec .linkb{margin-left:auto}
@@ -1182,7 +1191,8 @@ function duelMini(d){
 }
 
 /* ---------- components ---------- */
-function topicCard(t, rank){
+function typeLabel(t){ return t.kind==="question"?"❓ Question":t.kind==="place"?"📍 Place":t.kind==="battle"?"⚔️ Battle":t.kind==="prediction"?"🔮 Prediction":stat(t.id).reviews?"⭐ Reviews":"💬 Discussion"; }
+function topicCard(t, rank, o={}){
   const s = stat(t.id), tags=(t.tags||[]).slice(0,3);
   const extra = t.kind==="prediction" ? (()=>{ const p=IX.pv.get(t.id), n=p.yes+p.no; return `<span>${n?Math.round(100*p.yes/n):0}% say yes</span><span>${t.outcome?"Resolved":"Resolves "+fmtDate(t.resolveBy)}</span>`; })()
     : (IX.bByTopic.get(t.id)||[]).some(b=>b.endsAt>Date.now()) ? `<span class="brmark">Live battle</span>` : "";
@@ -1195,7 +1205,7 @@ function topicCard(t, rank){
   return `<article class="tcard"><a href="#t-${t.id}">
     ${t.banner?`<img class="thumb" src="${esc(t.banner)}" alt="" loading="lazy">`:`<div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>`}
     <div class="body">
-      <div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${t.kind==="place"?"<span>📍 Place</span>":t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
+      <div class="meta">${o.type?`<span class="ttype">${typeLabel(t)}</span>`:""}<span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${o.type?"":t.kind==="place"?"<span>📍 Place</span>":t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
       <h3>${esc(t.title)}</h3>
       <div class="stats">${s.reviews?`<span class="rating">★ ${s.avg.toFixed(1)}</span><span>${s.reviews} review${s.reviews>1?"s":""}</span>`:""}<span>${s.comments} comment${s.comments===1?"":"s"}</span>${s.branches?`<span>${s.branches} branch${s.branches>1?"es":""}</span>`:""}${extra}</div>
       ${snip}
@@ -1624,19 +1634,52 @@ function vTag(tag){
   ${cs.length?`<section class="sec"><div class="sech"><h2>Mentioned in comments</h2></div><div class="list">${cs.map(c=>{const t=S.topics.get(c.topicId); return t?`<a href="#t-${t.id}~${c.id}">${avatar(c.authorId)}<div class="txt"><div class="meta"><b style="color:var(--ink)">${esc(nameOf(c.authorId))}</b><span>in ${esc(t.title)}</span></div><div class="q">${esc(c.text)}</div></div></a>`:""}).join("")}</div></section>`:""}`;
 }
 
+function srReview(r){
+  const t=S.topics.get(r.topicId); if(!t) return "";
+  const txt=(r.text||r.title||"").trim().replace(/\s+/g," ");
+  return `<a class="srv" href="#t-${t.id}"><div class="srv-h"><span class="srv-st">${"★".repeat(r.rating||0)}<i>${"★".repeat(5-(r.rating||0))}</i></span><b>${esc(t.title)}</b></div>
+    ${txt?`<div class="srv-t">“${esc(txt.slice(0,140))}${txt.length>140?"…":""}”</div>`:""}
+    <div class="srv-m">${avatar(r.authorId,"xs")}<span>${esc(nameOf(r.authorId))} · ${ago(r.createdAt)}${t.location?` · 📍 ${esc(t.location)}`:""}</span></div></a>`;
+}
 function vSearch(){
   const q=UI.query.trim();
-  if(!q) return emptyBox("Search TopicTalk","Ask a question or type anything: a phone, a dish, a place, a person.");
+  if(!q) return emptyBox("Search TopicTalk","Type anything: a phone, a dish, a place, a person. Try “food in Arakkonam” or @name.");
   const r=searchAll(q,50);
-  const none=!r.topics.length&&!r.tags.length&&!r.people.length&&!r.cities.length;
-  const interp=r.place?`<div class="interp">Showing ${r.words.length?`<b>${esc(r.words.join(" "))}</b> in `:"what’s happening in "}<b>📍 ${esc(r.place.label)}</b>${r.near?" (your area)":""} · <a href="#city-${enc(r.place.id)}">Explore ${esc(r.place.name)} →</a> · <a href="#search" data-act="searchAnywhere">Search everywhere</a></div>`:r.homeFallback&&r.topics.length?`<div class="interp muted">Results near ${esc(homePlace().name)} come first.</div>`:"";
-  return `<h1 style="font-size:28px;font-weight:800">${esc(q)}</h1>${interp}
-  ${r.topics.length?answerPanel(q,r.topics):`<div class="answer"><div class="ahead">Community answer</div><div class="atext">Nobody has talked about this yet.</div><div class="muted" style="font-size:14px">Ask it, and the answer will come from people who know.</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri sm" data-act="newQuestion" data-title="${esc(q)}">Ask the community</button><button class="btn sm" data-act="newTopic" data-title="${esc(q)}">Start it as a topic</button></div></div>`}
-  ${r.battles.length?`<section class="sec" style="margin-top:22px"><div class="sech"><h2>🔥 Live battles</h2></div><div class="grid b">${r.battles.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
-  ${r.topics.length?`<section class="sec" style="margin-top:22px"><div class="sech"><h2>Conversations</h2></div><div class="grid">${r.topics.map(t=>topicCard(t)).join("")}</div></section>`:""}
-  ${r.cities.length?`<section class="sec"><div class="sech"><h2>Places</h2></div><div class="tagrow">${r.cities.map(c=>`<a class="chip" href="#city-${enc(c.slug)}">📍 ${esc(c.name)}</a>`).join("")}</div></section>`:""}
-  ${r.tags.length?`<section class="sec"><div class="sech"><h2>Hashtags</h2></div><div class="tagrow">${r.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div></section>`:""}
-  ${r.people.length?`<section class="sec"><div class="sech"><h2>People</h2></div><div class="list">${r.people.map(id=>`<div class="prow"><a href="#u-${esc(id)}">${avatar(id)}<div class="txt"><b>${esc(nameOf(id))}</b> ${idTag(id)}</div></a><span class="pbtns">${peopleBtns(id)}</span></div>`).join("")}</div></section>`:""}`;
+  if(UI.sTabQ!==q){ UI.sTabQ=q; UI.sTab=q.startsWith("@")?"pp":"all"; }
+  const disc=r.topics.filter(t=>t.kind!=="battle"&&t.kind!=="prediction");
+  const tab=UI.sTab||"all";
+  const tabs=[["all","All",0],["ds","💬 Discussions",disc.length],["rv","⭐ Reviews",r.reviews.length],["bt","⚔️ Battles",r.battles.length],["pp","👤 People",r.people.length]].filter(x=>x[0]==="all"||x[2]);
+  const none=!r.topics.length&&!r.tags.length&&!r.people.length&&!r.cities.length&&!r.battles.length&&!r.reviews.length;
+  const pill=(icon,x)=>`<span class="sqp">${icon} ${esc(x)}</span>`;
+  const understood=(r.cat||r.place)?`<div class="sq">${[r.words.length?pill("🔍",r.words.join(" ")):"",r.cat?pill("🏷️",r.cat):"",r.place?pill("📍",r.place.label+(r.near?" (your area)":"")):""].filter(Boolean).join('<span class="sqx">×</span>')}
+      ${r.place?`<span class="sqa"><a href="#city-${enc(r.place.id)}">Explore ${esc(r.place.name)} →</a> · <a href="#search" data-act="searchAnywhere">Search everywhere</a></span>`:""}</div>`
+    :r.homeFallback&&r.topics.length?`<div class="interp muted">Results near ${esc(homePlace().name)} come first.</div>`:"";
+  const more=(k,n,shown)=>n>shown?`<button type="button" class="linkb" data-act="sTab" data-v="${k}">See all ${n} →</button>`:"";
+  const sec=(title,k,n,shown,inner)=>`<section class="sec srsec"><div class="sech"><h2>${title}</h2>${more(k,n,shown)}</div>${inner}</section>`;
+  const tc=list=>`<div class="grid">${list.map(t=>topicCard(t,null,{type:1})).join("")}</div>`;
+  const bc=list=>`<div class="grid b hbgrid btlive">${list.map(b=>b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)).join("")}</div>`;
+  const rc=list=>`<div class="srvs">${list.map(srReview).join("")}</div>`;
+  const pc=list=>`<div class="list">${list.map(id=>`<div class="prow"><a href="#u-${esc(id)}">${avatar(id)}<div class="txt"><b>${esc(nameOf(id))}</b> ${idTag(id)}</div></a><span class="pbtns">${peopleBtns(id)}</span></div>`).join("")}</div>`;
+  const ask=`<div class="answer"><div class="ahead">Community answer</div><div class="atext">Nobody has talked about this yet.</div><div class="muted" style="font-size:14px">Ask it, and the answer will come from people who know.</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri sm" data-act="newQuestion" data-title="${esc(q)}">Ask the community</button><button class="btn sm" data-act="newTopic" data-title="${esc(q)}">Start a topic</button></div></div>`;
+  let body="";
+  if(tab==="all"){
+    const ppFirst=r.people.length&&(q.startsWith("@")||!r.topics.length);
+    body=(r.topics.length?answerPanel(q,r.topics):q.startsWith("@")?"":ask)
+      +(ppFirst?sec("👤 People","pp",r.people.length,4,pc(r.people.slice(0,4))):"")
+      +(r.battles.length?sec("⚔️ Battles","bt",r.battles.length,2,bc(r.battles.slice(0,2))):"")
+      +(disc.length?sec("💬 Discussions","ds",disc.length,6,tc(disc.slice(0,6))):"")
+      +(r.reviews.length?sec("⭐ Reviews","rv",r.reviews.length,3,rc(r.reviews.slice(0,3))):"")
+      +(!ppFirst&&r.people.length?sec("👤 People","pp",r.people.length,4,pc(r.people.slice(0,4))):"")
+      +(r.cities.length?`<section class="sec srsec"><div class="sech"><h2>📍 Places</h2></div><div class="tagrow">${r.cities.map(c=>`<a class="chip" href="#city-${enc(c.slug)}">📍 ${esc(c.name)}</a>`).join("")}</div></section>`:"")
+      +(r.tags.length?`<section class="sec srsec"><div class="sech"><h2># Hashtags</h2></div><div class="tagrow">${r.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div></section>`:"")
+      +(none&&q.startsWith("@")?emptyBox("No one found","Check the spelling, or search without the @."):"");
+  } else if(tab==="ds") body=tc(disc);
+  else if(tab==="rv") body=rc(r.reviews);
+  else if(tab==="bt") body=battleSections(r.battles);
+  else if(tab==="pp") body=pc(r.people);
+  return `<h1 class="srh">${esc(q)}</h1>${understood}
+    ${tabs.length>1?`<div class="tagrow srtabs" role="tablist">${tabs.map(([k,l,n])=>`<button type="button" class="chip ${tab===k?"on":""}" role="tab" aria-selected="${tab===k}" data-act="sTab" data-v="${k}">${l}${n?` <small>${n}</small>`:""}</button>`).join("")}</div>`:""}
+    ${body}`;
 }
 
 const STOP=new Set("a an the is are was were be to of in on for and or vs versus which what who whom how why where when best most good better any around nearby happening things place places there top find show me do does did should can could would will i my me we our it its this that these with at by from about than near under over into get got".split(" "));
@@ -1647,9 +1690,14 @@ function parseQ(q){
   for(let n=3;n>=1&&!place;n--) for(let i=0;i+n<=toks.length&&!place;i++){ const ph=toks.slice(i,i+n).join(" "); const pl=placeOf(ph); if(pl&&!STOP.has(ph)){ place=pl; for(let j=i;j<i+n;j++) used.add(j); } }
   // "anna nagar biryani" also tries area before a following city word handled by placeOf; keep first hit
   if(!place&&near){ place=homeArea()||homePlace(); }
-  const words=toks.filter((w,i)=>!used.has(i)&&w.length>1&&!STOP.has(w));
-  return {place,words,near,homeFallback:!place&&!!homePlace()};
+  let words=toks.filter((w,i)=>!used.has(i)&&w.length>1&&!STOP.has(w)), cat=null, catWord="";
+  for(const w of words){ const c=CAT_WORD[w]; if(c){ cat=c; catWord=w; break; } }
+  if(cat) words=words.filter(w=>w!==catWord);
+  return {place,words,near,cat,catWord,homeFallback:!place&&!!homePlace()};
 }
+const CAT_WORD=(()=>{ const m={}; for(const c of CATS){ if(c==="Other"||c==="Local") continue; const k=c.toLowerCase(); m[k]=c; if(!k.endsWith("s")) m[k+"s"]=c; }
+  Object.assign(m,{restaurant:"Food",restaurants:"Food",eat:"Food",eating:"Food",movie:"Movies",film:"Movies",films:"Movies",cinema:"Movies",sport:"Sports",games:"Gaming",game:"Gaming",car:"Cars",bike:"Bikes",app:"Apps",gadgets:"Tech",technology:"Tech"});
+  return m; })();
 function suggestQ(v){
   const pq=parseQ(v), out=[]; const add=x=>{ if(x&&x.toLowerCase()!==v&&!out.includes(x)&&out.length<4) out.push(x); };
   if(pq.place&&pq.words.length<=1){ const tc=new Map(); LIVE().filter(t=>inPlace(t,pq.place)).forEach(t=>(t.tags||[]).forEach(g=>tc.set(g,(tc.get(g)||0)+1))); const pre=pq.words[0]||""; [...tc].filter(([g])=>g!==pq.place.name.toLowerCase().replace(/\s/g,"")&&g.startsWith(pre)).sort((a,b)=>b[1]-a[1]).slice(0,3).forEach(([g])=>add(pq.place.name+" "+g)); }
@@ -1670,20 +1718,29 @@ function searchAll(q,n){
   q=q.trim().toLowerCase(); const pq=parseQ(q); const words=pq.place?pq.words:qWords(q), place=pq.place, hp=homePlace();
   const tagset=new Set(); for(const t of LIVE())(t.tags||[]).forEach(x=>tagset.add(x));
   const qtext=place?words.join(" "):q;
-  const score=t=>{ let sc=words.length?topicScore(t,qtext,words):0; const inP=place?inPlace(t,place):false;
+  const cat=pq.cat, catOk=t=>!cat||t.category===cat||topicScore(t,pq.catWord,[pq.catWord])>=1.5;
+  const score=t=>{ if(cat&&!catOk(t)) return 0; if(cat&&!words.length&&!place) return 2+IX.trend.get(t.id)*.01;
+    let sc=words.length?topicScore(t,qtext,words):0; const inP=place?inPlace(t,place):false;
     if(place){ if(!words.length) return inP?2+IX.trend.get(t.id)*.01:0; if(inP) sc=sc>=1?sc+5:sc>0?sc+3:2.2; else if(sc>=1.5) sc=sc*.6; else sc=0; }
     else if(hp&&sc>=1.5&&inPlace(t,hp)) sc+=2.5;
+    if(cat&&sc>0&&t.category===cat) sc+=1;
     return sc; };
-  const scored=LIVE().map(t=>[t,score(t)]).filter(x=>x[1]>=(place&&!words.length?1:1.5)).sort((a,b)=>b[1]-a[1]||IX.trend.get(b[0].id)-IX.trend.get(a[0].id));
+  const atP=q.startsWith("@");
+  const scored=atP?[]:LIVE().map(t=>[t,score(t)]).filter(x=>x[1]>=(place&&!words.length?1:1.5)).sort((a,b)=>b[1]-a[1]||IX.trend.get(b[0].id)-IX.trend.get(a[0].id));
   const topics=scored.slice(0,n).map(x=>x[0]);
   const qq=q.replace(/^#/,"");
   const tags=[...tagset].filter(x=>x.includes(qq)||words.includes(x)||(place&&x===place.name.toLowerCase().replace(/\s/g,""))).slice(0,10);
-  const people=place?[]:[...S.handles].filter(([id,d])=>(d.handle||"").toLowerCase().includes(qq.replace(/^@/,""))||idHit(id,qq)).map(([id])=>id).slice(0,8);
+  const people=place||cat?[]:[...S.handles].filter(([id,d])=>(d.handle||"").toLowerCase().includes(qq.replace(/^@/,""))||idHit(id,qq)).map(([id])=>id).slice(0,8);
   let cs=cities().filter(c=>c.name.toLowerCase().includes(qq)||words.includes(c.slug)).slice(0,6);
   if(place){ const pid=place.id; cs=[{slug:pid,name:place.label,n:0},...cs.filter(c=>c.slug!==pid&&c.slug!==place.city)]; }
   const live=new Set(LIVE().map(t=>t.id)), ids=new Set(topics.map(t=>t.id));
-  const battles=[...S.battles.values()].filter(b=>b.endsAt>Date.now()&&live.has(b.topicId)&&(ids.has(b.topicId)||(words.length&&words.every(w=>(b.question||"").toLowerCase().includes(w))))&&(!place||inPlace(S.topics.get(b.topicId),place))).slice(0,3);
-  return {topics,tags,people,cities:cs,battles,place,words,near:pq.near,homeFallback:pq.homeFallback};
+  const allIds=new Set(scored.map(x=>x[0].id)), bt=b=>((b.question||"")+" "+b.a+" "+b.b).toLowerCase();
+  const battles=atP?[]:[...S.battles.values()].filter(b=>live.has(b.topicId)&&(allIds.has(b.topicId)||(words.length&&words.every(w=>bt(b).includes(w))))&&(!place||inPlace(S.topics.get(b.topicId),place))&&(!cat||catOk(S.topics.get(b.topicId))))
+    .sort((a,b)=>(b.endsAt>Date.now())-(a.endsAt>Date.now())||b.createdAt-a.createdAt);
+  const rtext=r=>((r.title||"")+" "+(r.text||"")+" "+(r.pros||"")+" "+(r.cons||"")).toLowerCase();
+  const reviews=atP?[]:[...S.reviews.values()].filter(r=>!r.deletedAt&&live.has(r.topicId)&&(allIds.has(r.topicId)||(words.length&&words.every(w=>rtext(r).includes(w))&&(!place||inPlace(S.topics.get(r.topicId),place)))))
+    .sort((a,b)=>{ const i=x=>allIds.has(x.topicId)?0:1; return i(a)-i(b)||((b.text||"").length>30)-((a.text||"").length>30)||b.createdAt-a.createdAt; });
+  return {topics,tags,people,cities:cs,battles,reviews,place,cat,words,near:pq.near,homeFallback:pq.homeFallback,allN:scored.length};
 }
 
 function verdictPanel(t, rs){
@@ -2934,7 +2991,8 @@ document.addEventListener("click", async e=>{
       openModal(`<h2>Watch · last 7 days</h2><div class="list">${Object.entries(r.stats||{}).map(([k,n])=>`<div style="display:flex;justify-content:space-between;padding:8px 2px;border-bottom:1px solid var(--line)"><span>${esc(lb[k]||k)}</span><b>${n}</b></div>`).join("")}</div><p class="muted" style="font-size:12.5px">Counted once per person per hour for each action. No personal details are stored.</p><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`); }catch{ toast("Couldn’t load the numbers."); } break; }
     case "exGo": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } if(location.hash==="#explore") schedule(); else location.hash="explore"; break;
     case "exCat": UI.exCat=el.dataset.v; schedule(); break;
-    case "searchAnywhere": { const pq=parseQ(UI.query); UI.query=pq.words.join(" ")||UI.query; if(typeof q!=="undefined"&&q) q.value=UI.query; schedule(); break; }
+    case "sTab": UI.sTab=el.dataset.v; UI.fyN=10; schedule(); window.scrollTo({top:0}); break;
+    case "searchAnywhere": { const pq=parseQ(UI.query); UI.query=[...pq.words,pq.catWord].filter(Boolean).join(" ")||UI.query; if(typeof q!=="undefined"&&q) q.value=UI.query; schedule(); break; }
     case "suggest": { UI.query=el.dataset.q; if(typeof q!=="undefined"&&q) q.value=UI.query; dd.hidden=true; location.hash="#search"; schedule(); break; }
     case "locMode": { const prev=$("#n-loc"); if(prev) UI.locVal=prev.value; UI.locMode=UI.locMode===el.dataset.v?null:el.dataset.v; locRender(); break; }
     case "locUse": { const pl=PLACES.byId.get(el.dataset.id); if(pl){ UI.locMode="place"; UI.locVal=pl.label; locRender(); } break; }
@@ -3394,7 +3452,9 @@ q.addEventListener("input",()=>{
   const v=q.value.trim().toLowerCase(); if(!v||!IX){ dd.hidden=true; return; }
   const r=searchAll(v,6);
   let h="";
-  if(qWords(v).length>=2&&r.topics.length) h+=`<a href="#search" data-act="fullSearch" class="hl"><span style="color:var(--brand-deep);font-weight:700">Get the community answer</span><span class="muted">for “${esc(q.value.trim())}”</span></a>`;
+  if(r.cat||r.place){ const dn=r.topics.filter(t=>t.kind!=="battle"&&t.kind!=="prediction").length, cnt=[[dn,"discussion"],[r.reviews.length,"review"],[r.battles.length,"battle"]].filter(x=>x[0]).map(([n,w])=>n+" "+w+(n===1?"":"s")).join(" · ");
+    h+=`<a href="#search" data-act="fullSearch" class="hl"><span style="font-weight:700">${[r.words.length?esc(r.words.join(" ")):"",r.cat?esc(r.cat):"",r.place?"📍 "+esc(r.place.name):""].filter(Boolean).join(" × ")}</span><span class="muted">${cnt||"Nothing yet · be the first"}</span></a>`; }
+  else if(qWords(v).length>=2&&r.topics.length) h+=`<a href="#search" data-act="fullSearch" class="hl"><span style="color:var(--brand-deep);font-weight:700">Get the community answer</span><span class="muted">for “${esc(q.value.trim())}”</span></a>`;
   { const sg=suggestQ(v); if(sg.length) h+=`<div class="grp">Suggestions</div>`+sg.map(x=>`<a href="#search" data-act="suggest" data-q="${esc(x)}">🔍 ${esc(x)}</a>`).join(""); }
   if(r.topics.length) h+=`<div class="grp">Topics</div>`+r.topics.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:30px;height:30px;font-size:11px;border-radius:8px">${esc(abbr(t))}</div><span>${markq(t.title,v)}</span></a>`).join("");
   if(r.cities.length) h+=`<div class="grp">Cities</div>`+r.cities.slice(0,3).map(c=>`<a href="#city-${enc(c.slug)}">📍 ${esc(c.name)}</a>`).join("");
