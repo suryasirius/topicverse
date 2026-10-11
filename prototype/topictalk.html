@@ -617,6 +617,15 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .phs{display:flex;gap:8px;flex-wrap:wrap}.phi{position:relative;width:76px;height:76px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}.phi img{width:100%;height:100%;object-fit:cover;display:block}.phi button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:20px;cursor:pointer;padding:0}
 .phstrip{max-width:100%;min-width:0;display:flex;gap:8px;overflow-x:auto;margin:10px 0}.phstrip button{flex:0 0 auto;border:0;padding:0;background:none;cursor:pointer;border-radius:12px;overflow:hidden}.phstrip img{height:120px;width:auto;max-width:200px;object-fit:cover;display:block;border-radius:12px}.phstrip.sm img{height:84px}
 .qtog{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:14px;cursor:pointer}.qtog input{margin-top:3px;width:18px;height:18px;accent-color:var(--brand)}.qtog b{display:block;font-size:14px}.qtog small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
+/* FACE-OFF v1: slashing split bar with a clash spark */
+.bc2 .bc-pct{font-size:34px}.bc2 .bc-pct.a{color:var(--brand-deep)}.bc2 .bc-pct.b{color:#B7791F}
+.bc2 .bc-side:nth-child(2){text-align:right;align-items:flex-end}.bc2 .bc-side:nth-child(2)>.bc-row{width:100%}.bc2 .bc-side:nth-child(2) .bc-row{justify-content:space-between;flex-direction:row-reverse}.bc2 .bc-side:nth-child(2) .bc-row:last-child{flex-direction:row-reverse}
+.bc2 .bc-ff{position:relative;height:26px;border-radius:8px;overflow:hidden;background:#E5A93B}
+.bc2 .bc-ff .g{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#14864f,#33c07f);clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%);transition:width .6s cubic-bezier(.3,1.3,.5,1)}
+.bc2 .bc-ff .sh{position:absolute;inset:0;background:linear-gradient(#fff4,transparent 55%)}
+.bc2 .bc-ff .sp{position:absolute;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);transition:left .6s cubic-bezier(.3,1.3,.5,1);display:grid;place-items:center;filter:drop-shadow(0 0 5px #fff9)}
+.bc2 .bc-ff.off{background:#E1E8E4}.bc2 .bc-ff.off .g{background:#CBD6D0}.bc2 .bc-ff.off .sp{opacity:.55}
+.bc2.bc-anim .bc-ff .g{animation:bcgrow .8s cubic-bezier(.2,.9,.2,1)}
 .durc{display:flex;gap:8px;margin-top:8px}.durc[hidden]{display:none}.durc+.hint{min-height:0}.durc label{flex:1;font-size:12px;color:var(--muted)}.durc input{margin-top:4px;text-align:center}
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
 .backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
@@ -1065,7 +1074,7 @@ function battleCard(b, o={}){
     const mine=s.my===k, win=s.winner===k, tag=s.ended?(win?"WINNER":""):mine?"YOUR PICK":"TAP TO VOTE";
     return `<button class="side bc-side ${mine?"mine":""} ${win?"win":""}" data-act="bvote" data-id="${b.id}" data-v="${k}" ${s.ended?"disabled":""}>
       <span class="bc-row"><span class="bc-name">${esc(label)}</span>${mine?ck:""}</span>
-      <span class="bc-row"><span class="bc-pct">${show?pct+"%":"–"}</span><span class="bc-tag2 ${mine||win?"on":""}">${tag}</span></span></button>`; };
+      <span class="bc-row"><span class="bc-pct ${k}">${show?pct+"%":"–"}</span><span class="bc-tag2 ${mine||win?"on":""}">${tag}</span></span></button>`; };
   const lead=s.v.a===s.v.b?null:(s.v.a>s.v.b?b.a:b.b), diff=Math.abs(s.v.a-s.v.b);
   const vt=n=>n+(n===1?" vote":" votes");
   const momentum=s.ended?(s.winner==="tie"?"Ended in a tie.":`${esc(s.winner==="a"?b.a:b.b)} won by ${vt(diff)}.`)
@@ -1073,8 +1082,10 @@ function battleCard(b, o={}){
   const knob=Math.min(95,Math.max(5,s.pa));
   const gA=s.my?s.my==="a":s.winner==="a"||(s.pa>=s.pb), gB=s.my?s.my==="b":s.winner==="b"||(s.pb>s.pa);
   const few=s.n>=1&&s.n<5, early=few?`<span class="bc-early" title="Only ${s.n} ${s.n===1?"vote":"votes"} so far. This can still change.">${s.ended?"Few votes":"Early result"}</span> `:"";
-  const bar=show?`<div class="bc-meter"><div class="bc-track"><i class="${gA?"g":""}" style="width:${s.pa}%"></i><i class="${gB?"g":""}" style="width:${s.pb}%"></i></div><span class="bc-knob" style="left:calc(${knob}% - 9px)"></span></div><div class="bc-mom">${early}${momentum}</div>`
-    :`<div class="bc-mom">Pick a side to see how everyone voted.</div>`;
+  const fa=show?Math.max(5,Math.min(95,s.pa)):50, bolt='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="#F2B544" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+  const ff=`<div class="bc-ff${show?"":" off"}" aria-hidden="true"><div class="g" style="width:${fa}%"></div><div class="sh"></div><i class="sp" style="left:${fa}%">${bolt}</i></div>`;
+  const bar=show?`${ff}<div class="bc-mom">${early}${momentum}</div>`
+    :`${ff}<div class="bc-mom">Pick a side to see how everyone voted.</div>`;
   const clock='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M9 2h6"/></svg>';
   const chat='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12z"/></svg>';
   const where=[t&&t.category,t&&t.location].filter(Boolean).map(esc).join(" · ");
