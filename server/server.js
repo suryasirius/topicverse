@@ -178,6 +178,7 @@ function snapshotFor(uid) {
 const ID_RE = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
 const HANDLE_RE = /^[A-Za-z0-9_]{3,24}$/;
 class Deny extends Error { constructor(code, message) { super(message); this.code = code; } }
+const EVENTS = ["watch_open", "watch_discuss", "watch_battle_tap", "watch_topic_created", "watch_battle_created"];
 const deny = m => { throw new Deny("permission_denied", m || "You can’t change that."); };
 const bad = m => { throw new Deny("bad_request", m || "That request isn’t valid."); };
 const onlyKeys = (patch, keys) => Object.keys(patch).every(k => keys.includes(k));
@@ -591,6 +592,17 @@ const server = http.createServer(async (req, res) => {
       const prev = CARDMETA.get(t.id); if (prev && Date.now() - prev.t < 3600e3 && uid !== t.authorId && !isAdmin(uid)) return json(res, 200, { ok: true, kept: true });
       fs.writeFileSync(path.join(CARD_DIR, t.id + ".png"), buf); CARDMETA.set(t.id, { t: Date.now(), uid });
       return json(res, 200, { ok: true });
+    }
+    if (p === "/api/ev") {
+      const e = String(body.e || ""); if (!EVENTS.includes(e)) bad();
+      if (limited("ev:" + uid + ":" + e, 1, 36e5)) return json(res, 200, { ok: true });
+      const k = "ev:" + e + ":" + new Date().toISOString().slice(0, 10), r = q.getMeta.get(k);
+      q.setMeta.run(k, String((+(r && r.v) || 0) + 1)); return json(res, 200, { ok: true });
+    }
+    if (p === "/api/evstats") {
+      if (!isAdmin(uid)) deny("Only the owner can see this.");
+      const stats = {}; for (const e of EVENTS) { let n = 0; for (let d = 0; d < 7; d++) { const r = q.getMeta.get("ev:" + e + ":" + new Date(Date.now() - d * 864e5).toISOString().slice(0, 10)); n += +(r && r.v) || 0; } stats[e] = n; }
+      return json(res, 200, { stats });
     }
     if (p === "/api/write") {
       if (limited("w:" + uid, 150, 6e4)) return json(res, 429, { error: { code: "resource_exhausted", message: "Slow down a little, then try again." } });

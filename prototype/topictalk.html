@@ -111,7 +111,7 @@ main{padding-block:22px 110px}
 .withrow{margin-top:10px;font-size:14px;color:var(--muted)}.withrow a{color:var(--brand-deep);font-weight:600}
 .chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:var(--chip);font-size:12.5px;font-weight:500;color:var(--muted);border:0}
 a.chip:hover,button.chip:hover{color:var(--ink)}
-.chip.on{background:var(--ink);color:var(--bg)}
+.chip.on,a.chip.on:hover,button.chip.on:hover{background:var(--ink);color:var(--bg)}
 .brmark{color:var(--brand-deep);font-weight:600}
 
 .list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
@@ -363,7 +363,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
   .hero p{font-size:14.5px;margin-top:6px}
   .hero .ctas{flex-wrap:nowrap;gap:8px;width:100%}.hero .ctas .btn{flex:1;padding-inline:10px;font-size:14px;white-space:nowrap}
   .hero .ctas a.btn{display:none}
-  .catrow{flex-wrap:nowrap;overflow-x:auto;margin-inline:-16px;padding-inline:16px}.catrow .chip{flex:none;padding:7px 14px;font-size:13.5px}
+  .catrow{flex-wrap:nowrap;overflow-x:auto;margin-inline:-14px;padding-inline:14px}.catrow .chip{flex:none;padding:7px 14px;font-size:13.5px}
   .cityrow{margin-inline:-16px;padding-inline:16px}
   .tabs{margin:18px -16px 14px;padding-inline:16px}.tabs button{flex:none}
   .atext{font-size:16px}
@@ -634,6 +634,22 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .vcard.short{aspect-ratio:9/16;max-width:240px}.vopen{display:block;margin-top:4px;font-size:12.5px;color:var(--muted);text-decoration:none}
 .vplay{position:relative;max-width:480px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000}.vplay.portrait{aspect-ratio:9/16;max-width:300px}.vplay.ig{aspect-ratio:auto;max-width:400px;background:#fff;border:1px solid var(--line)}.vplay iframe{width:100%;height:100%;border:0;display:block}
 .ctext a.ext{color:var(--brand-deep);word-break:break-all}
+
+/* WATCH v1 */
+.whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
+.whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
+.wcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.whead{display:flex;align-items:center;gap:10px;font-size:13.5px}.wwho{flex:1;min-width:0}.wwho .muted{font-size:12px}
+.wsrc{font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 8px;white-space:nowrap}
+.wtitle{display:block;margin:10px 0 6px;font:800 17px/1.3 var(--f-display);color:var(--ink);text-decoration:none}
+.wcap{margin:6px 0 0;font-size:14px;color:var(--ink);line-height:1.45}
+.wphoto{position:relative;display:block;width:100%;border:0;padding:0;background:var(--bg);border-radius:14px;overflow:hidden;cursor:pointer}.wphoto img{width:100%;max-height:520px;object-fit:contain;display:block}
+.wmore{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.6);color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:999px}
+.wacts{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}.wacts .act{margin-left:auto}
+.wstrip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);gap:10px;overflow-x:auto;padding-bottom:4px}
+.wthumb{display:block;text-decoration:none;color:var(--ink);min-width:0}.wthumb b{display:block;font-size:13px;margin-top:6px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.wimg{position:relative;display:grid;place-items:center;aspect-ratio:16/10;border-radius:12px;background:#0d1b14 center/cover no-repeat}.wimg.ig{background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)}
+.wimg i{font-style:normal;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center;font-size:15px}
 .durc{display:flex;gap:8px;margin-top:8px}.durc[hidden]{display:none}.durc+.hint{min-height:0}.durc label{flex:1;font-size:12px;color:var(--muted)}.durc input{margin-top:4px;text-align:center}
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
 .backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
@@ -849,12 +865,12 @@ function videoLinks(text){
   }
   return out;
 }
-function videoCards(text){
-  return videoLinks(text).map(v=>{
+function videoCards(text){ return videoLinks(text).map(videoCardFor).join(""); }
+function videoCardFor(v){ {
     const k=v.prov+":"+v.id, yt=v.prov==="yt";
     if(!yt) return `<div class="vwrap" data-vk="${esc(k)}"><div class="vplay ig" style="height:600px"><iframe src="https://www.instagram.com/${v.kind==="p"?"p":"reel"}/${encodeURIComponent(v.id)}/embed/" title="Instagram post" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe></div><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on Instagram ↗</a></div>`;
     const th=yt?`<img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy">`:`<span class="vph ig"></span>`;
-    return `<div class="vwrap" data-vk="${esc(k)}"><button type="button" class="vcard${v.short?" short":""}" data-act="playVideo" data-prov="${v.prov}" data-vid="${esc(v.id)}" data-t="${v.t||0}" data-kind="${v.kind||""}" data-short="${v.short?1:0}" aria-label="Play video">${th}<span class="vplayb"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#fff"/></svg></span><span class="vlab">${yt?"YouTube · tap to play":v.kind==="p"?"Instagram post · tap to view":"Instagram reel · tap to play"}</span></button><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on ${yt?"YouTube":"Instagram"} ↗</a></div>`; }).join("");
+    return `<div class="vwrap" data-vk="${esc(k)}"><button type="button" class="vcard${v.short?" short":""}" data-act="playVideo" data-prov="${v.prov}" data-vid="${esc(v.id)}" data-t="${v.t||0}" data-kind="${v.kind||""}" data-short="${v.short?1:0}" aria-label="Play video">${th}<span class="vplayb"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#fff"/></svg></span><span class="vlab">${yt?"YouTube · tap to play":v.kind==="p"?"Instagram post · tap to view":"Instagram reel · tap to play"}</span></button><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on ${yt?"YouTube":"Instagram"} ↗</a></div>`; }
 }
 const tagsIn = t => [...String(t).matchAll(TAGRE)].map(m=>m[2].toLowerCase());
 const mentionsIn = t => [...String(t).matchAll(/(?:^|[\s(])@([A-Za-z0-9_]{2,24})/g)].map(m=>handleToId(m[1])).filter(Boolean);
@@ -1203,6 +1219,7 @@ function vHome(){
   ${(()=>{ const hp2=homePlace(); let rt=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0); const loc=hp2?rt.filter(t=>inPlace(t,hp2)):[]; if(loc.length>=2) rt=loc; rt=rt.sort((a,b)=>rvScore(b)-rvScore(a)).slice(0,3);
     return `<section class="sec">${SH("⭐ "+(hp2&&rt.length&&rt.every(t=>inPlace(t,hp2))?"Top rated near you":"Top rated"),"Places and things people recommend.",`<a href="#reviews">${L("See all")} →</a>`)}${rt.length?`<div class="list rvlist">${rt.map((t,i)=>{ const s=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}${s.reviews<3?" · early":""}</span></div></a>`; }).join("")}</div>`:`<div class="empty" style="background:var(--surface)"><b>No ratings yet.</b>Rate a place you know and help your town decide.<div style="margin-top:12px"><button class="btn pri sm" data-act="reviewPick">Review something</button></div></div>`}</section>`; })()}
   ${live.length?`<section class="sec">${SH("🔥 "+L("Live battles"),"Quick debates. Real opinions.",`<a href="#explore" data-act="exGo" data-v="battles">${L("See all")} →</a>`)}<div class="grid b bscroll">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
+  ${watchStrip()}
   <div class="cols">
     <div>
       <section class="sec">${SH(L("Trending now"),"What people are talking about.",`<a href="#explore">${L("See all")} →</a>`)}
@@ -1232,11 +1249,12 @@ function vHome(){
 
 function vExplore(){
   const cats = ["All",...new Set(LIVE().map(t=>t.category))];
-  const tabs=[["trending","Trending"],["latest","Latest"],["battles","Battles"],["duels","Debates"],["predictions","Predictions"],["discussed","Most discussed"],["reviewed","Most reviewed"],["branched","Most branched"],["questions","Questions"]];
+  const tabs=[["trending","Trending"],["watch","▶ Watch"],["latest","Latest"],["battles","Battles"],["duels","Debates"],["predictions","Predictions"],["discussed","Most discussed"],["reviewed","Most reviewed"],["branched","Most branched"],["questions","Questions"]];
   const head=`<div class="sech" style="margin-bottom:6px"><h1 style="font-size:32px;font-weight:800;margin:0">${L("Explore")}</h1><span style="display:flex;gap:6px"><a class="btn sm" href="#reviews">⭐ Reviews</a><a class="btn sm" href="#groups">${L("Groups")}</a></span></div>
   <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button class="${UI.exSort===k?"on":""}" data-act="exSort" data-v="${k}">${l}</button>`).join("")}</div>
   <div class="tagrow catrow" style="margin-bottom:18px">${cats.map(c=>`<button class="chip ${UI.exCat===c?"on":""}" data-act="exCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
   const catOk=t=>UI.exCat==="All"||t?.category===UI.exCat;
+  if(UI.exSort==="watch") return head+vWatch(catOk);
   if(UI.exSort==="battles"){
     const now=Date.now(), bs=[...S.battles.values()].filter(b=>catOk(S.topics.get(b.topicId))).sort((a,b)=>(b.endsAt>now)-(a.endsAt>now)||b.createdAt-a.createdAt);
     return head+(bs.length?`<div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div>`:emptyBox("No battles yet","Start one from the Create menu, or tap Settle it on any argument in the comments."));
@@ -1756,7 +1774,7 @@ function vProfile(id){
    <a class="spk" data-act="ptab" data-v="sparks" href="javascript:void 0"><span class="sp-i">🌱</span><span><b>${branchesFrom} topic${branchesFrom===1?"":"s"} sparked</b><small>${branchesFrom?"Your comments inspired new conversations.":"When someone branches one of your comments, it counts here."}</small></span></a>
    <div class="kpis sec muted">${rec.total?`${rec.w}–${rec.l}${rec.d?"–"+rec.d:""} debates`:"0 debates"} · ${rs.length} review${rs.length===1?"":"s"} · Called it ${resolved.length?correct+"/"+resolved.length:"–"}</div>
    <div class="tabs">${tabs.map(([k,l,n])=>`<button class="${UI.ptab===k?"on":""}" data-act="ptab" data-v="${k}">${l} · ${n}</button>`).join("")}</div>${{topics:"Topics started by "+(isMe?"you":nameOf(id)),sparks:"New topics created from "+(isMe?"your":"their")+" comments"}[UI.ptab]?`<div class="muted ptabnote">${{topics:"Topics started by "+(isMe?"you":esc(nameOf(id))),sparks:"New topics created from "+(isMe?"your":"their")+" comments"}[UI.ptab]}</div>`:""}${body}
-   ${isMe?`<details class="how setd"><summary>Settings</summary>${myBlocks().length?`<div class="muted" style="font-size:12px;margin:8px 0 4px">Blocked people</div>${myBlocks().map(u=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="flex:1">${esc(nameOf(u))}</span><button class="btn sm" data-act="unblock" data-id="${esc(u)}">Unblock</button></div>`).join("")}`:""}${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Reports to review (${S.reports.size})</div>${[...S.reports.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,30).map(r=>{ const lnk=r.type==="topic"?"#t-"+r.targetId:r.type==="comment"?"#t-"+(S.comments.get(r.targetId)?.topicId||"")+"~"+r.targetId:"#u-"+r.targetId; return `<div class="panel" style="margin:6px 0;padding:10px"><div style="font-size:13px"><b>${esc(r.type)}</b> · ${esc(r.reason)} · by ${esc(nameOf(r.reporterId))}</div>${r.note?`<div class="muted" style="font-size:13px">${esc(r.note)}</div>`:""}<div class="dprow" style="margin-top:6px"><a class="btn sm" href="${esc(lnk)}">Open</a><button class="btn sm" data-act="rpDismiss" data-id="${esc(r.id)}">Dismiss</button>${r.type!=="user"?`<button class="btn sm danger" data-act="rpRemove" data-id="${esc(r.id)}">Remove content</button>`:""}</div></div>`; }).join("")}`:""}<div class="muted" style="font-size:12px;margin:8px 0 4px">Location</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:14px">${homePlace()?esc((homeArea()?homeArea().name+", ":"")+homePlace().name):"Not set"}</span><button class="btn sm" data-act="plOpen" data-m="home">Change location</button></div><div class="muted" style="font-size:12px;margin:8px 0 4px">Accessibility · Text size</div><div class="seg">${[["s","Small"],["m","Medium"],["l","Large"],["x","Extra large"]].map(([k,l])=>`<button class="${curTS===k?"on":""}" data-act="textSize" data-v="${k}">${l}</button>`).join("")}</div>${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Admin (owner only)</div><p class="muted" style="margin:0 0 8px;font-size:13px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button>`:""}</details>`:""}`;
+   ${isMe?`<details class="how setd"><summary>Settings</summary>${myBlocks().length?`<div class="muted" style="font-size:12px;margin:8px 0 4px">Blocked people</div>${myBlocks().map(u=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="flex:1">${esc(nameOf(u))}</span><button class="btn sm" data-act="unblock" data-id="${esc(u)}">Unblock</button></div>`).join("")}`:""}${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Reports to review (${S.reports.size})</div>${[...S.reports.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,30).map(r=>{ const lnk=r.type==="topic"?"#t-"+r.targetId:r.type==="comment"?"#t-"+(S.comments.get(r.targetId)?.topicId||"")+"~"+r.targetId:"#u-"+r.targetId; return `<div class="panel" style="margin:6px 0;padding:10px"><div style="font-size:13px"><b>${esc(r.type)}</b> · ${esc(r.reason)} · by ${esc(nameOf(r.reporterId))}</div>${r.note?`<div class="muted" style="font-size:13px">${esc(r.note)}</div>`:""}<div class="dprow" style="margin-top:6px"><a class="btn sm" href="${esc(lnk)}">Open</a><button class="btn sm" data-act="rpDismiss" data-id="${esc(r.id)}">Dismiss</button>${r.type!=="user"?`<button class="btn sm danger" data-act="rpRemove" data-id="${esc(r.id)}">Remove content</button>`:""}</div></div>`; }).join("")}`:""}<div class="muted" style="font-size:12px;margin:8px 0 4px">Location</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:14px">${homePlace()?esc((homeArea()?homeArea().name+", ":"")+homePlace().name):"Not set"}</span><button class="btn sm" data-act="plOpen" data-m="home">Change location</button></div><div class="muted" style="font-size:12px;margin:8px 0 4px">Accessibility · Text size</div><div class="seg">${[["s","Small"],["m","Medium"],["l","Large"],["x","Extra large"]].map(([k,l])=>`<button class="${curTS===k?"on":""}" data-act="textSize" data-v="${k}">${l}</button>`).join("")}</div>${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Admin (owner only)</div><button class="btn sm" data-act="wStats" style="margin-bottom:8px">Watch numbers (7 days)</button><p class="muted" style="margin:0 0 8px;font-size:13px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button>`:""}</details>`:""}`;
 }
 
 /* ---------- typing ---------- */
@@ -1929,6 +1947,43 @@ document.addEventListener("change",async e=>{ const inp=e.target; if(!inp.classL
   PH[k]=PH[k]||[]; if(err) err.textContent="";
   for(const f of files){ if(PH[k].length>=PH_MAX){ if(err) err.textContent="Up to "+PH_MAX+" photos."; break; } try{ PH[k].push(await prepMedia(f)); }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t add that photo."; } }
   phRender(k); });
+// ---- WATCH: topics that carry a video or photo ----
+function ev(e){ if(!S.me) return; try{ fetch("/api/ev",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({e})}).catch(()=>{}); }catch{} }
+function watchItems(){
+  const out=[]; for(const t of LIVE()){ const vl=videoLinks(t.desc), ph=(t.media||[]).filter(m=>S.media.has(m)); if(vl.length||ph.length) out.push({t,vl,ph}); }
+  return out.sort((a,b)=>b.t.createdAt-a.t.createdAt||(a.t.id<b.t.id?-1:1));
+}
+const wIsVideo=it=>it.vl.some(v=>v.prov==="yt"||v.kind==="reel"), wIsPhoto=it=>it.ph.length>0||it.vl.some(v=>v.prov==="ig"&&v.kind==="p");
+function wThumb(it){ const v=it.vl[0]; if(v&&v.prov==="yt") return `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`; if(!v&&it.ph[0]) return S.media.get(it.ph[0]).data; return ""; }
+function wCard(it){
+  const t=it.t, st=stat(t.id), v=it.vl[0];
+  const media=v?videoCardFor(v):`<button type="button" class="wphoto" data-act="viewMedia" data-id="${esc(it.ph[0])}" aria-label="Open photo"><img src="${S.media.get(it.ph[0]).data}" alt="Photo shared by ${esc(nameOf(t.authorId))}" loading="lazy">${it.ph.length>1?`<span class="wmore">+${it.ph.length-1}</span>`:""}</button>`;
+  const cap=String(t.desc||"").replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim();
+  const src=v?(v.prov==="yt"?"YouTube":"Instagram"):"TopicTalk upload";
+  return `<article class="wcard"><div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${[t.location?"📍 "+esc(t.location):"",ago(t.createdAt)].filter(Boolean).join(" · ")}</div></div><span class="wsrc">${src}</span></div>
+    <a class="wtitle" href="#t-${t.id}">${esc(t.title)}</a>
+    ${media}
+    ${cap?`<p class="wcap">${esc(cap.slice(0,160))}${cap.length>160?"…":""}</p>`:""}
+    <div class="wacts"><a class="btn pri sm" href="#t-${t.id}" data-act="wDiscuss" data-id="${t.id}">💬 Discuss${st.comments?` · ${st.comments}`:""}</a><button type="button" class="btn sm" data-act="wBattle" data-id="${t.id}">⚔️ Start a battle</button><button type="button" class="act" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button></div></article>`;
+}
+function vWatch(catOk){
+  const f=UI.wf||"all", hp=homePlace();
+  let items=watchItems().filter(it=>catOk(it.t));
+  if(f==="videos") items=items.filter(wIsVideo); else if(f==="photos") items=items.filter(wIsPhoto); else if(f==="nearby") items=hp?items.filter(it=>inPlace(it.t,hp)):[];
+  const n=UI.wN||5, shown=items.slice(0,n);
+  const chips=[["all","All"],["videos","Videos"],["photos","Photos"],["nearby",hp?"📍 "+hp.name:"Nearby"]];
+  const empty=f==="nearby"&&!hp?emptyBox("Set your area first","Nearby shows videos and photos posted in your area.",`<button class="btn sm" data-act="plOpen" data-m="home">Set location</button>`)
+    :f==="all"?emptyBox("Nothing to watch yet","Share a video or photo and start a conversation with your community.",`<button class="btn pri" data-act="wShare">＋ Share a video or photo</button>`)
+    :emptyBox(f==="nearby"?"No local videos or photos yet":"Nothing here yet","Try All, or be the first to share one.",`<button class="btn sm" data-act="wFilter" data-v="all">View all</button>`);
+  return `<div class="whero"><div><h2>▶ Watch</h2><div class="muted">Videos, photos and conversations from your community.</div></div><button type="button" class="btn pri sm" data-act="wShare">＋ Share a video or photo</button></div>
+  <div class="tagrow wchips" role="tablist">${chips.map(([k,l])=>`<button class="chip ${f===k?"on":""}" data-act="wFilter" data-v="${k}" role="tab" aria-selected="${f===k}">${esc(l)}</button>`).join("")}</div>
+  ${shown.length?`<div class="wfeed">${shown.map(wCard).join("")}</div>${items.length>n?`<div style="text-align:center;margin:14px 0"><button class="btn" data-act="wMore">Load more</button></div>`:""}`:empty}`;
+}
+function watchStrip(){
+  const items=watchItems().slice(0,4); if(!items.length) return "";
+  return `<section class="sec">${SH("▶ Watch","Videos and photos people are talking about.",`<a href="#explore" data-act="exGo" data-v="watch">See all →</a>`)}<div class="wstrip">${items.map(it=>{ const th=wThumb(it), v=it.vl[0];
+    return `<a class="wthumb" href="#t-${it.t.id}"><span class="wimg${th?"":" ig"}"${th?` style="background-image:url('${esc(th)}')"`:""}>${v?`<i>▶</i>`:""}</span><b>${esc(it.t.title)}</b></a>`; }).join("")}</div></section>`;
+}
 function mediaHTML(c){
   return (c.media||[]).map(mid=>{ const m=S.media.get(mid); if(!m) return `<div class="cmedia ph">${c.mediaType==="gif"?"GIF":"Image"} loading…</div>`;
     const r=m.w&&m.h?Math.min(1, 320/m.w, 260/m.h):1;
@@ -2039,6 +2094,7 @@ function render(){
   else if(r.startsWith("city-")) html=vCity(r.slice(5));
   else if(r==="groups") html=vGroups();
   else if(r==="reviews") html=vReviews();
+  else if(r==="watch"){ UI.exSort="watch"; html=vExplore(); }
   else if(r.startsWith("d-")) html=vDuel(r.slice(2));
   else if(r.startsWith("g-")) html=vGroup(r.slice(2));
   else if(r.startsWith("t-")){ const [tid,cid]=r.slice(2).split("~"); if(changed){ UI.tab=cid&&S.reviews.has(cid)?"reviews":(S.topics.get(tid)?.kind==="place"?"reviews":"discussion"); if(UI.pendingReview===tid){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; } } focusC=cid; html=vTopic(tid); }
@@ -2357,7 +2413,9 @@ function topicModal(o={}){ PH.tn=[];
   const cat=o.category||(bt?bt.category:"Tech");
   const tags=o.tags||(bt?(bt.tags||[]).slice(0,3).join(" "):"");
   UI.newKind=o.kind||"topic"; UI.locMode=(o.loc||bt?.location)?"place":null; UI.locVal=o.loc||bt?.location||""; UI.locDis=new Set(); UI.tagged=[]; UI.taggedG=[]; UI.bn="";
-  openModal(`<h2>${b?"Turn this comment into a new topic":o.kind==="question"?"Ask the community":"Start a topic"}</h2>
+  UI.newWatch=!!o.watch; UI.fromWatch=!!o.watch;
+  openModal(`<h2>${b?"Turn this comment into a new topic":o.watch?"Share a video or photo":o.kind==="question"?"Ask the community":"Start a topic"}</h2>
+    ${o.watch?`<label class="l">YouTube or Instagram link<input class="f" id="n-link" inputmode="url" autocomplete="off" placeholder="https://youtu.be/…  or  instagram.com/reel/…"></label><div class="muted" style="font-size:12.5px;margin-top:-4px">Or add a photo in the Photos section below. Only the link is saved, the video stays on YouTube or Instagram.</div>`:""}
     ${b?`<div class="origin" style="margin:0">From ${esc(nameOf(b.authorId))} in <b>${esc(bt?.title||"")}</b>: <q>${esc(b.text.slice(0,200))}</q></div>`:""}
     ${b?"":`<label class="qtog"><input type="checkbox" id="n-isq" data-act="qtog" ${UI.newKind==="question"?"checked":""}><span><b>This is a question</b><small>People answer it, and the community answer is summarised from what they say.</small></span></label>`}
     <label class="l">${o.kind==="question"?"Your question":"Title"}<input class="f" id="n-title" maxlength="120" placeholder="${b?"e.g. iPhone 17 Pro Max vs Samsung S26 Ultra camera":o.kind==="question"?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"}" value="${esc(o.title||"")}"></label>
@@ -2415,12 +2473,15 @@ function durClamp(el){ const lim={d:7,h:23,m:59}[el.id.slice(4)]; let v=el.value
 function durHours(){ if(!UI.durC) return UI.dur; const n=id=>Math.max(0,Math.floor(+($(id)?.value)||0)); const h=n("#dur-d")*24+n("#dur-h")+n("#dur-m")/60; return Math.min(168,h); }
 function battleModal(o={}){
   const c=o.commentId&&S.comments.get(o.commentId), ct=c&&S.topics.get(c.topicId);
+  UI.btMedia=o.mediaIds||[]; if(!o.fromTopic) UI.fromWatch=false;
   UI.dur=24;
   openModal(`<h2>${c?"Settle it with a battle":"Start an A/B battle"}</h2>
     ${c?`<div class="origin" style="margin:0">${esc(nameOf(c.authorId))} in <b>${esc(ct?.title||"")}</b>: <q>${esc(c.text.slice(0,180))}</q></div><p class="muted" style="margin:0;font-size:13px">Everyone votes. When time runs out, the result is posted right under this comment.</p>`:""}
     <label class="l">Question<input class="f" id="bt-q" maxlength="100" placeholder="${c?"Who’s right?":"e.g. Which is better?"}" value="${esc(c?"Who’s right?":"")}"></label>
     <div class="row2"><label class="l">Side A<input class="f" id="bt-a" maxlength="40" placeholder="e.g. Ambur biryani"></label><label class="l">Side B<input class="f" id="bt-b" maxlength="40" placeholder="e.g. Chennai biryani"></label></div>
     ${c?"":`<div class="row2"><label class="l">Category${catSelect("bt-cat","Food")}</label><label class="l">City (optional)<input class="f" id="bt-loc" maxlength="60" placeholder="e.g. Arakkonam" value="${esc(o.loc||"")}"></label></div>
+    ${o.fromTopic?`<div class="muted" style="font-size:12.5px">From: <b>${esc(o.fromTopic)}</b>${UI.btMedia.length?` · ${UI.btMedia.length} photo${UI.btMedia.length>1?"s":""} attached`:""}</div>`:""}
+    <label class="l">Video link (optional)<input class="f" id="bt-link" inputmode="url" autocomplete="off" placeholder="YouTube or Instagram link" value="${esc(o.link||"")}"></label>
     <label class="l">Hashtags<input class="f" id="bt-tags" placeholder="biryani chennaifood"></label>
     <label class="l">Post to<select class="f" id="bt-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
     <label class="l">Voting stays open for${durSeg()}</label>
@@ -2589,8 +2650,15 @@ document.addEventListener("click", async e=>{
     case "qtog": { UI.newKind=el.checked?"question":"topic"; const h=$("#modal h2"); if(h) h.textContent=el.checked?"Ask the community":"Start a topic"; const lb=$("#n-title")?.closest("label"); if(lb&&lb.firstChild) lb.firstChild.textContent=el.checked?"Your question":"Title"; $("#n-title").placeholder=el.checked?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"; break; }
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
-    case "exSort": UI.exSort=el.dataset.v; schedule(); break;
-    case "exGo": UI.exSort=el.dataset.v; if(location.hash==="#explore") schedule(); else location.hash="explore"; break;
+    case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
+    case "wFilter": UI.wf=el.dataset.v; UI.wN=5; schedule(); break;
+    case "wMore": UI.wN=(UI.wN||5)+5; schedule(); break;
+    case "wDiscuss": ev("watch_discuss"); location.hash="t-"+id; break;
+    case "wShare": { if(!(await gate())) break; UI.fromWatch=true; topicModal({watch:true}); break; }
+    case "wBattle": { if(!(await gate())) break; const t=S.topics.get(id); if(!t) break; ev("watch_battle_tap"); UI.fromWatch=true; const v=videoLinks(t.desc)[0]; battleModal({loc:t.location||"",link:v?v.url:"",mediaIds:v?[]:(t.media||[]).slice(0,3),fromTopic:t.title}); break; }
+    case "wStats": { try{ const r=await (await fetch("/api/evstats",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:"{}"})).json(); const lb={watch_open:"Watch opened",watch_discuss:"Discuss tapped",watch_battle_tap:"Start a battle tapped",watch_topic_created:"Topics created from Watch",watch_battle_created:"Battles created from Watch"};
+      openModal(`<h2>Watch · last 7 days</h2><div class="list">${Object.entries(r.stats||{}).map(([k,n])=>`<div style="display:flex;justify-content:space-between;padding:8px 2px;border-bottom:1px solid var(--line)"><span>${esc(lb[k]||k)}</span><b>${n}</b></div>`).join("")}</div><p class="muted" style="font-size:12.5px">Counted once per person per hour for each action. No personal details are stored.</p><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`); }catch{ toast("Couldn’t load the numbers."); } break; }
+    case "exGo": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } if(location.hash==="#explore") schedule(); else location.hash="explore"; break;
     case "exCat": UI.exCat=el.dataset.v; schedule(); break;
     case "searchAnywhere": { const pq=parseQ(UI.query); UI.query=pq.words.join(" ")||UI.query; if(typeof q!=="undefined"&&q) q.value=UI.query; schedule(); break; }
     case "suggest": { UI.query=el.dataset.q; if(typeof q!=="undefined"&&q) q.value=UI.query; dd.hidden=true; location.hash="#search"; schedule(); break; }
@@ -2675,14 +2743,16 @@ document.addEventListener("click", async e=>{
       el.disabled=true;
       if(!c){
         tid=rid("t");
-        const t={title:q.slice(0,120),desc:"",category:$("#bt-cat").value,kind:"battle",tags:parseTags($("#bt-tags").value),location:normLoc($("#bt-loc").value),authorId:S.me,parentId:null,originCommentId:null,createdAt:now,groupId:$("#bt-group")?.value||null};
+        const lk=($("#bt-link")?.value||"").trim(); if(lk&&!videoLinks(lk).length){ err.textContent="Paste a YouTube or Instagram link, or leave it empty."; el.disabled=false; break; }
+        const t={title:q.slice(0,120),desc:lk?videoLinks(lk)[0].url:"",category:$("#bt-cat").value,kind:"battle",tags:parseTags($("#bt-tags").value),location:normLoc($("#bt-loc").value),authorId:S.me,parentId:null,originCommentId:null,createdAt:now,groupId:$("#bt-group")?.value||null};
+        if(UI.btMedia&&UI.btMedia.length) t.media=UI.btMedia.slice(0,3);
         if(!(await W(()=>db.doc("topics/"+tid).set(t)))){ el.disabled=false; break; }
         ensureFollow(tid); notifyGroup(t.groupId,tid,t.title);
       }
       if(UI.durC&&durHours()<1/6){ err.textContent="Custom time must be at least 10 minutes."; break; }
       const b={topicId:tid,commentId:c?c.id:null,question:q.slice(0,100),a:A.slice(0,40),b:Bv.slice(0,40),authorId:S.me,createdAt:now,endsAt:now+(durHours()||24)*3.6e6,seedA:0,seedB:0};
       if(await W(()=>db.doc("battles/"+bid).set(b))){
-        closeModal(true); toast("Battle is live. Share it so people vote.");
+        closeModal(true); toast("Battle is live. Share it so people vote."); if(UI.fromWatch){ ev("watch_battle_created"); UI.fromWatch=false; }
         if(c) notify([[c.authorId,"battle"],...followersOf(tid).map(u=>[u,"newbattle"])],{topicId:tid,commentId:c.id,text:`${b.a} vs ${b.b}`});
         if(!c) location.hash="t-"+tid; else schedule();
       } else el.disabled=false;
@@ -2843,7 +2913,10 @@ document.addEventListener("click", async e=>{
       if(dupe){ err.innerHTML=`That topic already exists: <a href="#t-${dupe.id}" style="color:var(--brand-deep);font-weight:600" data-act="closeModal">open it</a>.`; break; }
       if(!(await gate())) break;
       const bf=el.dataset.branch, oc=bf&&S.comments.get(bf);
-      const desc=$("#n-desc").value.trim().slice(0,2000);
+      let desc=$("#n-desc").value.trim().slice(0,2000);
+      { const lk=($("#n-link")?.value||"").trim();
+        if(lk){ if(!videoLinks(lk).length){ err.textContent="Paste a YouTube or Instagram link, or leave the link box empty."; break; } desc=(videoLinks(lk)[0].url+"\n"+desc).trim().slice(0,2000); }
+        else if(UI.newWatch&&!(PH.tn||[]).length){ err.textContent="Add a YouTube or Instagram link, or a photo."; break; } }
       const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:loc,authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
         groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null)};
       let acc=$("#n-acc")?.value||"open"; if(acc==="selected") acc="invite";
@@ -2860,6 +2933,7 @@ document.addEventListener("click", async e=>{
           mu.length&&notify(mu.map(u=>[u,"mention"]),{topicId:tid,text:t.title});
           tg.size&&notify([...tg].map(u=>[u,"tagged"]),{topicId:tid,text:t.title}); }
         notifyGroup(t.groupId,tid,t.title);
+        if(UI.fromWatch){ ev("watch_topic_created"); UI.fromWatch=false; }
         location.hash="t-"+tid;
       } else el.disabled=false;
       break; }
