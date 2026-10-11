@@ -689,6 +689,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .fmact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.fmact .btn{flex:1 1 auto;justify-content:center}.fq{color:var(--muted);text-decoration:none;font-size:13px}.fq:hover{color:var(--brand-deep)}
 .htabs .ti{font-style:normal}@media(max-width:480px){.htabs .ti{display:none}.htabs button{padding:10px 8px;font-size:14px}.htabs{gap:0}}
 .bc2 .bc-side:nth-child(2).mine{border-color:#E5A93B;background:color-mix(in srgb,#E5A93B 13%,var(--surface))}.bc2 .bc-side:nth-child(2).mine .bc-row svg{color:#C98A1E}.bc2 .bc-side:nth-child(2) .bc-tag2.on{color:#B7791F}.bc2 .bc-side:nth-child(2).win{border-color:#E5A93B}
+.igc .vplay.ig{position:relative;max-width:400px}.igc .igmore{position:absolute;left:0;right:0;bottom:0;height:72px;border:0;padding:30px 0 0;background:linear-gradient(transparent,var(--surface) 55%);color:var(--brand-deep);font:700 13.5px var(--f-body,inherit);cursor:pointer}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -920,9 +921,9 @@ function videoLinks(text){
   return out;
 }
 function videoCards(text){ return videoLinks(text).map(videoCardFor).join(""); }
-function videoCardFor(v){ {
+function videoCardFor(v,o={}){ {
     const k=v.prov+":"+v.id, yt=v.prov==="yt";
-    if(!yt) return `<div class="vwrap" data-vk="${esc(k)}"><div class="vplay ig" style="height:600px"><iframe src="https://www.instagram.com/${v.kind==="p"?"p":"reel"}/${encodeURIComponent(v.id)}/embed/" title="Instagram post" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe></div><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on Instagram ↗</a></div>`;
+    if(!yt) return `<div class="vwrap${o.compact?" igc":""}" data-vk="${esc(k)}"><div class="vplay ig" style="height:${o.compact?440:600}px"><iframe src="https://www.instagram.com/${v.kind==="p"?"p":"reel"}/${encodeURIComponent(v.id)}/embed/" title="Instagram post" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>${o.compact&&o.tid?`<button type="button" class="igmore" data-act="wPlay" data-id="${esc(o.tid)}">View full post</button>`:""}</div><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on Instagram ↗</a></div>`;
     const th=yt?`<img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy">`:`<span class="vph ig"></span>`;
     return `<div class="vwrap" data-vk="${esc(k)}"><button type="button" class="vcard${v.short?" short":""}" data-act="playVideo" data-prov="${v.prov}" data-vid="${esc(v.id)}" data-t="${v.t||0}" data-kind="${v.kind||""}" data-short="${v.short?1:0}" aria-label="Play video">${th}<span class="vplayb"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5v14l11-7z" fill="#fff"/></svg></span><span class="vlab">${yt?"YouTube · tap to play":v.kind==="p"?"Instagram post · tap to view":"Instagram reel · tap to play"}</span></button><a class="vopen" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on ${yt?"YouTube":"Instagram"} ↗</a></div>`; }
 }
@@ -1250,7 +1251,7 @@ function fCard(t){
   const cap=String(t.desc||"").replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim();
   const lc=(IX.cByTopic.get(t.id)||[]).filter(c=>!c.deletedAt&&c.text).sort((a,b)=>b.createdAt-a.createdAt)[0];
   const snip=cap?`<p class="fsnip">${esc(cap.slice(0,140))}${cap.length>140?"…":""}</p>`:lc?`<p class="fsnip"><b>${esc(nameOf(lc.authorId))}:</b> ${esc(lc.text.replace(/https?:\/\/\S+/g,"").slice(0,110))}${lc.text.length>110?"…":""}</p>`:"";
-  const media=vl[0]?videoCardFor(vl[0]):ph[0]?`<button type="button" class="wphoto" data-act="viewMedia" data-id="${esc(ph[0])}" aria-label="Open photo"><img src="${S.media.get(ph[0]).data}" alt="" loading="lazy">${ph.length>1?`<span class="wmore">+${ph.length-1}</span>`:""}</button>`:t.banner?`<a class="fban" href="#t-${t.id}"><img src="${esc(t.banner)}" alt="" loading="lazy"></a>`:"";
+  const media=vl[0]?videoCardFor(vl[0],{compact:true,tid:t.id}):ph[0]?`<button type="button" class="wphoto" data-act="viewMedia" data-id="${esc(ph[0])}" aria-label="Open photo"><img src="${S.media.get(ph[0]).data}" alt="" loading="lazy">${ph.length>1?`<span class="wmore">+${ph.length-1}</span>`:""}</button>`:t.banner?`<a class="fban" href="#t-${t.id}"><img src="${esc(t.banner)}" alt="" loading="lazy"></a>`:"";
   const kind=t.kind==="question"?"Question":t.kind==="place"?"📍 Place":t.kind==="prediction"?"Prediction":"";
   const meta=[kind,esc(t.category),t.location?"📍 "+esc(t.location):"",ago(lastAct(t))].filter(Boolean).join(" · ");
   const hasM=!!(vl[0]||ph[0]);
