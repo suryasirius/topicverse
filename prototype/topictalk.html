@@ -635,6 +635,8 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .vplay{position:relative;max-width:480px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000}.vplay.portrait{aspect-ratio:9/16;max-width:300px}.vplay.ig{aspect-ratio:auto;max-width:400px;background:#fff;border:1px solid var(--line)}.vplay iframe{width:100%;height:100%;border:0;display:block}
 .ctext a.ext{color:var(--brand-deep);word-break:break-all}
 
+.wthumb{border:0;background:none;padding:0;text-align:left;cursor:pointer;font:inherit}.wthumb:hover .wimg i{transform:scale(1.1)}.wimg i{transition:transform .2s}
+.wplayer{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}.wplayer.portrait{aspect-ratio:9/16;max-height:70vh;width:auto;margin:0 auto}.wplayer.ig{aspect-ratio:auto;height:min(620px,70vh);background:#fff;border:1px solid var(--line)}.wplayer iframe{width:100%;height:100%;border:0;display:block}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -1983,7 +1985,7 @@ function vWatch(catOk){
 function watchStrip(){
   const items=watchItems().slice(0,4); if(!items.length) return "";
   return `<section class="sec">${SH("▶ Watch","Videos and photos people are talking about.",`<a href="#explore" data-act="exGo" data-v="watch">See all →</a>`)}<div class="wstrip">${items.map(it=>{ const th=wThumb(it), v=it.vl[0];
-    return `<a class="wthumb" href="#t-${it.t.id}"><span class="wimg${th?"":" ig"}"${th?` style="background-image:url('${esc(th)}')"`:""}>${v?`<i>▶</i>`:""}</span><b>${esc(cleanTitle(it.t))}</b></a>`; }).join("")}</div></section>`;
+    return `<button type="button" class="wthumb" data-act="wPlay" data-id="${it.t.id}" aria-label="Play ${esc(cleanTitle(it.t))}"><span class="wimg${th?"":" ig"}"${th?` style="background-image:url('${esc(th)}')"`:""}>${v?`<i>▶</i>`:""}</span><b>${esc(cleanTitle(it.t))}</b></button>`; }).join("")}</div></section>`;
 }
 function mediaHTML(c){
   return (c.media||[]).map(mid=>{ const m=S.media.get(mid); if(!m) return `<div class="cmedia ph">${c.mediaType==="gif"?"GIF":"Image"} loading…</div>`;
@@ -2654,7 +2656,14 @@ document.addEventListener("click", async e=>{
     case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
     case "wFilter": UI.wf=el.dataset.v; UI.wN=5; schedule(); break;
     case "wMore": UI.wN=(UI.wN||5)+5; schedule(); break;
-    case "wDiscuss": ev("watch_discuss"); location.hash="t-"+id; break;
+    case "wDiscuss": ev("watch_discuss"); closeModal(false); location.hash="t-"+id; break;
+    case "wPlay": { const t=S.topics.get(id); if(!t) break; const v=videoLinks((t.title||"")+" "+(t.desc||""))[0];
+      if(!v){ const m=(t.media||[]).find(x=>S.media.has(x)); if(m){ openModal(`<img src="${S.media.get(m).data}" alt="" style="width:100%;border-radius:12px;display:block"><h2 style="font-size:17px;margin:2px 0 0">${esc(cleanTitle(t))}</h2><div class="acts"><button class="btn" data-act="closeModal">Close</button><button class="btn pri" data-act="wDiscuss" data-id="${t.id}">💬 Discuss</button></div>`); } else location.hash="t-"+id; break; }
+      const yt=v.prov==="yt", src=yt?`https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.id)}?autoplay=1&rel=0&playsinline=1${v.t?"&start="+v.t:""}`:`https://www.instagram.com/${v.kind==="p"?"p":"reel"}/${encodeURIComponent(v.id)}/embed/`;
+      openModal(`<div class="wplayer${yt?(v.short?" portrait":""):" ig"}"><iframe src="${src}" title="${esc(cleanTitle(t))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe></div>
+        <h2 style="font-size:17px;margin:2px 0 0">${esc(cleanTitle(t))}</h2><div class="muted" style="font-size:12.5px">${esc(nameOf(t.authorId))} · ${stat(t.id).comments} comment${stat(t.id).comments===1?"":"s"}</div>
+        <div class="acts"><a class="btn" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on ${yt?"YouTube":"Instagram"} ↗</a><button class="btn" data-act="closeModal">Close</button><button class="btn pri" data-act="wDiscuss" data-id="${t.id}">💬 Discuss</button></div>`);
+      break; }
     case "wShare": { if(!(await gate())) break; UI.fromWatch=true; topicModal({watch:true}); break; }
     case "wBattle": { if(!(await gate())) break; const t=S.topics.get(id); if(!t) break; ev("watch_battle_tap"); UI.fromWatch=true; const v=videoLinks(t.desc)[0]; battleModal({loc:t.location||"",link:v?v.url:"",mediaIds:v?[]:(t.media||[]).slice(0,3),fromTopic:t.title}); break; }
     case "wStats": { try{ const r=await (await fetch("/api/evstats",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:"{}"})).json(); const lb={watch_open:"Watch opened",watch_discuss:"Discuss tapped",watch_battle_tap:"Start a battle tapped",watch_topic_created:"Topics created from Watch",watch_battle_created:"Battles created from Watch"};
