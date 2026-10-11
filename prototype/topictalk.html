@@ -1198,7 +1198,7 @@ function battleCard(b, o={}){
     :(lead?`${esc(lead)} leads by ${vt(diff)}.`:"Dead even.")+(s.my&&!s.ended?` <button type="button" class="bc-why" data-act="bWhy" data-id="${b.id}">Say why →</button>`:s.ended?"":" Your vote decides it.");
   const knob=Math.min(95,Math.max(5,s.pa));
   const gA=s.my?s.my==="a":s.winner==="a"||(s.pa>=s.pb), gB=s.my?s.my==="b":s.winner==="b"||(s.pb>s.pa);
-  const few=s.n>=1&&s.n<5, early=few?`<span class="bc-early" title="Only ${s.n} ${s.n===1?"vote":"votes"} so far. This can still change.">${s.ended?"Few votes":"Early result"}</span> `:"";
+  const few=s.n>=1&&s.n<5, early=s.n?`<span class="bc-early" title="${few?`Only ${s.n} ${s.n===1?"vote":"votes"} so far. This can still change.`:s.ended?"Voting has closed.":"Voting is still open. This can change."}">${s.ended?(few?"Few votes":"Final result"):(few?"Early result":"Live result")}</span> `:"";
   const fa=show?Math.max(5,Math.min(95,s.pa)):50, bolt='<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z" fill="#F2B544" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
   const ff=`<div class="bc-ff${show?"":" off"}" aria-hidden="true"><div class="g" style="width:${fa}%"></div><div class="sh"></div><i class="sp" style="left:${fa}%">${bolt}</i></div>`;
   const bar=show?`${ff}<div class="bc-mom">${early}<b class="bc-tot">${vt(s.n)}</b> · ${momentum}</div>`
@@ -1214,7 +1214,7 @@ function battleCard(b, o={}){
     <div class="bc-sides">${side("a",b.a,s.pa)}${side("b",b.b,s.pb)}<span class="bc-vs">VS</span></div>
     ${bar}
     <div class="bfoot bc-foot"><span class="bc-by">${b.authorId?avatar(b.authorId,"xs"):""}<span>${show?(b.authorId?`by ${esc(nameOf(b.authorId))}`:""):`${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${b.authorId?` · by ${esc(nameOf(b.authorId))}`:""}`}</span></span>
-      <span class="bc-acts">${t?`<button type="button" class="bc-btn" data-act="bWhy" data-id="${b.id}" title="Explain your pick or read why others voted">${chat} Why?${stat(t.id).comments?` · ${stat(t.id).comments}`:""}</button>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}<span class="bc-sl"> ${L("Share card")}</span></button></span></div>
+      <span class="bc-acts">${t?`<button type="button" class="bc-btn" data-act="bWhy" data-id="${b.id}" title="Open the discussion">${chat} ${stat(t.id).comments?`${stat(t.id).comments} comment${stat(t.id).comments===1?"":"s"}`:"Discuss"}</button>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}<span class="bc-sl"> ${L("Share card")}</span></button></span></div>
   </div>`;
 }
 function predCard(t){
