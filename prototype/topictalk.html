@@ -699,6 +699,24 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .home2 .hbattles .bc-mom{font-size:12px}
 .home2 .hbattles .bc-foot{padding-top:8px}
 .bc-tot{color:var(--ink);font-weight:700}
+/* BATTLES PAGE v1 */
+.btbar{flex-wrap:wrap;gap:10px}.btchips{margin:0;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.btchips::-webkit-scrollbar{display:none}.btchips .chip{white-space:nowrap}
+.btsec{display:flex;align-items:baseline;gap:8px;margin:18px 0 10px}.btsec h3{margin:0;font-family:var(--f-display);font-size:17px;font-weight:800}.btsec .muted{font-size:13px}.btsec .linkb{margin-left:auto}
+.btnone{padding:14px;border:1px dashed var(--line);border-radius:14px;font-size:13.5px}
+.btlive>.battle.bc2{padding:12px;gap:8px}.btlive .bc-q{font-size:16px}.btlive .bc-side{padding:9px 10px;gap:6px}.btlive .bc-pct{font-size:26px}
+.btlive .bc-ff{height:14px;border-radius:6px}.btlive .bc-ff .sp{width:18px;height:18px}.btlive .bc-ff .sp svg{width:16px;height:16px}.btlive .bc-mom{font-size:12px}.btlive .bc-foot{padding-top:8px}.btlive .bc-sl{display:none}.btlive .bc-acts .act{width:34px;min-width:34px;justify-content:center;padding:0}
+.battle.bdone{padding:12px 14px 6px;gap:6px;border-radius:16px;background:var(--bg);box-shadow:none}
+.bdone .bd-top{display:flex;align-items:center;gap:7px;font-size:12px;min-width:0}.bdone .bc-end{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--muted)}
+.bdone .bc-where{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bdone .bd-when{margin-left:auto;color:var(--muted);flex:none}
+.bdone .bd-q{font-family:var(--f-display);font-size:15.5px;font-weight:800;line-height:1.25;color:var(--ink);display:block}
+.bdone .bd-win{font-size:15px;font-weight:800;color:var(--brand-deep)}.bdone .bd-win.b{color:#B7791F}
+.bdone .bd-lab{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--muted)}.bdone .bd-lab span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bdone .bd-lab .w{color:var(--ink);font-weight:700}
+.bdone .bd-bar{display:flex;gap:2px;height:6px;border-radius:999px;overflow:hidden;background:var(--line)}.bdone .bd-bar i{display:block;height:100%;min-width:3px}.bdone .bd-bar .a{background:var(--brand)}.bdone .bd-bar .b{background:#E5A93B}
+.bdone .bd-sum{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;font-size:12.5px;color:var(--ink);font-weight:600}.bdone .bd-sum .bc-early{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px}.bdone .bd-my{color:var(--muted);font-weight:500}
+.bdone .bd-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:-2px}
+.bdone .bd-disc{border:0;background:none;padding:6px 0;color:var(--brand-deep);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.bdone .bd-r{display:flex;align-items:center;gap:6px;font-size:12px}.bdone .bd-r .act{width:34px;height:32px;justify-content:center;padding:0;border-radius:999px}
+.bt-tip{font-size:12.5px;color:var(--muted);margin:-4px 0 2px}
 @media(max-width:720px){.home2 .hbattles{margin-inline:-14px;padding-inline:14px;scroll-padding-inline:14px}.home2 .hbattles>.battle{flex:0 0 84%}}
 @media(max-width:420px){.top .gbtn{display:none}.top .lang{padding:0 9px;font-size:12.5px;height:32px}}
 .bc-why{border:0;background:none;padding:0;color:var(--brand-deep);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
@@ -1195,7 +1213,7 @@ function battleState(b){
   return {v,n,ended,my,pa,pb,winner};
 }
 const cdFmt=ms=>{ ms=Math.max(0,ms); let x=Math.floor(ms/1000); const d=Math.floor(x/86400); x-=d*86400; const h=Math.floor(x/3600); x-=h*3600; const m=Math.floor(x/60), sec=x-m*60, z=n=>(n<10?"0":"")+n; return (d?d+"d ":"")+z(h)+":"+z(m)+":"+z(sec); };
-setInterval(()=>{ if(document.hidden) return; document.querySelectorAll(".bc-cd[data-end]").forEach(e=>{ const ms=+e.dataset.end-Date.now(); e.textContent=ms>0?cdFmt(ms):"Ended"; }); },1000);
+setInterval(()=>{ if(document.hidden) return; let fin=false; document.querySelectorAll(".bc-cd[data-end]").forEach(e=>{ const ms=+e.dataset.end-Date.now(); e.textContent=ms>0?cdFmt(ms):"Ended"; if(ms<=0&&e.dataset.live){ delete e.dataset.live; fin=true; } }); if(fin) schedule(); },1000);
 function battleCard(b, o={}){
   const s=battleState(b), show=s.my||s.ended, t=S.topics.get(b.topicId);
   const ck='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -1222,13 +1240,40 @@ function battleCard(b, o={}){
   const q=o.topicLink&&t?`<a class="bc-q" href="#t-${t.id}">${esc(b.question)}</a>`:`<div class="bc-q">${esc(b.question)}</div>`;
   return `<div class="battle bc2 ${o.inline?"inline":""} ${UI.bAnim===b.id?"bc-anim":""}" id="b-${b.id}">
     <div class="bc-top"><div class="bc-state">${s.ended?`<span class="bc-end">ENDED</span>`:`<i class="bc-dot"></i><span class="bc-live">LIVE</span>`}${where?`<span class="bc-where">· ${where}</span>`:""}</div>
-      <div class="bc-time">${clock}<span class="bc-cd" data-end="${b.endsAt}">${s.ended?"Final":cdFmt(b.endsAt-Date.now())}</span></div></div>
+      <div class="bc-time">${clock}<span class="bc-cd" data-end="${b.endsAt}"${s.ended?"":' data-live="1"'}>${s.ended?"Final":cdFmt(b.endsAt-Date.now())}</span></div></div>
     ${q}
     <div class="bc-sides">${side("a",b.a,s.pa)}${side("b",b.b,s.pb)}<span class="bc-vs">VS</span></div>
     ${bar}
     <div class="bfoot bc-foot"><span class="bc-by">${b.authorId?avatar(b.authorId,"xs"):""}<span>${show?(b.authorId?`by ${esc(nameOf(b.authorId))}`:""):`${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${b.authorId?` · by ${esc(nameOf(b.authorId))}`:""}`}</span></span>
       <span class="bc-acts">${t?`<button type="button" class="bc-btn" data-act="bDisc" data-id="${b.id}" title="Open the discussion">${chat} ${stat(t.id).comments?`${stat(t.id).comments} comment${stat(t.id).comments===1?"":"s"}`:"Discuss"}</button>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}<span class="bc-sl"> ${L("Share card")}</span></button></span></div>
   </div>`;
+}
+function battleDone(b){
+  const s=battleState(b), t=S.topics.get(b.topicId), vt=n=>n.toLocaleString("en-IN")+(n===1?" vote":" votes");
+  const diff=Math.abs(s.v.a-s.v.b), few=s.n>0&&s.n<5, wName=s.winner==="a"?b.a:s.winner==="b"?b.b:null;
+  const where=[t&&t.category,t&&t.location].filter(Boolean).map(esc).join(" · ");
+  const head=!s.n?"No votes were cast":wName?`🏆 ${esc(wName)} won`:"🤝 Ended in a tie";
+  const sum=!s.n?"Voting closed with no votes.":wName?`${vt(s.n)} · won by ${vt(diff)}`:`${vt(s.n)} · split evenly`;
+  const lab=(k,name,pct)=>`<span class="${s.winner===k?"w":""}">${k==="a"?`${esc(name)} <b>${pct}%</b>`:`<b>${pct}%</b> ${esc(name)}`}</span>`;
+  const comments=t?stat(t.id).comments:0;
+  return `<div class="battle bdone" id="b-${b.id}">
+    <div class="bd-top"><span class="bc-end">ENDED</span>${where?`<span class="bc-where">· ${where}</span>`:""}<span class="bd-when">${(x=>/\d[mhd]$/.test(x)?x+" ago":x)(ago(b.endsAt))}</span></div>
+    ${t?`<a class="bd-q" href="#t-${t.id}">${esc(b.question)}</a>`:`<div class="bd-q">${esc(b.question)}</div>`}
+    <div class="bd-win ${s.winner==="b"?"b":""}">${head}</div>
+    ${s.n?`<div class="bd-lab">${lab("a",b.a,s.pa)}${lab("b",b.b,s.pb)}</div><div class="bd-bar" aria-hidden="true"><i class="a" style="width:${s.pa}%"></i><i class="b" style="width:${s.pb}%"></i></div>`:""}
+    <div class="bd-sum">${few?`<span class="bc-early" title="Only ${vt(s.n)}. Read this result with care.">Few votes</span>`:""}<span>${sum}</span>${s.my?`<span class="bd-my">· you picked ${esc(s.my==="a"?b.a:b.b)}</span>`:""}</div>
+    <div class="bd-foot">${t?`<button type="button" class="bd-disc" data-act="bDisc" data-id="${b.id}">Discuss the result →</button>`:"<span></span>"}<span class="bd-r">${comments?`<span class="muted">${comments} comment${comments===1?"":"s"}</span>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}</button></span></div>
+  </div>`;
+}
+function battleSections(bs,o={}){
+  const now=Date.now(), live=bs.filter(b=>b.endsAt>now).sort((a,b)=>b.createdAt-a.createdAt), done=bs.filter(b=>b.endsAt<=now).sort((a,b)=>b.endsAt-a.endsAt);
+  const n=UI.fyN||10, en=UI.btEndAll?done.length:4;
+  const sec=(title,sub,link)=>`<div class="btsec"><h3>${title}</h3>${sub?`<span class="muted">${sub}</span>`:""}${link||""}</div>`;
+  return sec("Live battles",live.length?`${live.length} active`:"")
+    +(live.length?`<div class="grid b hbgrid btlive">${live.slice(0,n).map(b=>battleCard(b,{topicLink:true})).join("")}</div>${live.length>n?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}`
+      :`<div class="btnone muted">${o.none||"No live battles right now."} <button type="button" class="linkb" data-act="newBattle">Start one</button></div>`)
+    +(done.length?sec("Ended battles",`${done.length} finished`,done.length>4?`<button type="button" class="linkb" data-act="btEndAll">${UI.btEndAll?"Show less":"See all"}</button>`:"")
+      +`<div class="grid b hbgrid btdone">${done.slice(0,en).map(battleDone).join("")}</div>`:"");
 }
 function predCard(t){
   const p=IX.pv.get(t.id)||{yes:0,no:0}, n=p.yes+p.no, my=IX.myP.get(t.id), now=Date.now();
@@ -1345,8 +1390,14 @@ function vHome(){
           :emptyBox("No local discussions yet","Be the first to start one.",`<button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button>`)); }
   } else if(tab==="wt"){ body=vWatch(()=>true); }
   else if(tab==="bt"){
-    const bs=[...S.battles.values()].filter(b=>S.topics.has(b.topicId)).sort((a,b)=>(b.endsAt>now)-(a.endsAt>now)||b.createdAt-a.createdAt);
-    body=`<div class="harea"><span class="muted">Two sides, one winner. Live first.</span><button type="button" class="btn pri sm" data-act="newBattle">＋ Start a battle</button></div>`+(bs.length?`<div class="grid b hbgrid">${bs.slice(0,UI.fyN||10).map(b=>battleCard(b,{topicLink:true})).join("")}</div>${bs.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}`:emptyBox("No battles yet","Start one and share it so people vote."));
+    const f=UI.bf||"all", all=[...S.battles.values()].filter(b=>S.topics.has(b.topicId));
+    const bs=f==="nb"?(hp?all.filter(b=>inPlace(S.topics.get(b.topicId),hp)):[]):f==="fo"?all.filter(b=>IX.myFollows.has(b.topicId)||(b.authorId&&b.authorId!==S.me&&isFollowing(b.authorId))):all;
+    const chips=[["all","All"],["nb",hp?"📍 "+esc(hp.name):"📍 Nearby"],["fo","Following"]].map(([k,l])=>`<button type="button" class="chip ${f===k?"on":""}" data-act="bFilter" data-v="${k}">${l}</button>`).join("");
+    body=`<div class="harea btbar"><div class="tagrow btchips">${chips}</div><button type="button" class="btn pri sm" data-act="newBattle">＋ Start a battle</button></div>`
+      +(f==="nb"&&!hp?emptyBox("Choose your city","See battles from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`)
+        :!all.length?emptyBox("No battles yet","Start one and share it so people vote.")
+        :!bs.length?emptyBox(f==="fo"?"Nothing from what you follow yet":"No battles near you yet",f==="fo"?"Follow topics or people to see their battles here.":"Start the first local battle.",`<button class="btn pri sm" data-act="newBattle">Start a battle</button>`)
+        :battleSections(bs));
   } else if(tab==="rv"){
     const sp=topRatedList(20,"split"), row=(t,i)=>{ const s2=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s2.avg.toFixed(1)}</b><span>${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</span></div></a>`; };
     body=`<div class="harea"><span class="muted">Places and things people recommend.</span><button type="button" class="btn pri sm" data-act="reviewPick">⭐ Write a review</button></div>`
@@ -1441,7 +1492,7 @@ function vExplore(){
   if(UI.exSort==="watch") return head+vWatch(catOk);
   if(UI.exSort==="battles"){
     const now=Date.now(), bs=[...S.battles.values()].filter(b=>catOk(S.topics.get(b.topicId))).sort((a,b)=>(b.endsAt>now)-(a.endsAt>now)||b.createdAt-a.createdAt);
-    return head+(bs.length?`<div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div>`:emptyBox("No battles yet","Start one from the Create menu, or tap Settle it on any argument in the comments."));
+    return head+(bs.length?battleSections(bs):emptyBox("No battles yet","Start one from the Create menu, or tap Settle it on any argument in the comments."));
   }
   if(UI.exSort==="duels"){
     const order={voting:0,active:1,pending:2,done:3,forfeit:3,declined:9,expired:9};
@@ -2684,7 +2735,8 @@ function battleModal(o={}){
   UI.dur=24;
   openModal(`<h2>${c?"Settle it with a battle":"Start an A/B battle"}</h2>
     ${c?`<div class="origin" style="margin:0">${esc(nameOf(c.authorId))} in <b>${esc(ct?.title||"")}</b>: <q>${esc(c.text.slice(0,180))}</q></div><p class="muted" style="margin:0;font-size:13px">Everyone votes. When time runs out, the result is posted right under this comment.</p>`:""}
-    <label class="l">Question<input class="f" id="bt-q" maxlength="100" placeholder="${c?"Who’s right?":"e.g. Which is better?"}" value="${esc(c?"Who’s right?":"")}"></label>
+    <label class="l">Question<input class="f" id="bt-q" maxlength="100" placeholder="${c?"Who’s right?":"e.g. Best biryani in Arakkonam?"}" value="${esc(c?"Who’s right?":"")}"></label>
+    ${c?"":`<div class="bt-tip">Tip: ask one clear question with two real choices. Keep each side short.</div>`}
     <div class="row2"><label class="l">Side A<input class="f" id="bt-a" maxlength="40" placeholder="e.g. Ambur biryani"></label><label class="l">Side B<input class="f" id="bt-b" maxlength="40" placeholder="e.g. Chennai biryani"></label></div>
     ${c?"":`<div class="row2"><label class="l">Category${catSelect("bt-cat","Food")}</label><label class="l">City (optional)<input class="f" id="bt-loc" maxlength="60" placeholder="e.g. Arakkonam" value="${esc(o.loc||"")}"></label></div>
     ${o.fromTopic?`<div class="muted" style="font-size:12.5px">From: <b>${esc(o.fromTopic)}</b>${UI.btMedia.length?` · ${UI.btMedia.length} photo${UI.btMedia.length>1?"s":""} attached`:""}</div>`:""}
@@ -2859,6 +2911,8 @@ document.addEventListener("click", async e=>{
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
     case "hTab": UI.htab=el.dataset.v; UI.fyN=10; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); } break;
+    case "bFilter": UI.bf=el.dataset.v; UI.fyN=10; UI.btEndAll=false; schedule(); break;
+    case "btEndAll": UI.btEndAll=!UI.btEndAll; schedule(); break;
     case "fyMore": UI.fyN=(UI.fyN||10)+10; schedule(); break;
     case "wFilter": UI.wf=el.dataset.v; UI.wN=5; schedule(); break;
     case "wMore": UI.wN=(UI.wN||5)+5; schedule(); break;
