@@ -657,6 +657,23 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .hrv{flex:0 0 auto;min-width:170px;max-width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-decoration:none;color:var(--ink)}.hrv b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hrv span{color:#B7791F;font-weight:800;font-size:13px}.hrv small{color:var(--muted)}
 .hmore{display:block;width:100%;margin:14px 0}.hdisc .tagrow{gap:6px}.hbgrid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
 .sp-mode .cardimg{max-height:min(42vh,340px);width:auto;max-width:100%;margin:0 auto;display:block}.sp-mode .seg,.sp-mode #sh,.sp-mode .seg+p{display:none}.sp-sub{margin:-6px 0 2px;font-size:14px}.spst{border-color:#25D366!important;color:#128C4A!important}.spig{border-color:#E1306C!important;color:#C13584!important}.spwa{background:#25D366!important;border-color:#25D366!important;color:#fff!important}
+/* COMPOSER v2 (WhatsApp-style) */
+.composer{align-items:flex-end}.composer .box{gap:4px;align-items:stretch}
+.wa{display:flex;align-items:flex-end;gap:8px;width:100%}
+.wa-pill{flex:1;min-width:0;display:flex;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:2px 4px;transition:border-color .16s ease,box-shadow .16s ease}
+.wa-pill:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 14%,transparent)}
+.wa-pill .rt{flex:1;min-width:0}
+.wa-pill .rt-back{border:0!important;background:transparent!important;box-shadow:none!important;padding:10px 4px!important;border-radius:0}
+.wa-pill .rt .rt-in,.composer .wa-pill .rt-in,.composer:focus-within .wa-pill .rt-in,.composer.keep .wa-pill .rt-in{padding:10px 4px!important;min-height:44px!important;border-radius:0}
+.wa-pill .rt:focus-within .rt-back{box-shadow:none!important}
+.wa-ic.gifb{padding:0!important;margin:0 0 2px!important;letter-spacing:0}.wa-ic,.wa-ic.gifb{border:0!important;background:transparent;box-shadow:none!important}.wa-ic:hover{background:var(--chip)}.wa-ic{padding:0!important;width:40px!important;height:40px!important;border-radius:50%!important;flex:none;margin-bottom:2px;color:var(--muted)}
+.wa-send{width:48px;height:48px;min-width:48px;border-radius:50%!important;padding:0!important;display:grid!important;place-items:center;flex:none;box-shadow:0 2px 6px rgba(14,112,69,.25)}
+.wa-send svg{margin-left:2px}.wa-send.idle{opacity:.55;box-shadow:none}
+.wa-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 14px;font-size:12px;color:var(--muted)}.wa-meta:empty{display:none}
+.wa-rto{font-size:12.5px}.wa-rto b{color:var(--ink)}
+.wa-x{border:0;background:none;color:var(--muted);font:inherit;font-size:12.5px;padding:2px 4px;cursor:pointer}.wa-x:hover{color:var(--danger)}
+.wa-meta .khint{margin-left:0}.wa-meta .ccount{margin-left:auto}
+@media(max-width:720px){.composer>.av{display:none}}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -1610,7 +1627,7 @@ function vTopic(id){
   const discussion = `
     ${aiPanel(t,cs.length)}
     ${t.deletedAt?`<div class="muted" style="margin:6px 0 12px;font-size:14px">This topic is closed for new comments.</div>`:`<div class="composer">${S.me?avatar(S.me):""}<div class="box">
-      <textarea id="newc" rows="2" placeholder="${t.kind==="question"?"Answer the question…":"Add to the discussion…"} @name to tag, #tags to link. ${L("Tamil, Tanglish or English. All welcome.")}"></textarea>
+      <textarea id="newc" rows="2" placeholder="${t.kind==="question"?"Write your answer…":"Write a comment…"}"></textarea>
       <button class="btn pri sm" data-act="postComment" data-topic="${id}">${L("Post")}</button></div></div>`}
     ${sortBar}
     ${UI.csort==="other"&&!otherIds.size&&!UI.aiBusy[id]?`<div class="muted" style="font-size:13.5px;margin-bottom:10px">${sampleFn?"Claude needs to read the thread first to find the pushback.":"Finding the other side needs Claude, which isn’t available in this view."}</div>`:""}
@@ -1882,7 +1899,7 @@ function syncRich(ta){
   if(back&&back.classList.contains("rt-back")){ let v=ta.value; if(v.endsWith("\n")||!v) v+=" "; back.innerHTML=hlRich(v); back.scrollTop=ta.scrollTop; }
   const box=ta.closest(".composer,.dbox,.form"); const btn=box&&box.querySelector(".btn.pri");
   if(btn&&box.classList.contains("composer")) btn.classList.toggle("idle", !ta.value.trim()&&!ATT[ta.id]);
-  const n=ta.closest(".rt")?.parentNode?.querySelector(".ccount");
+  const n=(ta.closest(".composer .box")||ta.closest(".rt")?.parentNode)?.querySelector(".ccount");
   if(n){ const len=ta.value.length, lim=+ta.maxLength>0?+ta.maxLength:3000; n.textContent=len>lim*0.8?`${len.toLocaleString("en-IN")} / ${lim.toLocaleString("en-IN")}`:""; n.classList.toggle("over",len>lim); }
 }
 function enhance(root){
@@ -1895,15 +1912,23 @@ function enhance(root){
       ta.parentNode.insertBefore(wrap,ta); wrap.append(back,ta);
       ta.classList.add("rt-in");
       if(ta.id && DRAFT_IDS.test(ta.id) && !ta.value){ const d=loadDraft(ta); if(d){ ta.value=d; wrap.dataset.draft="1"; } }
-      // composer footer: tools on the left, actions on the right
+      // WhatsApp-style composer: [😊  text  📎] (send)
       const box=wrap.closest(".composer .box");
-      if(box && !box.querySelector(".cfoot")){
-        const foot=document.createElement("div"); foot.className="cfoot";
-        const tools=document.createElement("div"); tools.className="ctool";
-        tools.innerHTML=`<button type="button" class="tbtn" data-ins="@" title="Mention someone" aria-label="Mention someone">@</button><button type="button" class="tbtn" data-ins="#" title="Add a hashtag" aria-label="Add a hashtag">#</button><button type="button" class="tbtn" data-tool="emoji" title="Emoji" aria-label="Add emoji"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.3 2.1 2 3.5 2s2.6-.7 3.5-2"/><circle cx="9" cy="10" r=".9" fill="currentColor"/><circle cx="15" cy="10" r=".9" fill="currentColor"/></svg></button><button type="button" class="tbtn gifb" data-tool="gif" title="Add a GIF or photo" aria-label="Add a GIF or photo">GIF</button><span class="khint">${/Mac|iPhone|iPad/.test(navigator.platform)?"⌘":"Ctrl"} ↵ to post</span>${wrap.dataset.draft?'<span class="dchip">Draft restored</span>':""}<span class="ccount"></span>`;
-        const rest=[...box.children].filter(x=>x!==wrap);
-        const right=document.createElement("div"); right.className="cact"; rest.forEach(x=>right.append(x.tagName==="DIV"&&!x.className?(x.style.cssText="display:flex;gap:6px",x):x));
-        foot.append(tools,right); box.append(foot);
+      if(box && !box.querySelector(".wa")){
+        const post=box.querySelector(".btn.pri"), cancel=[...box.querySelectorAll(".btn")].find(b=>!b.classList.contains("pri"));
+        const fine=matchMedia("(hover:hover) and (pointer:fine)").matches, isR=/^r-/.test(ta.id); ta.rows=1;
+        const row=document.createElement("div"); row.className="wa";
+        const pill=document.createElement("div"); pill.className="wa-pill";
+        pill.innerHTML=`<button type="button" class="tbtn wa-ic" data-tool="emoji" title="Emoji" aria-label="Add emoji"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8"/><circle cx="9" cy="10" r=".6" fill="currentColor"/><circle cx="15" cy="10" r=".6" fill="currentColor"/></svg></button>`;
+        pill.append(wrap);
+        pill.insertAdjacentHTML("beforeend",`<button type="button" class="tbtn wa-ic gifb" data-tool="gif" title="Add a photo or GIF" aria-label="Add a photo or GIF"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9"/></svg></button>`);
+        row.append(pill);
+        if(post){ post.classList.add("wa-send"); post.classList.remove("sm"); post.setAttribute("aria-label",post.textContent.trim()||"Post"); post.title=post.textContent.trim()||"Post"; post.innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6l.1 6.5L15 12 3.5 13.9z"/></svg>`; row.append(post); }
+        const meta=document.createElement("div"); meta.className="wa-meta";
+        if(isR&&cancel){ const nm=(ta.placeholder.match(/^Reply to (.+?)…/)||[])[1]||""; meta.innerHTML=`<span class="wa-rto">↪ Replying to <b>${esc(nm)}</b></span>`; cancel.className="wa-x"; cancel.textContent="✕ Cancel"; meta.append(cancel); }
+        meta.insertAdjacentHTML("beforeend",`${fine?`<span class="khint">Enter to send · Shift+Enter for a new line · @ to tag · # for hashtags</span>`:""}${wrap.dataset.draft?'<span class="dchip">Draft restored</span>':""}<span class="ccount"></span>`);
+        [...box.children].forEach(x=>{ if(x!==row&&x!==wrap) x.remove(); });
+        box.append(row, meta);
       }
     }
     if(ATT[ta.id]&&ta.closest(".box")) attachUI(ta.closest(".box"),ta.id);
@@ -2004,7 +2029,7 @@ async function prepMedia(file){
 function attachUI(box, taId){
   let el=box.querySelector(".attach"); const a=ATT[taId];
   if(!a){ el&&el.remove(); return; }
-  if(!el){ el=document.createElement("div"); el.className="attach"; box.querySelector(".rt").after(el); }
+  if(!el){ el=document.createElement("div"); el.className="attach"; const w=box.querySelector(".wa"); if(w) w.before(el); else box.querySelector(".rt").after(el); }
   el.innerHTML=`<img src="${a.data}" alt=""><span class="muted">${a.type==="gif"?"GIF":"Photo"} · ${Math.round(a.size/1024)} KB</span><button type="button" class="act" data-act="unattach" data-id="${esc(taId)}" aria-label="Remove">✕ Remove</button>`;
 }
 const gifInput=document.createElement("input"); gifInput.type="file"; gifInput.accept="image/gif,image/webp,image/png,image/jpeg"; gifInput.hidden=true; document.body.append(gifInput);
@@ -2779,8 +2804,8 @@ document.addEventListener("click", async e=>{
     case "pickCity": UI.city=el.dataset.v; try{ localStorage.setItem("tt-city",UI.city); }catch{} schedule(); break;
     case "lang": UI.lang=UI.lang==="ta"?"en":"ta"; try{ localStorage.setItem("tt-lang",UI.lang); }catch{} render(); break;
     case "reply": UI.replyOpen.has(id)?UI.replyOpen.delete(id):UI.replyOpen.add(id); render(); { const t=document.getElementById("r-"+id); t&&t.focus(); } break;
-    case "postComment": { const ta=$("#newc"); const lbl=el.textContent; el.disabled=true; el.classList.add("busy"); el.textContent="Posting"; if(await postComment(el.dataset.topic,null,ta.value,"newc")){ clearField(ta); attachUI(ta.closest(".box"),"newc"); } el.disabled=false; el.classList.remove("busy"); el.textContent=lbl; break; }
-    case "postReply": { UI.more.add(id); const ta=document.getElementById("r-"+id); const c=S.comments.get(id); el.disabled=true; if(c&&await postComment(c.topicId,id,ta.value,"r-"+id)){ UI.replyOpen.delete(id); clearField(ta); schedule(); } el.disabled=false; break; }
+    case "postComment": { const ta=$("#newc"); const lbl=el.innerHTML, wa=el.classList.contains("wa-send"); el.disabled=true; el.classList.add("busy"); if(!wa) el.textContent="Posting"; if(await postComment(el.dataset.topic,null,ta.value,"newc")){ const t2=$("#newc")||ta; clearField(t2); if(t2!==ta) clearField(ta); const bx=t2.closest(".box"); if(bx) attachUI(bx,"newc"); } el.disabled=false; el.classList.remove("busy"); el.innerHTML=lbl; break; }
+    case "postReply": { UI.more.add(id); const ta=document.getElementById("r-"+id); const c=S.comments.get(id); el.disabled=true; if(c&&await postComment(c.topicId,id,ta.value,"r-"+id)){ UI.replyOpen.delete(id); clearField(ta); const t2=document.getElementById("r-"+id); if(t2&&t2!==ta) clearField(t2); schedule(); } el.disabled=false; break; }
     case "like": {
       if(!(await gate())) break;
       const key=`${id}__${S.me}`, ref=db.doc("likes/"+key);
@@ -3197,6 +3222,8 @@ document.addEventListener("input", e=>{ if(e.target.id==="n-tagin"||e.target.id=
 document.addEventListener("keydown", e=>{
   if(e.key==="Escape"&&!epEl.hidden){ epClose(true); return; }
   if(e.key==="Escape"&&$("#modal").innerHTML) closeModal(false);
+  if(e.key==="Enter"&&!e.shiftKey&&!e.metaKey&&!e.ctrlKey&&!e.altKey&&!e.isComposing&&e.target.tagName==="TEXTAREA"&&e.target.closest(".composer")&&epEl.hidden&&matchMedia("(hover:hover) and (pointer:fine)").matches){
+    e.preventDefault(); const b=e.target.closest(".composer")?.querySelector(".btn.pri"); b&&b.click(); return; }
   if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)&&e.target.tagName==="TEXTAREA"){
     e.preventDefault(); const b=e.target.closest(".composer,.form,.dbox,.modal")?.querySelector(".btn.pri"); b&&b.click(); }
 });
