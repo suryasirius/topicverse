@@ -616,6 +616,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @media(max-width:720px){.battle.bc2 .bc-sl{display:none}.battle.bc2 .bc-acts .act{width:34px;justify-content:center;padding:0;min-width:34px;min-height:32px}.battle.bc2 .bc-q{font-size:16.5px}}
 .phs{display:flex;gap:8px;flex-wrap:wrap}.phi{position:relative;width:76px;height:76px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}.phi img{width:100%;height:100%;object-fit:cover;display:block}.phi button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;font-size:15px;line-height:20px;cursor:pointer;padding:0}
 .phstrip{max-width:100%;min-width:0;display:flex;gap:8px;overflow-x:auto;margin:10px 0}.phstrip button{flex:0 0 auto;border:0;padding:0;background:none;cursor:pointer;border-radius:12px;overflow:hidden}.phstrip img{height:120px;width:auto;max-width:200px;object-fit:cover;display:block;border-radius:12px}.phstrip.sm img{height:84px}
+.qtog{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:14px;cursor:pointer}.qtog input{margin-top:3px;width:18px;height:18px;accent-color:var(--brand)}.qtog b{display:block;font-size:14px}.qtog small{display:block;color:var(--muted);font-size:12.5px;line-height:1.35}
 .durc{display:flex;gap:8px;margin-top:8px}.durc[hidden]{display:none}.durc+.hint{min-height:0}.durc label{flex:1;font-size:12px;color:var(--muted)}.durc input{margin-top:4px;text-align:center}
 .backbtn{display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--brand-deep);padding:6px 10px 6px 0;margin:0 0 2px;cursor:pointer}
 .backbtn:hover{text-decoration:underline}.backbtn:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
@@ -2310,7 +2311,7 @@ function topicModal(o={}){ PH.tn=[];
   UI.newKind=o.kind||"topic"; UI.locMode=(o.loc||bt?.location)?"place":null; UI.locVal=o.loc||bt?.location||""; UI.locDis=new Set(); UI.tagged=[]; UI.taggedG=[]; UI.bn="";
   openModal(`<h2>${b?"Turn this comment into a new topic":o.kind==="question"?"Ask the community":"Start a topic"}</h2>
     ${b?`<div class="origin" style="margin:0">From ${esc(nameOf(b.authorId))} in <b>${esc(bt?.title||"")}</b>: <q>${esc(b.text.slice(0,200))}</q></div>`:""}
-    ${b?"":`<div><div class="seg" role="tablist"><button class="${UI.newKind==="topic"?"on":""}" data-act="kind" data-v="topic">Topic</button><button class="${UI.newKind==="question"?"on":""}" data-act="kind" data-v="question">Question</button></div></div>`}
+    ${b?"":`<label class="qtog"><input type="checkbox" id="n-isq" data-act="qtog" ${UI.newKind==="question"?"checked":""}><span><b>This is a question</b><small>People answer it, and the community answer is summarised from what they say.</small></span></label>`}
     <label class="l">${o.kind==="question"?"Your question":"Title"}<input class="f" id="n-title" maxlength="120" placeholder="${b?"e.g. iPhone 17 Pro Max vs Samsung S26 Ultra camera":o.kind==="question"?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"}" value="${esc(o.title||"")}"></label>
     <label class="l">Description (optional)<textarea id="n-desc" rows="3" placeholder="Give people some context. ${L("Tamil, Tanglish or English. All welcome.")}">${esc(o.desc||"")}</textarea></label>
     <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
@@ -2427,8 +2428,7 @@ function createMenu(){
    <p class="cm-sub">Pick what you want to share. You can branch it later.</p>
    <div class="cm-grp">Talk</div>
    <div class="cm-rows">
-    <button class="choice cm-row" style="--h:152" data-act="newTopic"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></i><div><b>Topic</b><span>Anything people can talk about</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
-    <button class="choice cm-row" style="--h:215" data-act="newQuestion"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.8M12 17h.01"/></svg></i><div><b>Question</b><span>Ask the community</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
+    <button class="choice cm-row" style="--h:152" data-act="newTopic"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></i><div><b>Topic</b><span>Talk about anything, or ask a question</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
     <button class="choice cm-row" style="--h:275" data-act="newGroup"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.4-3.4 3-5.2 6-5.2s5.6 1.8 6 5.2"/><circle cx="17.5" cy="9" r="2.4"/><path d="M17 14.4c2.2.1 3.7 1.6 4 4"/></svg></i><div><b>Group</b><span>Debate with friends</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
    </div>
    <div class="cm-grp">Get opinions</div>
@@ -2538,6 +2538,7 @@ document.addEventListener("click", async e=>{
       else el.disabled=false;
       break; }
     case "pickReview": e.preventDefault(); closeModal(false); UI.pendingReview=id; if(location.hash==="#t-"+id){ UI.tab="reviews"; UI.rvOpen=true; UI.pendingReview=null; schedule(); } else location.hash="t-"+id; break;
+    case "qtog": { UI.newKind=el.checked?"question":"topic"; const h=$("#modal h2"); if(h) h.textContent=el.checked?"Ask the community":"Start a topic"; const lb=$("#n-title")?.closest("label"); if(lb&&lb.firstChild) lb.firstChild.textContent=el.checked?"Your question":"Title"; $("#n-title").placeholder=el.checked?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"; break; }
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; schedule(); break;
