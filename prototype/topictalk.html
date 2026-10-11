@@ -701,6 +701,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .bc-tot{color:var(--ink);font-weight:700}
 @media(max-width:720px){.home2 .hbattles{margin-inline:-14px;padding-inline:14px;scroll-padding-inline:14px}.home2 .hbattles>.battle{flex:0 0 84%}}
 @media(max-width:420px){.top .gbtn{display:none}.top .lang{padding:0 9px;font-size:12.5px;height:32px}}
+.bc-why{border:0;background:none;padding:0;color:var(--brand-deep);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -1194,7 +1195,7 @@ function battleCard(b, o={}){
   const lead=s.v.a===s.v.b?null:(s.v.a>s.v.b?b.a:b.b), diff=Math.abs(s.v.a-s.v.b);
   const vt=n=>n+(n===1?" vote":" votes");
   const momentum=s.ended?(s.winner==="tie"?"Ended in a tie.":`${esc(s.winner==="a"?b.a:b.b)} won by ${vt(diff)}.`)
-    :(lead?`${esc(lead)} leads by ${vt(diff)}. Bring a friend to flip it.`:"Dead even. Your vote decides it.");
+    :(lead?`${esc(lead)} leads by ${vt(diff)}.`:"Dead even.")+(s.my&&!s.ended?` <button type="button" class="bc-why" data-act="bWhy" data-id="${b.id}">Say why →</button>`:s.ended?"":" Your vote decides it.");
   const knob=Math.min(95,Math.max(5,s.pa));
   const gA=s.my?s.my==="a":s.winner==="a"||(s.pa>=s.pb), gB=s.my?s.my==="b":s.winner==="b"||(s.pb>s.pa);
   const few=s.n>=1&&s.n<5, early=few?`<span class="bc-early" title="Only ${s.n} ${s.n===1?"vote":"votes"} so far. This can still change.">${s.ended?"Few votes":"Early result"}</span> `:"";
@@ -1213,7 +1214,7 @@ function battleCard(b, o={}){
     <div class="bc-sides">${side("a",b.a,s.pa)}${side("b",b.b,s.pb)}<span class="bc-vs">VS</span></div>
     ${bar}
     <div class="bfoot bc-foot"><span class="bc-by">${b.authorId?avatar(b.authorId,"xs"):""}<span>${show?(b.authorId?`by ${esc(nameOf(b.authorId))}`:""):`${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${b.authorId?` · by ${esc(nameOf(b.authorId))}`:""}`}</span></span>
-      <span class="bc-acts">${t&&!o.inline?`<a class="bc-btn" href="#t-${t.id}">${chat} Why?</a>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}<span class="bc-sl"> ${L("Share card")}</span></button></span></div>
+      <span class="bc-acts">${t?`<button type="button" class="bc-btn" data-act="bWhy" data-id="${b.id}" title="Explain your pick or read why others voted">${chat} Why?${stat(t.id).comments?` · ${stat(t.id).comments}`:""}</button>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}<span class="bc-sl"> ${L("Share card")}</span></button></span></div>
   </div>`;
 }
 function predCard(t){
@@ -2224,6 +2225,8 @@ window.addEventListener("resize",()=>{ acClose(); epClose(); document.querySelec
 let rq=0;
 function schedule(){ if(rq) return; rq=requestAnimationFrame(()=>{ rq=0; render(); const hd=document.querySelector("header.top"); if(hd) document.documentElement.style.setProperty("--toph",hd.offsetHeight+"px"); }); }
 const parseRoute = () => { try{ return decodeURIComponent(location.hash.slice(1)||"home"); }catch{ return "home"; } };
+function applyWhy(){ const w=UI.whyPrefill; if(!w||location.hash.split("~")[0]!=="#t-"+w.tid) return; UI.whyPrefill=null; UI.tab="discussion";
+  setTimeout(()=>{ const ta=$("#newc"); if(!ta) return; if(w.text&&!ta.value) ta.value=w.text; syncRich(ta); ta.scrollIntoView({block:"center",behavior:"smooth"}); try{ ta.focus({preventScroll:true}); ta.setSelectionRange(ta.value.length,ta.value.length); }catch{} },120); }
 function render(){
   buildIndex();
   const r=parseRoute(), changed=r!==UI.lastRoute;
@@ -2256,6 +2259,7 @@ function render(){
     const tab=r==="explore"||r==="alerts"||r==="me";
     view.innerHTML=(r==="home"||own?"":`<button type="button" class="backbtn${tab?" bk-tab":""}" data-act="goBack" aria-label="Go back">← Back</button>`)+html; }
   for(const id in keep){ const jp=UI.justPosted; if(jp&&id===jp.id&&Date.now()-jp.t<3000&&String(keep[id]).trim()===jp.text) continue; const el=document.getElementById(id); if(el) el.value=keep[id]; }
+  if(UI.whyPrefill) applyWhy();
   enhance(view);
   markSeen(); maybeAskHome();
   if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
@@ -2888,6 +2892,9 @@ document.addEventListener("click", async e=>{
         notify((IX.pVoters.get(id)||[]).map(v=>[v.userId,"resolved"]),{topicId:id,text:"Result: "+el.dataset.v.toUpperCase()}); }
       break; }
     case "settle": { if(!(await gate())) break; battleModal({commentId:id}); break; }
+    case "bWhy": { const b=S.battles.get(id); if(!b) break; const side=IX.myB.get(b.id), pick=side?(side==="a"?b.a:b.b):"";
+      UI.whyPrefill={tid:b.topicId, text:pick?`I picked ${pick} because `:"", cid:b.commentId||""};
+      if(location.hash==="#t-"+b.topicId) applyWhy(); else location.hash="t-"+b.topicId; break; }
     case "editBattle": editBattleModal(id); break;
     case "editTopic": { const t=S.topics.get(id); if(!t||t.authorId!==S.me) break;
       const pv=t.kind==="prediction"?IX.pv.get(id):null, locked=pv&&(pv.yes+pv.no)>0;
