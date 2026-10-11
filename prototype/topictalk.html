@@ -703,6 +703,17 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 @media(max-width:420px){.top .gbtn{display:none}.top .lang{padding:0 9px;font-size:12.5px;height:32px}}
 .bc-why{border:0;background:none;padding:0;color:var(--brand-deep);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 .bc-mom3{display:flex;flex-direction:column;align-items:flex-start;gap:3px}.bc-mom3 .bc-ml{display:flex;align-items:center;gap:6px}.bc-mom3 .bc-early{margin:0}.bc-mom3 .bc-ml2{color:var(--ink);font-weight:600}.bc-mom3 .bc-why{margin-top:1px}
+/* POST CARD v2 */
+.fcard{padding:14px 14px 6px}
+.fcard .whead{gap:10px}.fcat{margin-left:auto;align-self:flex-start;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-deep);background:var(--brand-soft);border-radius:999px;padding:3px 8px;white-space:nowrap}
+.ftitle{font-size:17.5px;margin:10px 0 2px}
+.fcard .fsnip{margin:2px 0 0}
+.fcard .vwrap,.fcard .wphoto,.fcard .fban{margin-top:10px}
+.fph{width:100%;max-height:440px;border-radius:14px;background:var(--chip)}.fph img{width:100%;height:100%;max-height:none;object-fit:cover}
+.flatest{display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:8px 10px;border-radius:12px;background:var(--chip);text-decoration:none;color:var(--ink);font-size:13.5px;line-height:1.4}.flatest b{font-weight:700}.flatest .av{flex:none}
+.frow{display:flex;align-items:center;gap:2px;margin-top:8px;border-top:1px solid var(--line);padding-top:4px}
+.fa{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:600 13px var(--f-body,inherit);padding:8px 10px;border-radius:10px;text-decoration:none;cursor:pointer;min-height:38px}
+.fa:hover{background:var(--chip);color:var(--ink)}.fa.on{color:#E0466A}.fa.fshare{margin-left:auto}.fa.fstar{color:#B7791F}.fa.fstar small{color:var(--muted);font-weight:500}
 /* WATCH v1 */
 .whero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 10px}.whero h2{margin:0;font-family:var(--f-display);font-size:22px}
 .whero h2{font-size:18px}.wchips{margin-bottom:14px}.wfeed{display:grid;gap:14px;max-width:560px}
@@ -1263,16 +1274,32 @@ function fCard(t){
   if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[])[0]; if(b) return `<div class="fitem">${battleCard(b,{topicLink:true})}</div>`; }
   const st=stat(t.id), vl=videoLinks((t.title||"")+" "+(t.desc||"")), ph=(t.media||[]).filter(m=>S.media.has(m)), br=descCount(t.id)-0;
   const cap=String(t.desc||"").replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim();
-  const lc=(IX.cByTopic.get(t.id)||[]).filter(c=>!c.deletedAt&&c.text).sort((a,b)=>b.createdAt-a.createdAt)[0];
-  const snip=cap?`<p class="fsnip">${esc(cap.slice(0,140))}${cap.length>140?"…":""}</p>`:lc?`<p class="fsnip"><b>${esc(nameOf(lc.authorId))}:</b> ${esc(lc.text.replace(/https?:\/\/\S+/g,"").slice(0,110))}${lc.text.length>110?"…":""}</p>`:"";
-  const media=vl[0]?videoCardFor(vl[0],{compact:true,tid:t.id}):ph[0]?`<button type="button" class="wphoto" data-act="viewMedia" data-id="${esc(ph[0])}" aria-label="Open photo"><img src="${S.media.get(ph[0]).data}" alt="" loading="lazy">${ph.length>1?`<span class="wmore">+${ph.length-1}</span>`:""}</button>`:t.banner?`<a class="fban" href="#t-${t.id}"><img src="${esc(t.banner)}" alt="" loading="lazy"></a>`:"";
-  const kind=t.kind==="question"?"Question":t.kind==="place"?"📍 Place":t.kind==="prediction"?"Prediction":"";
-  const meta=[kind,esc(t.category),t.location?"📍 "+esc(t.location):"",ago(lastAct(t))].filter(Boolean).join(" · ");
-  const hasM=!!(vl[0]||ph[0]);
-  return `<article class="fitem fcard"><div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${meta}</div></div></div>
-    <a class="wtitle" href="#t-${t.id}">${esc(cleanTitle(t))}</a>${snip}${media}
+  const lc=(IX.cByTopic.get(t.id)||[]).filter(c=>!c.deletedAt&&(c.text||"").trim()).sort((a,b)=>b.createdAt-a.createdAt)[0];
+  const kind=t.kind==="question"?"Question":t.kind==="place"?"Place":t.kind==="prediction"?"Prediction":"";
+  const meta=[t.location?"📍 "+esc(t.location):"",ago(t.createdAt)].filter(Boolean).join(" · ");
+  let media="";
+  if(vl[0]) media=videoCardFor(vl[0],{compact:true,tid:t.id});
+  else if(ph[0]){ const m=S.media.get(ph[0]), r=m.w&&m.h?Math.max(4/5,Math.min(16/9,m.w/m.h)):4/3;
+    media=`<button type="button" class="wphoto fph" data-act="viewMedia" data-id="${esc(ph[0])}" aria-label="Open photo" style="aspect-ratio:${r.toFixed(3)}"><img src="${m.data}" alt="${esc(cleanTitle(t))}" loading="lazy">${ph.length>1?`<span class="wmore">+${ph.length-1}</span>`:""}</button>`; }
+  else if(t.banner) media=`<a class="fban" href="#t-${t.id}"><img src="${esc(t.banner)}" alt="" loading="lazy"></a>`;
+  const hasM=!!(vl[0]||ph[0]), lk=likes(t), on=IX.myLikes.has(t.id);
+  const latest=lc?`<a class="flatest" href="#t-${t.id}~${lc.id}">${avatar(lc.authorId,"xs")}<span><b>${esc(nameOf(lc.authorId))}</b> ${esc(lc.text.replace(/https?:\/\/\S+/g,"").slice(0,110))}${lc.text.length>110?"…":""}</span></a>`:"";
+  const heart='<svg width="17" height="17" viewBox="0 0 24 24" fill="'+(on?"currentColor":"none")+'" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-8.7C1.3 8.4 3 5 6.4 5c2 0 3.3 1.1 4.1 2.3h3C14.3 6.1 15.6 5 17.6 5 21 5 22.7 8.4 21.2 11.3 19 15.6 12 20 12 20z"/></svg>';
+  const cmt='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
+  const brI='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-11 6"/></svg>';
+  return `<article class="fitem fcard">
+    <div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${meta}</div></div><span class="fcat">${kind?esc(kind)+" · ":""}${esc(t.category)}</span></div>
+    <a class="wtitle ftitle" href="#t-${t.id}">${esc(cleanTitle(t))}</a>
+    ${cap?`<p class="fsnip">${esc(cap.slice(0,160))}${cap.length>160?"…":""}</p>`:""}
+    ${media}
     ${hasM?`<div class="fmact"><a class="btn pri sm" href="#t-${t.id}" data-act="wDiscuss" data-id="${t.id}">💬 Discuss on TopicTalk</a><button type="button" class="btn sm" data-act="wBattle" data-id="${t.id}">⚔️ Battle on this topic</button></div>`:""}
-    <div class="ffoot">${hasM?`<a class="fq" href="#t-${t.id}">💬 ${st.comments} comment${st.comments===1?"":"s"}</a>`:`<a class="btn sm${st.comments?"":" pri"}" href="#t-${t.id}">💬 ${st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Discuss"}</a>`}${st.reviews?`<span class="fstar">★ ${st.avg.toFixed(1)} <small>(${st.reviews})</small></span>`:""}${br?`<span class="fq">⑂ ${br} branch${br===1?"":"es"}</span>`:""}<button type="button" class="act fshare" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button></div></article>`;
+    ${latest}
+    <div class="frow">
+      <button type="button" class="fa${on?" on":""}" data-act="like" data-id="${t.id}" data-kind="topic" aria-pressed="${on}" aria-label="Like">${heart}<span>${lk||"Like"}</span></button>
+      <a class="fa" href="#t-${t.id}">${cmt}<span>${st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Comment"}</span></a>
+      ${st.reviews?`<a class="fa fstar" href="#t-${t.id}">★ ${st.avg.toFixed(1)} <small>(${st.reviews})</small></a>`:br?`<a class="fa" href="#t-${t.id}" title="Topics that branched from this one">${brI}<span>${br} branch${br===1?"":"es"}</span></a>`:""}
+      <button type="button" class="fa fshare" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button>
+    </div></article>`;
 }
 function mixFeed(list){
   const typ=t=>t.kind==="battle"?"B":(videoLinks((t.title||"")+" "+(t.desc||"")).length||(t.media||[]).length)?"M":"T";
@@ -2598,7 +2625,7 @@ function topicModal(o={}){ PH.tn=[];
     ${o.watch?`<label class="l">YouTube or Instagram link<input class="f" id="n-link" inputmode="url" autocomplete="off" placeholder="https://youtu.be/…  or  instagram.com/reel/…"></label><div class="muted" style="font-size:12.5px;margin-top:-4px">Or add a photo in the Photos section below. Only the link is saved, the video stays on YouTube or Instagram.</div>`:""}
     ${b?`<div class="origin" style="margin:0">From ${esc(nameOf(b.authorId))} in <b>${esc(bt?.title||"")}</b>: <q>${esc(b.text.slice(0,200))}</q></div>`:""}
     ${b?"":`<label class="qtog"><input type="checkbox" id="n-isq" data-act="qtog" ${UI.newKind==="question"?"checked":""}><span><b>This is a question</b><small>People answer it, and the community answer is summarised from what they say.</small></span></label>`}
-    <label class="l">${o.kind==="question"?"Your question":"Title"}<input class="f" id="n-title" maxlength="120" placeholder="${b?"e.g. iPhone 17 Pro Max vs Samsung S26 Ultra camera":o.kind==="question"?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"}" value="${esc(o.title||"")}"></label>
+    <label class="l">${o.watch?"Your question or caption":o.kind==="question"?"Your question":"Title"}<input class="f" id="n-title" maxlength="120" placeholder="${o.watch?"Say what it is or ask about it, e.g. Is this the best turf in Arakkonam?":b?"e.g. iPhone 17 Pro Max vs Samsung S26 Ultra camera":o.kind==="question"?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"}" value="${esc(o.title||"")}"></label>
     <label class="l">Description (optional)<textarea id="n-desc" rows="3" placeholder="Give people some context. ${L("Tamil, Tanglish or English. All welcome.")}">${esc(o.desc||"")}</textarea></label>
     <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
       <div class="l">Where is this relevant?<div class="seg" id="n-locseg"></div><div id="n-locbox"></div></div></div>
@@ -2879,9 +2906,9 @@ document.addEventListener("click", async e=>{
       if(!(await gate())) break;
       const key=`${id}__${S.me}`, ref=db.doc("likes/"+key);
       if(S.likes.has(key)) await W(()=>ref.delete());
-      else { const tgt=el.dataset.kind==="review"?S.reviews.get(id):S.comments.get(id);
-        if(await W(()=>ref.set({targetId:id,kind:el.dataset.kind,userId:S.me,topicId:tgt?.topicId||"",createdAt:Date.now()}))&&tgt)
-          notify([[tgt.authorId,"like"]],{topicId:tgt.topicId,commentId:el.dataset.kind==="comment"?id:null,text:(tgt.text||tgt.title||"").slice(0,120)}); }
+      else { const isT=el.dataset.kind==="topic", tgt=el.dataset.kind==="review"?S.reviews.get(id):isT?S.topics.get(id):S.comments.get(id), tpid=isT?id:(tgt?.topicId||"");
+        if(await W(()=>ref.set({targetId:id,kind:el.dataset.kind,userId:S.me,topicId:tpid,createdAt:Date.now()}))&&tgt&&tgt.authorId!==S.me)
+          notify([[tgt.authorId,"like"]],{topicId:tpid,commentId:el.dataset.kind==="comment"?id:null,text:(tgt.text||tgt.title||"").slice(0,120)}); }
       break; }
     case "follow": {
       if(!(await gate())) break;
