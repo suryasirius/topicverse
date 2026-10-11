@@ -704,7 +704,11 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .btsec{display:flex;align-items:baseline;gap:8px;margin:18px 0 10px}.btsec h3{margin:0;font-family:var(--f-display);font-size:17px;font-weight:800}.btsec .muted{font-size:13px}.btsec .linkb{margin-left:auto}
 .btnone{padding:14px;border:1px dashed var(--line);border-radius:14px;font-size:13.5px}
 .btlive>.battle.bc2{padding:12px;gap:8px}.btlive .bc-q{font-size:16px}.btlive .bc-side{padding:9px 10px;gap:6px}.btlive .bc-pct{font-size:26px}
-.btlive .bc-ff{height:14px;border-radius:6px}.btlive .bc-ff .sp{width:18px;height:18px}.btlive .bc-ff .sp svg{width:16px;height:16px}.btlive .bc-mom{font-size:12px}.btlive .bc-foot{padding-top:8px}.btlive .bc-sl{display:none}.btlive .bc-acts .act{width:34px;min-width:34px;justify-content:center;padding:0}
+.btlive .bc-ff{height:14px;border-radius:6px}.btlive .bc-ff .sp{width:18px;height:18px}.btlive .bc-ff .sp svg{width:16px;height:16px}.btlive .bc-mom{font-size:12px}.btlive .bc-foot{padding-top:8px}.btlive .bc-sl{display:none}
+.btlive .bc-ff{height:8px;border-radius:999px}.btlive .bc-ff .g{clip-path:none;border-radius:999px 0 0 999px}.btlive .bc-ff .sp{display:none}
+.btlive .bc-mom3{display:grid;grid-template-columns:1fr auto;align-items:center;gap:3px 10px}.btlive .bc-mom3 .bc-ml{grid-column:1;grid-row:1}.btlive .bc-mom3 .bc-why{grid-column:2;grid-row:1;margin:0}.btlive .bc-mom3 .bc-ml2{grid-column:1/-1;grid-row:2;font-size:12.5px}
+.bdone .bd-win.few{color:var(--ink);font-size:14.5px}
+.btchips .chip.on{box-shadow:0 0 0 2px color-mix(in srgb,var(--ink) 18%,transparent)}.btlive .bc-acts .act{width:34px;min-width:34px;justify-content:center;padding:0}
 .battle.bdone{padding:12px 14px 6px;gap:6px;border-radius:16px;background:var(--bg);box-shadow:none}
 .bdone .bd-top{display:flex;align-items:center;gap:7px;font-size:12px;min-width:0}.bdone .bc-end{font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--muted)}
 .bdone .bc-where{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bdone .bd-when{margin-left:auto;color:var(--muted);flex:none}
@@ -1225,7 +1229,7 @@ function battleCard(b, o={}){
   const lead=s.v.a===s.v.b?null:(s.v.a>s.v.b?b.a:b.b), diff=Math.abs(s.v.a-s.v.b);
   const vt=n=>n+(n===1?" vote":" votes");
   const momentum=s.ended?(s.winner==="tie"?"Ended in a tie.":`${esc(s.winner==="a"?b.a:b.b)} won by ${vt(diff)}.`)
-    :(lead?`${esc(lead)} leads by ${vt(diff)}`:"Dead even");
+    :(s.n<5?(lead?`${esc(lead)} is ahead for now`:"Level for now"):lead?`${esc(lead)} leads by ${vt(diff)}`:"Dead even");
   const whyBtn=s.my&&!s.ended?`<button type="button" class="bc-why" data-act="bWhy" data-id="${b.id}">Say why →</button>`:"";
   const knob=Math.min(95,Math.max(5,s.pa));
   const gA=s.my?s.my==="a":s.winner==="a"||(s.pa>=s.pb), gB=s.my?s.my==="b":s.winner==="b"||(s.pb>s.pa);
@@ -1252,14 +1256,14 @@ function battleDone(b){
   const s=battleState(b), t=S.topics.get(b.topicId), vt=n=>n.toLocaleString("en-IN")+(n===1?" vote":" votes");
   const diff=Math.abs(s.v.a-s.v.b), few=s.n>0&&s.n<5, wName=s.winner==="a"?b.a:s.winner==="b"?b.b:null;
   const where=[t&&t.category,t&&t.location].filter(Boolean).map(esc).join(" · ");
-  const head=!s.n?"No votes were cast":wName?`🏆 ${esc(wName)} won`:"🤝 Ended in a tie";
-  const sum=!s.n?"Voting closed with no votes.":wName?`${vt(s.n)} · won by ${vt(diff)}`:`${vt(s.n)} · split evenly`;
+  const head=!s.n?"No votes were cast":few?(wName?`${esc(wName)} got more votes`:"Ended level"):wName?`🏆 ${esc(wName)} won`:"🤝 Ended in a tie";
+  const sum=!s.n?"Voting closed with no votes.":few?`Only ${vt(s.n)} · too few to call a winner`:wName?`${vt(s.n)} · won by ${vt(diff)}`:`${vt(s.n)} · split evenly`;
   const lab=(k,name,pct)=>`<span class="${s.winner===k?"w":""}">${k==="a"?`${esc(name)} <b>${pct}%</b>`:`<b>${pct}%</b> ${esc(name)}`}</span>`;
   const comments=t?stat(t.id).comments:0;
   return `<div class="battle bdone" id="b-${b.id}">
     <div class="bd-top"><span class="bc-end">ENDED</span>${where?`<span class="bc-where">· ${where}</span>`:""}<span class="bd-when">${(x=>/\d[mhd]$/.test(x)?x+" ago":x)(ago(b.endsAt))}</span></div>
     ${t?`<a class="bd-q" href="#t-${t.id}">${esc(b.question)}</a>`:`<div class="bd-q">${esc(b.question)}</div>`}
-    <div class="bd-win ${s.winner==="b"?"b":""}">${head}</div>
+    <div class="bd-win ${few?"few":s.winner==="b"?"b":""}">${head}</div>
     ${s.n?`<div class="bd-lab">${lab("a",b.a,s.pa)}${lab("b",b.b,s.pb)}</div><div class="bd-bar" aria-hidden="true"><i class="a" style="width:${s.pa}%"></i><i class="b" style="width:${s.pb}%"></i></div>`:""}
     <div class="bd-sum">${few?`<span class="bc-early" title="Only ${vt(s.n)}. Read this result with care.">Few votes</span>`:""}<span>${sum}</span>${s.my?`<span class="bd-my">· you picked ${esc(s.my==="a"?b.a:b.b)}</span>`:""}</div>
     <div class="bd-foot">${t?`<button type="button" class="bd-disc" data-act="bDisc" data-id="${b.id}">Discuss the result →</button>`:"<span></span>"}<span class="bd-r">${comments?`<span class="muted">${comments} comment${comments===1?"":"s"}</span>`:""}<button class="act" data-act="shareBattle" data-id="${b.id}" aria-label="Share card">${ICON.share}</button></span></div>
@@ -1391,12 +1395,12 @@ function vHome(){
   } else if(tab==="wt"){ body=vWatch(()=>true); }
   else if(tab==="bt"){
     const f=UI.bf||"all", all=[...S.battles.values()].filter(b=>S.topics.has(b.topicId));
-    const bs=f==="nb"?(hp?all.filter(b=>inPlace(S.topics.get(b.topicId),hp)):[]):f==="fo"?all.filter(b=>IX.myFollows.has(b.topicId)||(b.authorId&&b.authorId!==S.me&&isFollowing(b.authorId))):all;
-    const chips=[["all","All"],["nb",hp?"📍 "+esc(hp.name):"📍 Nearby"],["fo","Following"]].map(([k,l])=>`<button type="button" class="chip ${f===k?"on":""}" data-act="bFilter" data-v="${k}">${l}</button>`).join("");
+    const bs=f==="nb"?(hp?all.filter(b=>inPlace(S.topics.get(b.topicId),hp)):[]):f==="fo"?all.filter(b=>{ const t=S.topics.get(b.topicId); return IX.myFollows.has(b.topicId)||(b.authorId&&b.authorId!==S.me&&isFollowing(b.authorId))||(t.groupId&&S.myGroups.has(t.groupId)); }):all;
+    const chips=[["all","All"],["nb",hp?"📍 "+esc(hp.name):"📍 Nearby"],["fo","Following"]].map(([k,l])=>`<button type="button" class="chip ${f===k?"on":""}" aria-pressed="${f===k}" data-act="bFilter" data-v="${k}">${l}</button>`).join("");
     body=`<div class="harea btbar"><div class="tagrow btchips">${chips}</div><button type="button" class="btn pri sm" data-act="newBattle">＋ Start a battle</button></div>`
       +(f==="nb"&&!hp?emptyBox("Choose your city","See battles from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`)
         :!all.length?emptyBox("No battles yet","Start one and share it so people vote.")
-        :!bs.length?emptyBox(f==="fo"?"Nothing from what you follow yet":"No battles near you yet",f==="fo"?"Follow topics or people to see their battles here.":"Start the first local battle.",`<button class="btn pri sm" data-act="newBattle">Start a battle</button>`)
+        :!bs.length?emptyBox(f==="fo"?"Nothing from what you follow yet":"No battles near you yet",f==="fo"?"Follow topics, people or groups to see their battles here.":"Start the first local battle.",`<button class="btn pri sm" data-act="newBattle">Start a battle</button>`)
         :battleSections(bs));
   } else if(tab==="rv"){
     const sp=topRatedList(20,"split"), row=(t,i)=>{ const s2=stat(t.id); return `<a href="#t-${t.id}"><div class="rk">${i+1}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div><div class="rv-sc"><b>★ ${s2.avg.toFixed(1)}</b><span>${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</span></div></a>`; };
