@@ -1487,7 +1487,7 @@ function vHome(){
   const tabs=[["fy","For you"],["fo",`Following${foN&&tab!=="fo"?` <small class="gun">${foN>9?"9+":foN}</small>`:""}`],["nb",`<i class="ti">📍 </i>${hp?esc(hp.name):"Nearby"}`],["wt",`<i class="ti">▶ </i>Watch`],["bt",`<i class="ti">⚔️ </i>Battles`],["rv",`<i class="ti">⭐ </i>Reviews`]];
   const head=`<div class="hacts">
       <button type="button" class="ha ha-rv" data-act="reviewPick"><i aria-hidden="true">⭐</i><b>Write a review</b><span>Rate a place, product or film</span></button>
-      <button type="button" class="ha ha-ask" data-act="newQuestion"><i aria-hidden="true">❓</i><b>Ask the community</b><span>Get answers from people who know</span></button>
+      <button type="button" class="ha ha-ask" data-act="newQuestion"><i aria-hidden="true">💬</i><b>Ask the community</b><span>Get answers from people who know</span></button>
       <button type="button" class="ha ha-bt" data-act="newBattle"><i aria-hidden="true">⚔️</i><b>Start a battle</b><span>Two sides, everyone votes</span></button>
     </div><div class="hmore2"><button type="button" class="linkb" data-act="create">More: topic, video or photo, group ›</button></div>
   <nav class="htabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" aria-selected="${tab===k}" class="${tab===k?"on":""}" data-act="hTab" data-v="${k}">${l}</button>`).join("")}</nav>`;
