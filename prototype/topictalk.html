@@ -664,6 +664,18 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .fo-what{font-size:13.5px;font-weight:700}.fo-last{display:flex;align-items:flex-start;gap:6px;font-size:13px;color:color-mix(in srgb,var(--ink) 80%,var(--muted));background:var(--bg);border-radius:10px;padding:6px 8px}.fo-last span{min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .fo-why{font-size:12px;color:var(--muted)}
 .fosug .fsg{display:flex;align-items:center;gap:10px;padding:10px 12px}.fsg a{flex:1;min-width:0;display:grid;color:var(--ink);text-decoration:none}.fsg b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fsg small{font-size:12px;color:var(--muted)}
+.askf{display:grid;gap:14px}.askf>h2{margin:0}
+.askq>span{font-size:15px;font-weight:700;color:var(--ink);text-transform:none;letter-spacing:0}
+.askq textarea{color:var(--ink);font-size:17px;line-height:1.4;font-weight:600;min-height:72px;resize:none;padding:12px 14px}
+.askd>summary,.askm>summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-weight:700;font-size:14px;color:var(--brand-deep);padding:4px 0;min-height:32px}
+.askd>summary::-webkit-details-marker,.askm>summary::-webkit-details-marker{display:none}
+.askd>summary small,.askm>summary small{font-weight:500;font-size:12.5px;color:var(--muted)}
+.askd[open]>summary{margin-bottom:6px}
+.askm{border:1px solid var(--line);border-radius:14px;padding:8px 12px;background:var(--bg)}
+.askm>summary::before{content:"›";display:inline-block;transition:transform .15s;font-size:18px;line-height:1}.askm[open]>summary::before{transform:rotate(90deg)}
+.askm-b{display:grid;gap:12px;padding:8px 0 4px}
+.askg{font-size:13px;color:var(--muted);margin-top:-6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .simbox{display:grid;gap:6px;margin:-4px 0 2px;padding:10px 12px;border:1px solid color-mix(in srgb,#E5A93B 55%,var(--line));border-radius:12px;background:color-mix(in srgb,#E5A93B 8%,var(--surface));font-size:13px}.simbox[hidden]{display:none}.simbox>b{font-size:13.5px}
 .simrow{display:grid;gap:1px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 10px;font:inherit;color:var(--ink);cursor:pointer}.simrow:hover{border-color:var(--brand)}.simrow b{font-size:14px;line-height:1.3}.simrow small{color:var(--muted);font-size:12px}
 .q2b{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;margin-top:14px;padding:12px 14px;border:1px dashed color-mix(in srgb,var(--brand) 45%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--brand) 5%,var(--surface))}.q2b>div{display:grid;gap:2px;min-width:0;flex:1 1 220px}.q2b b{font-size:14.5px}.q2b span{font-size:13px;color:var(--muted)}
@@ -2612,7 +2624,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ locSuggest(); clearTimeout(UI.simT); UI.simT=setTimeout(simRender,180); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
+document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ if(e.target.tagName==="TEXTAREA"&&/\n/.test(e.target.value)) e.target.value=e.target.value.replace(/\s*\n+\s*/g," "); locSuggest(); clearTimeout(UI.simT); UI.simT=setTimeout(simRender,180); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   { const jp=UI.justPosted; if(jp&&ta.id===jp.id&&Date.now()-jp.t<3000&&jp.text&&ta.value.trim()===jp.text){ ta.value=""; try{ localStorage.removeItem(draftKey(ta)); }catch{} syncRich(ta); return; } }
@@ -3005,6 +3017,31 @@ function topicModal(o={}){ PH.tn=[];
   const tags=o.tags||(bt?(bt.tags||[]).slice(0,3).join(" "):"");
   UI.newKind=o.kind||"topic"; UI.locMode=(o.loc||bt?.location)?"place":null; UI.locVal=o.loc||bt?.location||""; UI.locDis=new Set(); UI.tagged=[]; UI.taggedG=[]; UI.bn="";
   UI.newWatch=!!o.watch; UI.fromWatch=!!o.watch;
+  const ask=o.kind==="question"&&!b&&!o.watch, gpre=o.groupId??curGroup(), gName=gpre&&S.groups.get(gpre)?.name;
+  if(ask){
+    openModal(`<div class="askf"><h2>Ask the community</h2>
+    <label class="l askq"><span>What do you want to ask?</span><textarea class="f" id="n-title" rows="2" maxlength="120" placeholder="e.g. Which turf in Arakkonam has the best lights for night cricket?">${esc(o.title||"")}</textarea></label>
+    <div id="n-sim" class="simbox" aria-live="polite" hidden></div>
+    <details class="askd"${o.desc?" open":""}><summary>＋ Add details <small>optional</small></summary>
+    <label class="l"><span class="sr">Details</span><textarea id="n-desc" rows="3" placeholder="Give people some context. ${L("Tamil, Tanglish or English. All welcome.")}">${esc(o.desc||"")}</textarea></label>
+    </details>
+    <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
+      <div class="l">Where is this relevant?<div class="seg" id="n-locseg"></div><div id="n-locbox"></div></div></div>
+    ${gName?`<div class="askg">👥 Posting in <b>${esc(gName)}</b> · you can change this in More options</div>`:""}
+    <details class="askm"><summary>More options <small>hashtags, tag friends, who can see it, pictures</small></summary><div class="askm-b">
+    ${b?"":`<label class="qtog"><input type="checkbox" id="n-isq" data-act="qtog" ${UI.newKind==="question"?"checked":""}><span><b>This is a question</b><small>People answer it, and the community answer is summarised from what they say.</small></span></label>`}
+    <label class="l">Hashtags<input class="f" id="n-tags" placeholder="iphone17 camera smartphones" value="${esc(tags)}"></label>
+    <div class="l">Tag friends (optional)<div class="tagbox" id="n-tagged"></div><input class="f" id="n-tagin" autocomplete="off" maxlength="30" placeholder="Type a friend’s name, their ID, or a group name"><div class="tagsug" id="n-tagsug" hidden></div><span class="hint" style="margin:0">Tag friends or a whole group you belong to. They get a notification and are shown on the topic. Up to 10 friends.</span></div>
+    ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
+    ${b&&accOf(S.topics.get(b.topicId))!=="open"?`<div class="muted" style="font-size:13px">${LOCK} This branch stays as private as the original topic.</div>`:`<label class="l">Who can see this?<select class="f" id="n-acc"><option value="open">Everyone</option><option value="friends">Friends only</option><option value="selected">Selected people (use Tag friends above)</option><option value="request">Request to join (title is public, you approve)</option><option value="private">Only me</option></select></label>`}
+    <div class="l">Banner picture (optional)<div class="dprow"><span id="n-bn" style="flex:1;min-width:0"></span><label class="btn sm" style="cursor:pointer">Choose picture<input type="file" id="n-bfile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></label><button type="button" class="btn sm" data-act="bnRemove">Remove</button></div></div>
+    <div class="l">Photos (optional)${phBox("tn")}</div>
+    </div></details>
+    <div class="hint" id="n-err"></div>
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">Post question</button></div></div>`);
+    locRender(); if(o.title) simRender(); setTimeout(()=>{ const t=$("#n-title"); if(t&&!o.title) t.focus(); },50);
+    return;
+  }
   openModal(`<h2>${b?"Turn this comment into a new topic":o.watch?"Share a video or photo":o.kind==="question"?"Ask the community":"Start a topic"}</h2>
     ${o.watch?`<label class="l">YouTube or Instagram link<input class="f" id="n-link" inputmode="url" autocomplete="off" placeholder="https://youtu.be/…  or  instagram.com/reel/…"></label><div class="muted" style="font-size:12.5px;margin-top:-4px">Or add a photo in the Photos section below. Only the link is saved, the video stays on YouTube or Instagram.</div>`:""}
     ${b?`<div class="origin" style="margin:0">From ${esc(nameOf(b.authorId))} in <b>${esc(bt?.title||"")}</b>: <q>${esc(b.text.slice(0,200))}</q></div>`:""}
