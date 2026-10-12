@@ -640,6 +640,27 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .wimg{overflow:hidden}.wimg.igf{background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)}.wimg.igf iframe{position:absolute;left:50%;top:-54px;width:100%;min-width:326px;height:calc(100% + 600px);transform:translateX(-50%);border:0;pointer-events:none;background:#fff}.wimg i{position:relative;z-index:1}
 /* HOME v2 */
 .home2{max-width:720px;margin:0 auto}
+.hacts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 0}
+.ha{display:grid;justify-items:start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:12px 14px;color:var(--ink);font:inherit;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
+.ha:hover{border-color:var(--brand);box-shadow:0 6px 18px -12px rgba(21,32,26,.4);transform:translateY(-1px)}.ha:focus-visible{outline:3px solid color-mix(in srgb,var(--brand) 45%,transparent);outline-offset:2px}
+.ha i{font-style:normal;font-size:22px;line-height:1}.ha b{font-size:15px;line-height:1.25}.ha span{font-size:12.5px;color:var(--muted);line-height:1.3}
+.ha-rv{background:color-mix(in srgb,#E5A93B 9%,var(--surface))}.ha-ask{background:color-mix(in srgb,var(--brand) 8%,var(--surface))}.ha-bt{background:color-mix(in srgb,#5B7BE5 8%,var(--surface))}
+.hmore2{display:flex;justify-content:flex-end;margin:6px 2px 0}.hmore2 .linkb{font-size:13px}
+@media(max-width:560px){.hacts{gap:6px}.ha{justify-items:center;text-align:center;padding:10px 6px;border-radius:14px}.ha span{display:none}.ha b{font-size:13px}.ha i{font-size:20px}}
+.bzempty{display:grid;gap:6px;justify-items:start;padding:12px 14px;border:1px dashed var(--line);border-radius:14px;background:var(--surface);margin:4px 0 14px}.bzempty b{font-size:15px}.bzempty span{font-size:13px;color:var(--muted)}
+.fofeed{display:grid;gap:10px}
+.focard{display:grid;gap:4px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);text-decoration:none}.focard:hover{border-color:var(--brand)}
+.fo-h{display:flex;align-items:center;gap:8px;font-size:12px;min-width:0}.fo-h .muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fo-t{margin-left:auto;color:var(--muted);flex:none}
+.fo-new{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--brand);border-radius:999px;padding:1px 7px;flex:none}
+.fo-ti{font-family:var(--f-display);font-size:16px;line-height:1.3}.fo-rt{font-size:12.5px;font-weight:700;color:var(--brand-deep)}
+.fo-what{font-size:13.5px;font-weight:700}.fo-last{display:flex;align-items:flex-start;gap:6px;font-size:13px;color:color-mix(in srgb,var(--ink) 80%,var(--muted));background:var(--bg);border-radius:10px;padding:6px 8px}.fo-last span{min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.fo-why{font-size:12px;color:var(--muted)}
+.fosug .fsg{display:flex;align-items:center;gap:10px;padding:10px 12px}.fsg a{flex:1;min-width:0;display:grid;color:var(--ink);text-decoration:none}.fsg b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fsg small{font-size:12px;color:var(--muted)}
+.simbox{display:grid;gap:6px;margin:-4px 0 2px;padding:10px 12px;border:1px solid color-mix(in srgb,#E5A93B 55%,var(--line));border-radius:12px;background:color-mix(in srgb,#E5A93B 8%,var(--surface));font-size:13px}.simbox[hidden]{display:none}.simbox>b{font-size:13.5px}
+.simrow{display:grid;gap:1px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 10px;font:inherit;color:var(--ink);cursor:pointer}.simrow:hover{border-color:var(--brand)}.simrow b{font-size:14px;line-height:1.3}.simrow small{color:var(--muted);font-size:12px}
+.q2b{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;margin-top:14px;padding:12px 14px;border:1px dashed color-mix(in srgb,var(--brand) 45%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--brand) 5%,var(--surface))}.q2b>div{display:grid;gap:2px;min-width:0;flex:1 1 220px}.q2b b{font-size:14.5px}.q2b span{font-size:13px;color:var(--muted)}
+.btfut{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;border:1px dashed var(--line);background:var(--bg);border-radius:12px;padding:10px 12px;font:inherit;color:var(--ink);cursor:pointer}.btfut:hover{border-color:var(--brand)}.btfut>span:first-child{font-size:20px;line-height:1.1}.btfut b{display:block;font-size:14px;color:var(--brand-deep)}.btfut small{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.cm-em{font-style:normal;font-size:20px;display:grid;place-items:center}
 .hcomp{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 10px;margin:4px 0 0}
 .hcin{flex:1;min-width:0;text-align:left;border:0;background:none;font:inherit;font-size:14.5px;color:var(--muted);padding:8px 4px;cursor:text;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .htabs{position:sticky;top:var(--toph,58px);z-index:15;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;background:var(--bg);border-bottom:1px solid var(--line);margin:8px 0 10px;padding:0 2px}.htabs::-webkit-scrollbar{display:none}
@@ -816,6 +837,7 @@ body.ingchat #view{padding-bottom:96px}
 .wmore{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.6);color:#fff;font-weight:800;font-size:13px;padding:4px 10px;border-radius:999px}
 .wacts{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}.wacts .act{margin-left:auto}
 .wstrip{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);gap:10px;overflow-x:auto;padding-bottom:4px}
+.wstrip{grid-auto-columns:minmax(150px,220px)}
 .wthumb{display:block;text-decoration:none;color:var(--ink);min-width:0}.wthumb b{display:block;font-size:13px;margin-top:6px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .wimg{position:relative;display:grid;place-items:center;aspect-ratio:16/10;border-radius:12px;background:#0d1b14 center/cover no-repeat}.wimg.ig{background:linear-gradient(45deg,#f9ce34,#ee2a7b,#6228d7)}
 .wimg i{font-style:normal;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center;font-size:15px}
@@ -1419,6 +1441,31 @@ function fCard(t){
       <button type="button" class="fa fshare" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button>
     </div></article>`;
 }
+// ---- Following: what changed in the topics, places and people you follow (last 14 days), one card per topic ----
+const foSeen=()=>{ try{ return +localStorage.getItem("tt_fo_seen")||0; }catch{ return 0; } };
+function followFeed(){
+  if(!S.me) return [];
+  const since=Date.now()-14*864e5, myT=IX.myFollows, people=new Set([...S.ufollows.values()].filter(f=>f.followerId===S.me).map(f=>f.followingId));
+  const live=new Map(LIVE().map(t=>[t.id,t])), by=new Map();
+  const add=(tid,k,at,who,txt,why)=>{ const t=live.get(tid); if(!t) return;
+    let e=by.get(tid); if(!e){ e={t,n:{c:0,r:0,b:0,t:0},last:0,ev:null,why:new Set()}; by.set(tid,e); }
+    e.n[k]++; e.why.add(why); if(at>e.last){ e.last=at; e.ev={k,who,txt}; } };
+  for(const c of S.comments.values()) if(cLive(c)&&c.createdAt>since&&c.authorId!==S.me&&(myT.has(c.topicId)||people.has(c.authorId))) add(c.topicId,"c",c.createdAt,c.authorId,c.text,myT.has(c.topicId)?"t":"p:"+c.authorId);
+  for(const r of S.reviews.values()){ const at=r.updatedAt||r.createdAt; if(at>since&&r.authorId!==S.me&&(myT.has(r.topicId)||people.has(r.authorId))) add(r.topicId,"r",at,r.authorId,(r.rating?"★".repeat(r.rating)+" ":"")+(r.title||r.text||""),myT.has(r.topicId)?"t":"p:"+r.authorId); }
+  for(const b of S.battles.values()) if(b.createdAt>since&&b.authorId!==S.me&&(myT.has(b.topicId)||people.has(b.authorId))) add(b.topicId,"b",b.createdAt,b.authorId,`${b.a} vs ${b.b}`,myT.has(b.topicId)?"t":"p:"+b.authorId);
+  for(const t of live.values()) if(t.createdAt>since&&people.has(t.authorId)&&t.kind!=="battle") add(t.id,"t",t.createdAt,t.authorId,t.title,"p:"+t.authorId);
+  return [...by.values()].sort((a,b)=>b.last-a.last).slice(0,30);
+}
+function foCard(e,seen){
+  const t=e.t, n=e.n, parts=[n.t?"🆕 New topic":"",n.c?`💬 ${n.c} new comment${n.c===1?"":"s"}`:"",n.r?`⭐ ${n.r} new review${n.r===1?"":"s"}`:"",n.b?`⚔️ ${n.b===1?"New battle":n.b+" new battles"}`:""].filter(Boolean).join(" · ");
+  const pw=[...e.why].find(w=>w.startsWith("p:")), why=e.why.has("t")?(t.kind==="place"?"A place you follow":"A topic you follow"):pw?`From ${esc(nameOf(pw.slice(2)))}, who you follow`:"";
+  const s2=stat(t.id), txt=String(e.ev?.txt||"").replace(/\s+/g," ").trim();
+  return `<a class="focard" href="#t-${t.id}"><div class="fo-h"><span class="gt-k">${typeLabel(t)}</span>${t.location?`<span class="muted">📍 ${esc(t.location)}</span>`:""}${e.last>seen?`<i class="fo-new">New</i>`:""}<span class="fo-t">${ago(e.last)}</span></div>
+    <b class="fo-ti">${esc(t.title)}</b>${s2.reviews?`<span class="fo-rt">★ ${s2.avg.toFixed(1)} · ${s2.reviews} review${s2.reviews===1?"":"s"}</span>`:""}
+    <div class="fo-what">${parts}</div>
+    ${e.ev&&txt&&e.ev.k!=="t"?`<div class="fo-last">${avatar(e.ev.who,"xs")}<span><b>${esc(nameOf(e.ev.who))}:</b> ${esc(txt.slice(0,110))}</span></div>`:""}
+    <div class="fo-why">${why}</div></a>`;
+}
 function mixFeed(list){
   const typ=t=>t.kind==="battle"?"B":(videoLinks((t.title||"")+" "+(t.desc||"")).length||(t.media||[]).length)?"M":"T";
   const rest=list.map(t=>[t,typ(t)]), out=[];
@@ -1435,8 +1482,13 @@ function topRatedList(n,mode){ const hp=homePlace(); const all=LIVE().filter(t=>
 function vHome(){
   if (!S.topics.size) return heroHTML() + emptyBox("No topics yet","Start the first one. Anything can become a topic: a phone, a dish, a film, a local issue.",`<button class="btn pri" data-act="newTopic">${L("Start a topic")}</button>`);
   const tab=UI.htab||"fy", hp=homePlace(), ha=homeArea(), now=Date.now();
-  const tabs=[["fy","For you"],["nb",`<i class="ti">📍 </i>${hp?esc(hp.name):"Nearby"}`],["wt",`<i class="ti">▶ </i>Watch`],["bt",`<i class="ti">⚔️ </i>Battles`],["rv",`<i class="ti">⭐ </i>Reviews`]];
-  const head=`<div class="hcomp">${S.me?avatar(S.me,"xs"):""}<button type="button" class="hcin" data-act="newTopic">Start a topic or ask something…</button><button type="button" class="btn sm" data-act="wShare" aria-label="Share a video or photo" title="Share a video or photo">▶<span class="hvt">&nbsp;Video / photo</span></button><button type="button" class="btn pri sm" data-act="create">＋ Post</button></div>
+  const foN=(()=>{ if(!S.me) return 0; const sn=foSeen(); return followFeed().filter(e=>e.last>sn).length; })();
+  const tabs=[["fy","For you"],["fo",`Following${foN&&tab!=="fo"?` <small class="gun">${foN>9?"9+":foN}</small>`:""}`],["nb",`<i class="ti">📍 </i>${hp?esc(hp.name):"Nearby"}`],["wt",`<i class="ti">▶ </i>Watch`],["bt",`<i class="ti">⚔️ </i>Battles`],["rv",`<i class="ti">⭐ </i>Reviews`]];
+  const head=`<div class="hacts">
+      <button type="button" class="ha ha-rv" data-act="reviewPick"><i aria-hidden="true">⭐</i><b>Write a review</b><span>Rate a place, product or film</span></button>
+      <button type="button" class="ha ha-ask" data-act="newQuestion"><i aria-hidden="true">❓</i><b>Ask the community</b><span>Get answers from people who know</span></button>
+      <button type="button" class="ha ha-bt" data-act="newBattle"><i aria-hidden="true">⚔️</i><b>Start a battle</b><span>Two sides, everyone votes</span></button>
+    </div><div class="hmore2"><button type="button" class="linkb" data-act="create">More: topic, video or photo, group ›</button></div>
   <nav class="htabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" aria-selected="${tab===k}" class="${tab===k?"on":""}" data-act="hTab" data-v="${k}">${l}</button>`).join("")}</nav>`;
   let body="";
   if(tab==="fy"){
@@ -1458,9 +1510,26 @@ function vHome(){
   } else if(tab==="nb"){
     if(!hp) body=emptyBox("Choose your city","See topics, battles and places from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`);
     else { const list=LIVE().filter(t=>inPlace(t,hp)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
-      body=`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
+      const lw=watchItems().filter(it=>inPlace(it.t,hp)), lb=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)&&inPlace(S.topics.get(b.topicId),hp)).sort((a,b)=>b.createdAt-a.createdAt);
+      const buzz=(lw.length?watchStrip({items:lw,n:6,cls:"hsec",title:"📣 Local buzz",sub:`Videos and photos people shared about ${esc(hp.name)}. They play from YouTube or Instagram.`,link:`<button type="button" class="linkb" data-act="buzzAll">See all →</button>`})
+          :`<div class="bzempty"><b>📣 Local buzz</b><span>Seen a good reel or video about ${esc(hp.name)}? Share the link. Nothing is copied: it plays from YouTube or Instagram, and people can discuss it here.</span><button type="button" class="btn sm" data-act="wShare" data-loc="${esc(hp.label||hp.name)}">▶ Share a local video</button></div>`)
+        +(lb.length?`<section class="hsec">${SH("🔥 Battles in "+esc(hp.name),"",lb.length>2?`<button type="button" class="linkb" data-act="hTab" data-v="bt">See all →</button>`:"")}<div class="grid b hbgrid btlive">${lb.slice(0,2).map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:"");
+      const lbIds=new Set(lb.slice(0,2).map(b=>b.topicId));
+      list.splice(0,list.length,...list.filter(t=>!lbIds.has(t.id)));
+      body=buzz+`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
         +(list.length?`<div class="hfeed">${list.slice(0,UI.fyN||10).map(fCard).join("")}</div>${list.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}<a class="morep" href="#city-${enc(hp.id)}">Open the ${esc(hp.name)} page →</a>`
           :emptyBox("No local discussions yet","Be the first to start one.",`<button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button>`)); }
+  } else if(tab==="fo"){
+    if(!S.me) body=emptyBox("Follow places, topics and people","Log in, then tap Follow on anything. Their news shows up here.",`<button class="btn pri sm" data-act="loginNow">Log in</button>`);
+    else { const list=followFeed(), sn=UI.foSeen0??foSeen(); if(UI.foSeen0==null) UI.foSeen0=sn;
+      try{ localStorage.setItem("tt_fo_seen",String(Date.now())); }catch{}
+      const nf=IX.myFollows.size+[...S.ufollows.values()].filter(f=>f.followerId===S.me).length;
+      const sug=LIVE().filter(t=>!IX.myFollows.has(t.id)&&t.kind!=="prediction"&&t.authorId!==S.me&&(t.kind==="place"||stat(t.id).reviews||(hp&&inPlace(t,hp)))).sort((a,b)=>((hp&&inPlace(b,hp))?1:0)-((hp&&inPlace(a,hp))?1:0)||stat(b.id).reviews+stat(b.id).comments-stat(a.id).reviews-stat(a.id).comments).slice(0,4);
+      const sugH=sug.length?`<section class="hsec">${SH("Places and topics to follow",hp?"Popular near "+esc(hp.name):"")}<div class="list fosug">${sug.map(t=>{ const s2=stat(t.id); return `<div class="fsg"><a href="#t-${t.id}"><b>${esc(t.title)}</b><small>${[typeLabel(t),t.location?"📍 "+esc(t.location):"",s2.reviews?`★ ${s2.avg.toFixed(1)}`:"",`${s2.comments} comments`].filter(Boolean).join(" · ")}</small></a><button type="button" class="btn sm" data-act="follow" data-id="${t.id}">Follow</button></div>`; }).join("")}</div></section>`:"";
+      body=`<div class="harea"><span class="muted">${nf?`New in the ${nf} thing${nf===1?"":"s"} you follow · last 14 days`:"Follow a place, topic or person to see their news here."}</span></div>`
+        +(list.length?`<div class="fofeed">${list.slice(0,UI.fyN||10).map(e=>foCard(e,sn)).join("")}</div>${list.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}`
+          :emptyBox(nf?"Nothing new yet":"You’re not following anything yet",nf?"When people comment, review or start a battle on what you follow, it shows up here.":"Tap Follow on a restaurant, shop, turf or topic. New reviews, comments and battles will collect here.",""))
+        +sugH; }
   } else if(tab==="wt"){ body=vWatch(()=>true); }
   else if(tab==="bt"){
     const f=UI.bf||"all", all=[...S.battles.values()].filter(b=>S.topics.has(b.topicId));
@@ -1470,7 +1539,8 @@ function vHome(){
       +(f==="nb"&&!hp?emptyBox("Choose your city","See battles from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`)
         :!all.length?emptyBox("No battles yet","Start one and share it so people vote.")
         :!bs.length?emptyBox(f==="fo"?"Nothing from what you follow yet":"No battles near you yet",f==="fo"?"Follow topics, people or groups to see their battles here.":"Start the first local battle.",`<button class="btn pri sm" data-act="newBattle">Start a battle</button>`)
-        :battleSections(bs));
+        :battleSections(bs))
+      +(()=>{ if(f!=="all") return ""; const pr=LIVE().filter(t=>t.kind==="prediction"&&!t.outcome).sort((a,b)=>a.resolveBy-b.resolveBy); return pr.length?`<div class="btsec"><h3>🔮 Predictions</h3><span class="muted">${pr.length} open · vote now, see who called it</span></div><div class="grid b hbgrid">${pr.slice(0,4).map(predCard).join("")}</div>`:""; })();
   } else if(tab==="rv"){
     const wk=Date.now()-7*864e5, rated=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0);
     const cc=new Map(); rated.forEach(t=>cc.set(t.category,(cc.get(t.category)||0)+1));
@@ -1735,7 +1805,7 @@ function gcEl(){
   let c=$("#gcomp"); if(c) return c;
   c=document.createElement("div"); c.id="gcomp"; c.className="gcomp"; c.hidden=true;
   c.innerHTML=`<div class="gc-bar" id="gc-bar" hidden></div>
-    <div class="gc-menu" id="gc-menu" hidden><button type="button" data-act="newTopic" class="gc-mi">💬 Topic or question</button><button type="button" data-act="newBattle" class="gc-mi">⚔️ Battle</button><button type="button" data-act="newPred" class="gc-mi">🔮 Prediction</button><label class="gc-mi">📷 Photo<input type="file" id="gc-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></label></div>
+    <div class="gc-menu" id="gc-menu" hidden><button type="button" data-act="newQuestion" class="gc-mi">❓ Ask the group</button><button type="button" data-act="newBattle" class="gc-mi">⚔️ Battle</button><button type="button" data-act="newTopic" class="gc-mi">💬 Topic</button><label class="gc-mi">📷 Photo<input type="file" id="gc-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></label></div>
     <div class="gc-row"><button type="button" class="gc-plus" data-act="gPlus" aria-label="Start a topic, battle or prediction, or add a photo">＋</button>
       <textarea id="gc-ta" rows="1" maxlength="2000" placeholder="Message" aria-label="Message"></textarea>
       <button type="button" class="gc-send" data-act="gSend" aria-label="Send"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.6 2-12.6 2z"/></svg></button></div>`;
@@ -1778,7 +1848,7 @@ function gcSync(changed,atBottom){
   const gid=UI.gcView, c=gcEl(), on=!!gid&&!!S.me;
   document.body.classList.toggle("ingchat",on); c.hidden=!on;
   if(!on){ UI.gcLast=null; return; }
-  const gm=c.querySelectorAll("[data-act=newTopic],[data-act=newBattle],[data-act=newPred]"); gm.forEach(b=>b.dataset.group=gid);
+  const gm=c.querySelectorAll("[data-act=newTopic],[data-act=newBattle],[data-act=newPred],[data-act=newQuestion]"); gm.forEach(b=>b.dataset.group=gid);
   if(UI.gcLast!==gid){ const ta=$("#gc-ta"); let d=""; try{ d=sessionStorage.getItem("tt_gdraft_"+gid)||""; }catch{} ta.value=d; UI.gcReply=null; PH.gc=[]; UI.gcRetry=null; gcBar(); UI.gcLast=gid; changed=true; }
   if(UI.gKeepY!=null){ window.scrollTo(0,document.documentElement.scrollHeight-UI.gKeepY); UI.gKeepY=null; }
   else { if(changed){ UI.gcHold=Date.now()+3000; const toEnd=()=>{ if(UI.gcView&&Date.now()<(UI.gcHold||0)) window.scrollTo(0,document.documentElement.scrollHeight); }; setTimeout(toEnd,350); setTimeout(toEnd,1200); } if(changed||atBottom||UI.gcStick||Date.now()<(UI.gcHold||0)){ requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight)); UI.gcStick=false; } }
@@ -1805,6 +1875,7 @@ function vCity(slug){
    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(name)}">Start a topic here</button><button class="btn sm" data-act="newBattle" data-loc="${esc(name)}">Start a battle</button><button class="btn sm" data-act="plOpen" data-m="explore">Explore another area</button>${pl&&!isHome?`<button class="btn sm" data-act="makeHome" data-id="${esc(pl.type==="area"?pl.city:pl.id)}" data-area="${pl.type==="area"?esc(pl.id):""}">Make this my area</button>`:""}</div>
    ${areas.length?`<div class="cityrow" style="margin-bottom:18px">${areas.map(a=>`<a class="citychip" href="#city-${enc(a.id)}"><b>${esc(a.name)}</b></a>`).join("")}</div>`:""}
    ${bs.length?`<section class="sec"><div class="sech"><h2>🔥 ${L("Live battles")}</h2></div><div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
+   ${pl?watchStrip({items:watchItems().filter(it=>inPlace(it.t,pl)),n:6,title:"📣 Local buzz",sub:`Videos and photos shared about ${esc(pl.name)}.`,link:""}):""}
    ${top.length?`<section class="sec"><div class="sech"><h2>📈 Trending here</h2></div><div class="grid">${top.map(t=>topicCard(t)).join("")}</div></section>`:""}
    ${more.length?`<section class="sec"><div class="sech"><h2>🆕 New topics</h2></div><div class="grid">${more.map(t=>topicCard(t)).join("")}</div></section>`:""}
    ${ts.length?"":`<div class="empty"><b>No discussions here yet.</b>Be the first to start one.<div style="margin-top:12px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(name)}">Start a topic</button></div></div>`}`;
@@ -2045,6 +2116,7 @@ function vTopic(id){
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
     ${t.kind==="prediction"?`<div style="margin-top:16px">${predCard(t)}</div>`:""}
     ${battles.map(b=>`<div style="margin-top:16px">${battleCard(b)}</div>`).join("")}
+    ${t.kind==="question"&&!t.deletedAt&&!battles.some(b=>b.endsAt>Date.now())?`<div class="q2b"><div><b>${splitSides(t.title)[0]?"Two clear options here?":"Is this a choice between two options?"}</b><span>Turn it into a battle so everyone can vote. The answers stay here.</span></div><button type="button" class="btn sm" data-act="q2battle" data-id="${t.id}">⚔️ Turn into a battle</button></div>`:""}
     ${t.deletedAt?"":`<div class="tbar">
       <button class="btn sm ${following?"":"pri"}" data-act="follow" data-id="${id}">${following?L("Following"):L("Follow")} · ${s.followers}</button>
       ${t.kind==="battle"&&battles[0]&&(t.authorId===S.me||S.isOwner)?`<button class="btn sm" data-act="editBattle" data-id="${battles[0].id}">Edit battle</button>`:""}
@@ -2473,9 +2545,9 @@ function vWatch(catOk){
   <div class="tagrow wchips" role="tablist">${chips.map(([k,l])=>`<button class="chip ${f===k?"on":""}" data-act="wFilter" data-v="${k}" role="tab" aria-selected="${f===k}">${esc(l)}</button>`).join("")}</div>
   ${shown.length?`<div class="wfeed">${shown.map(wCard).join("")}</div>${items.length>n?`<div style="text-align:center;margin:14px 0"><button class="btn" data-act="wMore">Load more</button></div>`:""}`:empty}`;
 }
-function watchStrip(){
-  const items=watchItems().slice(0,4); if(!items.length) return "";
-  return `<section class="sec">${SH("▶ Watch","Videos and photos people are talking about.",`<a href="#explore" data-act="exGo" data-v="watch">See all →</a>`)}<div class="wstrip">${items.map(it=>{ const th=wThumb(it), v=it.vl[0];
+function watchStrip(o={}){
+  const items=(o.items||watchItems()).slice(0,o.n||4); if(!items.length) return "";
+  return `<section class="${o.cls||"sec"}">${SH(o.title||"▶ Watch",o.sub??"Videos and photos people are talking about.",o.link??`<a href="#explore" data-act="exGo" data-v="watch">See all →</a>`)}<div class="wstrip">${items.map(it=>{ const th=wThumb(it), v=it.vl[0];
     const igf=!th&&v&&v.prov==="ig"?`<iframe src="https://www.instagram.com/${v.kind==="p"?"p":"reel"}/${encodeURIComponent(v.id)}/embed/" loading="lazy" tabindex="-1" aria-hidden="true" scrolling="no" title="" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin"></iframe>`:"";
     return `<button type="button" class="wthumb" data-act="wPlay" data-id="${it.t.id}" aria-label="Play ${esc(cleanTitle(it.t))}"><span class="wimg${igf?" igf":th?"":" ig"}"${th?` style="background-image:url('${esc(th)}')"`:""}>${igf}${v?`<i>▶</i>`:""}</span><b>${esc(cleanTitle(it.t))}</b></button>`; }).join("")}</div></section>`;
 }
@@ -2530,7 +2602,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ locSuggest(); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
+document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ locSuggest(); clearTimeout(UI.simT); UI.simT=setTimeout(simRender,180); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   { const jp=UI.justPosted; if(jp&&ta.id===jp.id&&Date.now()-jp.t<3000&&jp.text&&ta.value.trim()===jp.text){ ta.value=""; try{ localStorage.removeItem(draftKey(ta)); }catch{} syncRich(ta); return; } }
@@ -2928,6 +3000,7 @@ function topicModal(o={}){ PH.tn=[];
     ${b?`<div class="origin" style="margin:0">From ${esc(nameOf(b.authorId))} in <b>${esc(bt?.title||"")}</b>: <q>${esc(b.text.slice(0,200))}</q></div>`:""}
     ${b?"":`<label class="qtog"><input type="checkbox" id="n-isq" data-act="qtog" ${UI.newKind==="question"?"checked":""}><span><b>This is a question</b><small>People answer it, and the community answer is summarised from what they say.</small></span></label>`}
     <label class="l">${o.watch?"Your question or caption":o.kind==="question"?"Your question":"Title"}<input class="f" id="n-title" maxlength="120" placeholder="${o.watch?"Say what it is or ask about it, e.g. Is this the best turf in Arakkonam?":b?"e.g. iPhone 17 Pro Max vs Samsung S26 Ultra camera":o.kind==="question"?"e.g. What is the best phone under ₹50,000?":"e.g. Best biryani in Chennai"}" value="${esc(o.title||"")}"></label>
+    <div id="n-sim" class="simbox" aria-live="polite" hidden></div>
     <label class="l">Description (optional)<textarea id="n-desc" rows="3" placeholder="Give people some context. ${L("Tamil, Tanglish or English. All welcome.")}">${esc(o.desc||"")}</textarea></label>
     <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
       <div class="l">Where is this relevant?<div class="seg" id="n-locseg"></div><div id="n-locbox"></div></div></div>
@@ -2939,7 +3012,7 @@ function topicModal(o={}){ PH.tn=[];
     <div class="l">Photos (optional)${phBox("tn")}</div>
     <div class="hint" id="n-err"></div>
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">${b?"Create branch topic":"Create"}</button></div>`);
-  locRender();
+  locRender(); if(o.title) simRender();
 }
 function locRender(){
   const seg=$("#n-locseg"), box=$("#n-locbox"); if(!seg||!box) return; const m=UI.locMode, hp=homePlace();
@@ -2980,23 +3053,33 @@ function durClamp(el){ const lim={d:7,h:23,m:59}[el.id.slice(4)]; let v=el.value
   const d=$("#dur-d"),h=$("#dur-h"),m=$("#dur-m"); if(+d.value>=7){ if(+h.value||+m.value){ h.value=0; m.value=0; capped=true; } d.value=7; }
   const note=$("#durnote"); if(note) note.textContent=capped?"Maximum is 7 days, so we set it to 7 days.":""; }
 function durHours(){ if(!UI.durC) return UI.dur; const n=id=>Math.max(0,Math.floor(+($(id)?.value)||0)); const h=n("#dur-d")*24+n("#dur-h")+n("#dur-m")/60; return Math.min(168,h); }
+function splitSides(q){
+  let x=String(q||"").replace(/[?？!.]+\s*$/,"").trim(); if(x.includes(":")) x=x.split(":").pop().trim();
+  x=x.replace(/^(which|who|what)(\s+(is|are|was|has|does|do))?(\s+(better|best|right|tastier|cheaper|nicer|faster))?\s*[,:-]?\s*/i,"").replace(/^(is|are)\s+/i,"");
+  const cap=v=>{ v=v.trim().replace(/^the\s+/i,""); return (/^[a-z]+(\s|$)/.test(v)?v[0].toUpperCase()+v.slice(1):v).slice(0,40); };
+  let m=x.match(/^(.+?)\s+(?:or|vs\.?|versus)\s+(.+)$/i); if(m) return [cap(m[1]),cap(m[2])];
+  m=x.match(/^(.+?)\s+(?:is\s+|are\s+)?better than\s+(.+)$/i); if(m) return [cap(m[1]),cap(m[2])];
+  return ["",""];
+}
 function battleModal(o={}){
-  const c=o.commentId&&S.comments.get(o.commentId), ct=c&&S.topics.get(c.topicId);
+  const c=o.commentId&&S.comments.get(o.commentId), ct=c&&S.topics.get(c.topicId), qt=!c&&o.qTopic&&S.topics.get(o.qTopic), qs=qt?splitSides(qt.title):["",""];
   UI.btMedia=o.mediaIds||[]; if(!o.fromTopic) UI.fromWatch=false;
   UI.dur=24;
-  openModal(`<h2>${c?"Settle it with a battle":"Start an A/B battle"}</h2>
+  openModal(`<h2>${c?"Settle it with a battle":qt?"Turn this question into a battle":"Start an A/B battle"}</h2>
+    ${qt?`<div class="origin" style="margin:0">Question: <q>${esc(qt.title)}</q></div><p class="muted" style="margin:0;font-size:13px">The battle appears on the question’s page, and the discussion carries on there.</p>`:""}
     ${c?`<div class="origin" style="margin:0">${esc(nameOf(c.authorId))} in <b>${esc(ct?.title||"")}</b>: <q>${esc(c.text.slice(0,180))}</q></div><p class="muted" style="margin:0;font-size:13px">Everyone votes. When time runs out, the result is posted right under this comment.</p>`:""}
-    <label class="l">Question<input class="f" id="bt-q" maxlength="100" placeholder="${c?"Who’s right?":"e.g. Best biryani in Arakkonam?"}" value="${esc(c?"Who’s right?":"")}"></label>
+    <label class="l">Question<input class="f" id="bt-q" maxlength="100" placeholder="${c?"Who’s right?":"e.g. Best biryani in Arakkonam?"}" value="${esc(c?"Who’s right?":qt?qt.title.slice(0,100):"")}"></label>
     ${c?"":`<div class="bt-tip">Tip: ask one clear question with two real choices. Keep each side short.</div>`}
-    <div class="row2"><label class="l">Side A<input class="f" id="bt-a" maxlength="40" placeholder="e.g. Ambur biryani"></label><label class="l">Side B<input class="f" id="bt-b" maxlength="40" placeholder="e.g. Chennai biryani"></label></div>
-    ${c?"":`<div class="row2"><label class="l">Category${catSelect("bt-cat","Food")}</label><label class="l">City (optional)<input class="f" id="bt-loc" maxlength="60" placeholder="e.g. Arakkonam" value="${esc(o.loc||"")}"></label></div>
+    <div class="row2"><label class="l">Side A<input class="f" id="bt-a" maxlength="40" placeholder="e.g. Ambur biryani" value="${esc(qs[0])}"></label><label class="l">Side B<input class="f" id="bt-b" maxlength="40" placeholder="e.g. Chennai biryani" value="${esc(qs[1])}"></label></div>
+    ${c||qt?"":`<div class="row2"><label class="l">Category${catSelect("bt-cat","Food")}</label><label class="l">City (optional)<input class="f" id="bt-loc" maxlength="60" placeholder="e.g. Arakkonam" value="${esc(o.loc||"")}"></label></div>
     ${o.fromTopic?`<div class="muted" style="font-size:12.5px">From: <b>${esc(o.fromTopic)}</b>${UI.btMedia.length?` · ${UI.btMedia.length} photo${UI.btMedia.length>1?"s":""} attached`:""}</div>`:""}
     <label class="l">Video link (optional)<input class="f" id="bt-link" inputmode="url" autocomplete="off" placeholder="YouTube or Instagram link" value="${esc(o.link||"")}"></label>
     <label class="l">Hashtags<input class="f" id="bt-tags" placeholder="biryani chennaifood"></label>
     <label class="l">Post to<select class="f" id="bt-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
     <label class="l">Voting stays open for${durSeg()}</label>
+    ${c||qt?"":`<button type="button" class="btfut" data-act="predFromBattle" data-group="${esc(o.groupId||"")}"><span>🔮</span><span><b>About the future? Settle it on a date →</b><small>People vote Yes or No now. When the date comes, you mark what happened and everyone sees who called it.</small></span></button>`}
     <div class="hint" id="bt-err"></div>
-    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveBattle" data-comment="${esc(o.commentId||"")}">Start battle</button></div>`);
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveBattle" data-comment="${esc(o.commentId||"")}" data-qtopic="${esc(qt?qt.id:"")}">Start battle</button></div>`);
 }
 function editBattleModal(bid){
   const b=S.battles.get(bid); if(!b) return; const s=battleState(b), locked=s.n>0;
@@ -3011,8 +3094,8 @@ function editBattleModal(bid){
 }
 function predModal(o={}){
   const min=new Date(Date.now()+86400000).toISOString().slice(0,10);
-  openModal(`<h2>Make a prediction</h2><p class="muted" style="margin:0;font-size:13px">People vote Yes or No now. When the date passes, you mark what happened and everyone’s “called it” record updates. No money involved.</p>
-    <label class="l">Question (must have a clear yes/no answer)<input class="f" id="pr-q" maxlength="120" placeholder="e.g. Will CSK make the playoffs next season?"></label>
+  openModal(`<h2>🔮 Predict the future</h2><p class="muted" style="margin:0;font-size:13px">People vote Yes or No now. When the date passes, you mark what happened and everyone’s “called it” record updates. No money involved.</p>
+    <label class="l">Question (must have a clear yes/no answer)<input class="f" id="pr-q" maxlength="120" placeholder="e.g. Will CSK make the playoffs next season?" value="${esc(o.title||"")}"></label>
     <label class="l">Details (optional)<textarea id="pr-desc" rows="2" placeholder="How will we know the answer?"></textarea></label>
     <div class="row2"><label class="l">Category${catSelect("pr-cat","Sports")}</label><label class="l">Resolves on<input class="f" type="date" id="pr-date" min="${min}"></label></div>
     <label class="l">Hashtags<input class="f" id="pr-tags" placeholder="ipl csk"></label>
@@ -3043,18 +3126,18 @@ function groupModal(){
     <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveGroup">Create group</button></div>`);
 }
 function createMenu(){
-  openModal(`<div class="cmenu"><div class="cm-hd"><h2>Start something</h2><button type="button" class="cm-x" data-act="closeModal" aria-label="Close">×</button></div>
-   <p class="cm-sub">Pick what you want to share. You can branch it later.</p>
-   <div class="cm-grp">Talk</div>
+  const row=(h,act,ic,title,sub,extra="")=>`<button class="choice cm-row" style="--h:${h}" data-act="${act}"${extra}><i class="cm-ic cm-em" aria-hidden="true">${ic}</i><div><b>${title}</b><span>${sub}</span></div><em class="cm-chev" aria-hidden="true">›</em></button>`;
+  openModal(`<div class="cmenu"><div class="cm-hd"><h2>What do you want to do?</h2><button type="button" class="cm-x" data-act="closeModal" aria-label="Close">×</button></div>
    <div class="cm-rows">
-    <button class="choice cm-row" style="--h:152" data-act="newTopic"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></i><div><b>Topic</b><span>Talk about anything, or ask a question</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
-    <button class="choice cm-row" style="--h:275" data-act="newGroup"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.4-3.4 3-5.2 6-5.2s5.6 1.8 6 5.2"/><circle cx="17.5" cy="9" r="2.4"/><path d="M17 14.4c2.2.1 3.7 1.6 4 4"/></svg></i><div><b>Group</b><span>Debate with friends</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
+    ${row(45,"reviewPick","⭐","Write a review","Rate a place, product, film or anything")}
+    ${row(152,"newQuestion","❓","Ask the community","Get answers. A good question can become a battle")}
+    ${row(14,"newBattle","⚔️","Start a battle","Two sides, everyone votes. Or predict the future")}
    </div>
-   <div class="cm-grp">Get opinions</div>
+   <div class="cm-grp">More</div>
    <div class="cm-rows">
-    <button class="choice cm-row" style="--h:14" data-act="newBattle"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V9M12 20V4M19 20v-7"/></svg></i><div><b>A/B battle</b><span>Two sides, one winner</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
-    <button class="choice cm-row" style="--h:36" data-act="newPred"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></i><div><b>Prediction</b><span>Vote now, see who called it</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
-    <button class="choice cm-row rvc" style="--h:45" data-act="reviewPick"><i class="cm-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg></i><div><b>Review</b><span>Rate a place, shop or product</span></div><em class="cm-chev" aria-hidden="true">›</em></button>
+    ${row(200,"newTopic","💬","Start a topic","Say something people can discuss")}
+    ${row(330,"wShare","▶️","Share a video or photo","A YouTube or Instagram link, or your photo")}
+    ${row(275,"newGroup","👥","Create a group","A chat for your friends, team or turf")}
    </div></div>`);
   $("#modal .scrim")?.classList.add("sheetm");
 }
@@ -3088,6 +3171,17 @@ function rpHits(){
 }
 const NSTOP=new Set(["hotel","restaurant","the","shop","store","mobiles","mobile","salon","and","cafe","centre","center","bakery","sweets","tailors","tailor","clinic","bhavan","in","at","of"]);
 const normTok=x=>String(x||"").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w&&!NSTOP.has(w));
+function simTopics(q,n){
+  q=String(q||"").trim(); const ql=q.toLowerCase(), qt=normTok(q); if(q.length<5) return [];
+  return LIVE().map(t=>[t,t.title.toLowerCase()===ql?3:qt.length>=2?simScore(q,t.title):0]).filter(x=>x[1]>=.6).sort((a,b)=>b[1]-a[1]||stat(b[0].id).comments-stat(a[0].id).comments).slice(0,n||3).map(x=>x[0]);
+}
+function simRender(){
+  const box=$("#n-sim"), inp=$("#n-title"); if(!box||!inp) return;
+  const ts=simTopics(inp.value,3); box.hidden=!ts.length; if(!ts.length){ box.innerHTML=""; return; }
+  const exact=ts[0].title.toLowerCase()===inp.value.trim().toLowerCase();
+  box.innerHTML=`<b>${exact?"This topic already exists":"Similar topics already exist"}</b><span class="muted">Join one of these${exact?"":", or carry on if yours is different"}.</span>
+    ${ts.map(t=>{ const s2=stat(t.id); return `<button type="button" class="simrow" data-act="simOpen" data-id="${t.id}"><span class="gt-k">${typeLabel(t)}</span><b>${esc(t.title)}</b><small>${[t.location?"📍 "+esc(t.location):"",s2.reviews?`★ ${s2.avg.toFixed(1)} · ${s2.reviews} review${s2.reviews===1?"":"s"}`:"",`${s2.comments} comment${s2.comments===1?"":"s"}`].filter(Boolean).join(" · ")}</small></button>`; }).join("")}`;
+}
 const simScore=(a,b)=>{ const A=new Set(normTok(a)),B=new Set(normTok(b)); if(!A.size||!B.size) return 0; let i=0; A.forEach(w=>{ if(B.has(w)) i++; }); return i/Math.min(A.size,B.size); };
 const rvScore=t=>{ const s=stat(t.id); return (s.avg*s.reviews+3.5*3)/(s.reviews+3); };
 const rvTrust=n=>n<3?"Early reviews":n<5?"Limited feedback":"";
@@ -3123,7 +3217,7 @@ document.addEventListener("click", async e=>{
     case "create": createMenu(); break;
     case "closeModal": closeModal(false); break;
     case "newTopic": topicModal({tags:el.dataset.tag||"",title:el.dataset.title||"",loc:el.dataset.loc||"",groupId:el.dataset.group}); break;
-    case "newQuestion": topicModal({kind:"question",category:"Other",title:el.dataset.title||""}); break;
+    case "newQuestion": topicModal({kind:"question",category:"Other",title:el.dataset.title||"",groupId:el.dataset.group||undefined}); break;
     case "askAnswer": { const r=searchAll(UI.query,5); askAnswer(UI.query.trim(),r.topics); break; }
     case "writeAnswer": writeAnswer(id); break;
     case "newBattle": if(!(await gate())) break; battleModal({loc:el.dataset.loc||"",groupId:el.dataset.group}); break;
@@ -3167,10 +3261,11 @@ document.addEventListener("click", async e=>{
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
-    case "hTab": UI.htab=el.dataset.v; UI.fyN=10; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); } break;
+    case "hTab": UI.htab=el.dataset.v; UI.fyN=10; UI.foSeen0=null; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); } break;
     case "bFilter": UI.bf=el.dataset.v; UI.fyN=10; UI.btEndAll=false; schedule(); break;
     case "btEndAll": UI.btEndAll=!UI.btEndAll; schedule(); break;
     case "fyMore": UI.fyN=(UI.fyN||10)+10; schedule(); break;
+    case "buzzAll": UI.htab="wt"; UI.wf="nearby"; UI.wN=5; schedule(); window.scrollTo({top:0}); break;
     case "wFilter": UI.wf=el.dataset.v; UI.wN=5; schedule(); break;
     case "wMore": UI.wN=(UI.wN||5)+5; schedule(); break;
     case "wDiscuss": ev("watch_discuss"); closeModal(false); location.hash="t-"+id; break;
@@ -3181,7 +3276,7 @@ document.addEventListener("click", async e=>{
         <h2 style="font-size:17px;margin:2px 0 0">${esc(cleanTitle(t))}</h2><div class="muted" style="font-size:12.5px">${esc(nameOf(t.authorId))} · ${stat(t.id).comments} comment${stat(t.id).comments===1?"":"s"}</div>
         <div class="acts"><a class="btn" href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">Open on ${yt?"YouTube":"Instagram"} ↗</a><button class="btn" data-act="closeModal">Close</button><button class="btn pri" data-act="wDiscuss" data-id="${t.id}">💬 Discuss</button></div>`);
       break; }
-    case "wShare": { if(!(await gate())) break; UI.fromWatch=true; topicModal({watch:true}); break; }
+    case "wShare": { if(!(await gate())) break; UI.fromWatch=true; topicModal({watch:true,loc:el.dataset.loc||""}); break; }
     case "wBattle": { if(!(await gate())) break; const t=S.topics.get(id); if(!t) break; ev("watch_battle_tap"); UI.fromWatch=true; const v=videoLinks(t.desc)[0]; battleModal({loc:t.location||"",link:v?v.url:"",mediaIds:v?[]:(t.media||[]).slice(0,3),fromTopic:t.title}); break; }
     case "wStats": { try{ const r=await (await fetch("/api/evstats",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:"{}"})).json(); const lb={watch_open:"Watch opened",watch_discuss:"Discuss tapped",watch_battle_tap:"Start a battle tapped",watch_topic_created:"Topics created from Watch",watch_battle_created:"Battles created from Watch"};
       openModal(`<h2>Watch · last 7 days</h2><div class="list">${Object.entries(r.stats||{}).map(([k,n])=>`<div style="display:flex;justify-content:space-between;padding:8px 2px;border-bottom:1px solid var(--line)"><span>${esc(lb[k]||k)}</span><b>${n}</b></div>`).join("")}</div><p class="muted" style="font-size:12.5px">Counted once per person per hour for each action. No personal details are stored.</p><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`); }catch{ toast("Couldn’t load the numbers."); } break; }
@@ -3289,10 +3384,10 @@ document.addEventListener("click", async e=>{
       if(!A||!Bv){ err.textContent="Name both sides."; break; }
       if(A.toLowerCase()===Bv.toLowerCase()){ err.textContent="The two sides need to be different."; break; }
       if(!(await gate())) break;
-      const cid=el.dataset.comment, c=cid&&S.comments.get(cid);
-      const now=Date.now(), bid=rid("b"); let tid=c?c.topicId:null;
+      const cid=el.dataset.comment, c=cid&&S.comments.get(cid), qt=!c&&el.dataset.qtopic&&S.topics.get(el.dataset.qtopic);
+      const now=Date.now(), bid=rid("b"); let tid=c?c.topicId:qt?qt.id:null;
       el.disabled=true;
-      if(!c){
+      if(!c&&!qt){
         tid=rid("t");
         const lk=($("#bt-link")?.value||"").trim(); if(lk&&!videoLinks(lk).length){ err.textContent="Paste a YouTube or Instagram link, or leave it empty."; el.disabled=false; break; }
         const t={title:q.slice(0,120),desc:lk?videoLinks(lk)[0].url:"",category:$("#bt-cat").value,kind:"battle",tags:parseTags($("#bt-tags").value),location:normLoc($("#bt-loc").value),authorId:S.me,parentId:null,originCommentId:null,createdAt:now,groupId:$("#bt-group")?.value||null};
@@ -3307,7 +3402,8 @@ document.addEventListener("click", async e=>{
         const inChat=inGChat();
         if(!inChat) setTimeout(()=>openCard("battle",bid,"feed",{title:"⚔️ Your battle is live!",sub:"Battles get votes when friends see them. Share it now."}),650);
         if(c) notify([[c.authorId,"battle"],...followersOf(tid).map(u=>[u,"newbattle"])],{topicId:tid,commentId:c.id,text:`${b.a} vs ${b.b}`});
-        if(inChat) stayInChat(); else if(!c) location.hash="t-"+tid; else schedule();
+        if(qt){ notify(followersOf(tid).map(u=>[u,"newbattle"]),{topicId:tid,text:`${b.a} vs ${b.b}`}); ensureFollow(tid); }
+        if(inChat) stayInChat(); else if(!c&&!qt) location.hash="t-"+tid; else schedule();
       } else el.disabled=false;
       break; }
     case "savePred": {
@@ -3418,6 +3514,10 @@ document.addEventListener("click", async e=>{
       const g=S.groups.get(id); if(!g||!isAdmin(id)) break;
       if(await W(()=>db.doc("groups/"+id).update({invite:newCode()}))) toast("New code made. The old one no longer works.");
       break; }
+    case "loginNow": await gate(); break;
+    case "simOpen": closeModal(false); location.hash="t-"+id; break;
+    case "q2battle": if(!(await gate())) break; battleModal({qTopic:id}); break;
+    case "predFromBattle": { const q0=($("#bt-q")?.value||"").trim(); closeModal(false); if(!(await gate())) break; predModal({title:q0&&q0!=="Who’s right?"?q0:"",groupId:el.dataset.group||undefined}); break; }
     case "gTab": UI.gtab=el.dataset.v; UI.gtabG=id; UI.fyN=10; UI.gSel=null; schedule(); break;
     case "gInfo": gInfoModal(id); break;
     case "gTap": { if(e.target.closest("a,button:not(.gb)")&&e.target.closest("a,button")!==el) break; UI.gSel=UI.gSel===id?null:id; schedule(); break; }
@@ -3515,7 +3615,7 @@ document.addEventListener("click", async e=>{
       let loc=""; if(UI.locMode==="place"){ const pl=placeOf($("#n-loc")?.value||UI.locVal); if(!pl){ err.textContent="Choose a place from the list, or pick Everywhere."; break; } loc=pl.label; }
       if(title.length<3){ err.textContent="Give it a title of at least 3 characters."; break; }
       const dupe=[...S.topics.values()].find(t=>t.title.toLowerCase()===title.toLowerCase());
-      if(dupe){ err.innerHTML=`That topic already exists: <a href="#t-${dupe.id}" style="color:var(--brand-deep);font-weight:600" data-act="closeModal">open it</a>.`; break; }
+      if(dupe){ err.innerHTML=`That topic already exists: <a href="#t-${dupe.id}" style="color:var(--brand-deep);font-weight:600" data-act="simOpen" data-id="${dupe.id}">open it</a>.`; break; }
       if(!(await gate())) break;
       const bf=el.dataset.branch, oc=bf&&S.comments.get(bf);
       let desc=$("#n-desc").value.trim().slice(0,2000);
