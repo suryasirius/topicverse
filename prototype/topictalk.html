@@ -823,6 +823,7 @@ body.ingchat #view{padding-bottom:96px}
 .fph{width:100%;max-height:440px;border-radius:14px;background:var(--chip)}.fph img{width:100%;height:100%;max-height:none;object-fit:cover}
 .flatest{display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:8px 10px;border-radius:12px;background:var(--chip);text-decoration:none;color:var(--ink);font-size:13.5px;line-height:1.4}.flatest b{font-weight:700}.flatest .av{flex:none}
 .frow{display:flex;align-items:center;gap:2px;margin-top:8px;border-top:1px solid var(--line);padding-top:4px}
+@media(max-width:380px){.frow .fa{padding:8px 7px;gap:5px}}
 .fa{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--muted);font:600 13px var(--f-body,inherit);padding:8px 10px;border-radius:10px;text-decoration:none;cursor:pointer;min-height:38px}
 .fa:hover{background:var(--chip);color:var(--ink)}.fa.on{color:#E0466A}.fa.fshare{margin-left:auto}.fa.fstar{color:#B7791F}.fa.fstar small{color:var(--muted);font-weight:500}
 /* WATCH v1 */
@@ -1432,12 +1433,12 @@ function fCard(t){
     <a class="wtitle ftitle" href="#t-${t.id}">${esc(cleanTitle(t))}</a>
     ${cap?`<p class="fsnip">${esc(cap.slice(0,160))}${cap.length>160?"…":""}</p>`:""}
     ${media}
-    ${hasM?`<div class="fmact"><a class="btn pri sm" href="#t-${t.id}" data-act="wDiscuss" data-id="${t.id}">💬 Discuss on TopicTalk</a><button type="button" class="btn sm" data-act="wBattle" data-id="${t.id}">⚔️ Battle on this topic</button></div>`:""}
     ${latest}
     <div class="frow">
       <button type="button" class="fa${on?" on":""}" data-act="like" data-id="${t.id}" data-kind="topic" aria-pressed="${on}" aria-label="Like">${heart}<span>${lk||"Like"}</span></button>
-      <a class="fa" href="#t-${t.id}">${cmt}<span>${st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Comment"}</span></a>
-      ${st.reviews?`<a class="fa fstar" href="#t-${t.id}">★ ${st.avg.toFixed(1)} <small>(${st.reviews})</small></a>`:br?`<a class="fa" href="#t-${t.id}" title="Topics that branched from this one">${brI}<span>${br} branch${br===1?"":"es"}</span></a>`:""}
+      <a class="fa" href="#t-${t.id}">${cmt}<span>${t.kind==="question"?(st.comments?`${st.comments} answer${st.comments===1?"":"s"}`:"Answer"):st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Comment"}</span></a>
+      ${(t.kind==="question"&&!(IX.bByTopic.get(t.id)||[]).some(b=>b.endsAt>Date.now()))||hasM?`<button type="button" class="fa" data-act="${t.kind==="question"?"q2battle":"wBattle"}" data-id="${t.id}" title="${t.kind==="question"?"Turn this question into a battle":"Start a battle about this"}">⚔️<span>Battle</span></button>`:""}
+      ${st.reviews?`<a class="fa fstar" href="#t-${t.id}" title="${st.reviews<3?"Only "+st.reviews+" review"+(st.reviews===1?"":"s")+" so far":""}">★ ${st.avg.toFixed(1)} <small>(${st.reviews}${st.reviews<3?" · early":""})</small></a>`:br?`<a class="fa" href="#t-${t.id}" title="Topics that branched from this one">${brI}<span>${br} branch${br===1?"":"es"}</span></a>`:""}
       <button type="button" class="fa fshare" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button>
     </div></article>`;
 }
@@ -1500,13 +1501,13 @@ function vHome(){
     const all=LIVE().filter(t=>t.kind!=="prediction"&&!(t.kind==="battle"&&liveIds.has(t.id))).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1)).map(x=>x[0]);
     { const m=mixFeed(all); all.length=0; all.push(...m); }
     const n=UI.fyN||10, items=all.slice(0,n), tr=topRatedList(6);
-    const strip=tr.list.length?`<section class="hstrip">${SH(tr.near?"⭐ Reviews near you":"⭐ Popular reviews","",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}</small></a>`; }).join("")}</div></section>`:"";
+    const strip=tr.list.length?`<section class="hstrip">${SH(tr.near?"⭐ Reviews near you":"⭐ Popular reviews","",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</small></a>`; }).join("")}</div></section>`:"";
     const feed=items.map((t,i)=>fCard(t)+(i===2?strip:"")).join("")+(items.length<3?strip:"");
     const tagCount=new Map(); for(const t of LIVE()) (t.tags||[]).forEach(x=>tagCount.set(x,(tagCount.get(x)||0)+1));
     const tags=[...tagCount].sort((a,b)=>b[1]-a[1]).slice(0,8), bod=branchOfDay();
     body=area+(live.length?`<section class="hsec">${SH("🔥 "+L("Live battles"),"",`<button type="button" class="linkb" data-act="hTab" data-v="bt">${L("See all")} →</button>`)}<div class="grid b bscroll hbattles">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:"")
       +`<div class="hfeed">${feed}</div>`+(all.length>n?`<button type="button" class="btn hmore" data-act="fyMore">Load more posts</button>`:"")
-      +`<section class="hsec hdisc">${SH("Discover","")}<div class="tagrow">${tags.map(([g])=>`<a class="chip" href="#tag-${enc(g)}">#${esc(g)}</a>`).join("")}${bod?`<a class="chip" href="#t-${bod.id}">🌱 Branch of the day</a>`:""}<a class="chip" href="#explore" data-act="exGo" data-v="predictions">🔮 Predictions</a><a class="chip" href="#explore" data-act="exGo" data-v="duels">⚖️ Debates</a><a class="chip" href="#groups">👥 Groups</a></div></section>`;
+      +`<section class="hsec hdisc">${SH("Discover","")}<div class="tagrow">${tags.map(([g])=>`<a class="chip" href="#tag-${enc(g)}">#${esc(g)}</a>`).join("")}${bod?`<a class="chip" href="#t-${bod.id}">🌱 Branch of the day</a>`:""}<button type="button" class="chip" data-act="hTab" data-v="bt">⚔️ Battles &amp; predictions</button><a class="chip" href="#explore" data-act="exGo" data-v="duels">⚖️ Debates</a><a class="chip" href="#groups">👥 Groups</a></div></section>`;
   } else if(tab==="nb"){
     if(!hp) body=emptyBox("Choose your city","See topics, battles and places from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`);
     else { const list=LIVE().filter(t=>inPlace(t,hp)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
@@ -2121,6 +2122,7 @@ function vTopic(id){
       <button class="btn sm ${following?"":"pri"}" data-act="follow" data-id="${id}">${following?L("Following"):L("Follow")} · ${s.followers}</button>
       ${t.kind==="battle"&&battles[0]&&(t.authorId===S.me||S.isOwner)?`<button class="btn sm" data-act="editBattle" data-id="${battles[0].id}">Edit battle</button>`:""}
       ${t.kind==="battle"?"":`<button class="btn sm" data-act="openReview">${mine?"Edit review":L("Review")}</button>`}
+      ${!t.deletedAt&&(t.kind==="place"||s.reviews)?`<button class="btn sm" data-act="askAbout" data-id="${id}">❓ Ask about it</button><button class="btn sm" data-act="compareIt" data-id="${id}">⚔️ Compare</button>`:""}
       <button class="btn sm" data-act="shareTopic" data-id="${id}">${ICON.share}${L("Share card")}</button>
       ${S.me&&(accOf(t)==="open"||canManageT(t)||(t.membersCanAdd&&tRoleOf(t,S.me)))?`<button class="btn sm" data-act="inviteF" data-id="${id}">Invite friends</button>`:""}
       ${S.isOwner&&!t.deletedAt&&(t.kind==="place"||s.reviews)?`<button class="btn sm" data-act="mergeOpen" data-id="${id}">Merge / remove</button>`:""}${canManageT(t)?`<button class="btn sm" data-act="privacy" data-id="${id}">Privacy${(()=>{ const n=[...S.joinreqs.values()].filter(r=>r.topicId===id&&r.status==="pending").length; return n?` · ${n} request${n>1?"s":""}`:""; })()}</button>`:""}
@@ -3068,10 +3070,10 @@ function battleModal(o={}){
   openModal(`<h2>${c?"Settle it with a battle":qt?"Turn this question into a battle":"Start an A/B battle"}</h2>
     ${qt?`<div class="origin" style="margin:0">Question: <q>${esc(qt.title)}</q></div><p class="muted" style="margin:0;font-size:13px">The battle appears on the question’s page, and the discussion carries on there.</p>`:""}
     ${c?`<div class="origin" style="margin:0">${esc(nameOf(c.authorId))} in <b>${esc(ct?.title||"")}</b>: <q>${esc(c.text.slice(0,180))}</q></div><p class="muted" style="margin:0;font-size:13px">Everyone votes. When time runs out, the result is posted right under this comment.</p>`:""}
-    <label class="l">Question<input class="f" id="bt-q" maxlength="100" placeholder="${c?"Who’s right?":"e.g. Best biryani in Arakkonam?"}" value="${esc(c?"Who’s right?":qt?qt.title.slice(0,100):"")}"></label>
+    <label class="l">Question<input class="f" id="bt-q" maxlength="100" placeholder="${c?"Who’s right?":"e.g. Best biryani in Arakkonam?"}" value="${esc(c?"Who’s right?":qt?qt.title.slice(0,100):o.q||"")}"></label>
     ${c?"":`<div class="bt-tip">Tip: ask one clear question with two real choices. Keep each side short.</div>`}
-    <div class="row2"><label class="l">Side A<input class="f" id="bt-a" maxlength="40" placeholder="e.g. Ambur biryani" value="${esc(qs[0])}"></label><label class="l">Side B<input class="f" id="bt-b" maxlength="40" placeholder="e.g. Chennai biryani" value="${esc(qs[1])}"></label></div>
-    ${c||qt?"":`<div class="row2"><label class="l">Category${catSelect("bt-cat","Food")}</label><label class="l">City (optional)<input class="f" id="bt-loc" maxlength="60" placeholder="e.g. Arakkonam" value="${esc(o.loc||"")}"></label></div>
+    <div class="row2"><label class="l">Side A<input class="f" id="bt-a" maxlength="40" placeholder="e.g. Ambur biryani" value="${esc(qs[0]||o.a||"")}"></label><label class="l">Side B<input class="f" id="bt-b" maxlength="40" placeholder="e.g. Chennai biryani" value="${esc(qs[1])}"></label></div>
+    ${c||qt?"":`<div class="row2"><label class="l">Category${catSelect("bt-cat",o.cat||"Food")}</label><label class="l">City (optional)<input class="f" id="bt-loc" maxlength="60" placeholder="e.g. Arakkonam" value="${esc(o.loc||"")}"></label></div>
     ${o.fromTopic?`<div class="muted" style="font-size:12.5px">From: <b>${esc(o.fromTopic)}</b>${UI.btMedia.length?` · ${UI.btMedia.length} photo${UI.btMedia.length>1?"s":""} attached`:""}</div>`:""}
     <label class="l">Video link (optional)<input class="f" id="bt-link" inputmode="url" autocomplete="off" placeholder="YouTube or Instagram link" value="${esc(o.link||"")}"></label>
     <label class="l">Hashtags<input class="f" id="bt-tags" placeholder="biryani chennaifood"></label>
@@ -3380,8 +3382,9 @@ document.addEventListener("click", async e=>{
       if(ok){ closeModal(true); toast("Battle updated"); } else el.disabled=false;
       break; }
     case "saveBattle": {
-      const q=$("#bt-q").value.trim()||"Who’s right?", A=$("#bt-a").value.trim(), Bv=$("#bt-b").value.trim(), err=$("#bt-err");
+      let q=$("#bt-q").value.trim()||"Who’s right?"; const A=$("#bt-a").value.trim(), Bv=$("#bt-b").value.trim(), err=$("#bt-err");
       if(!A||!Bv){ err.textContent="Name both sides."; break; }
+      if(/\bor …\?$/.test(q)) q=`${A} or ${Bv}?`;
       if(A.toLowerCase()===Bv.toLowerCase()){ err.textContent="The two sides need to be different."; break; }
       if(!(await gate())) break;
       const cid=el.dataset.comment, c=cid&&S.comments.get(cid), qt=!c&&el.dataset.qtopic&&S.topics.get(el.dataset.qtopic);
@@ -3516,6 +3519,8 @@ document.addEventListener("click", async e=>{
       break; }
     case "loginNow": await gate(); break;
     case "simOpen": closeModal(false); location.hash="t-"+id; break;
+    case "askAbout": { const t=S.topics.get(id); if(!t) break; topicModal({kind:"question",category:t.category,title:`Is ${t.title} worth it?`.slice(0,120),loc:t.location||"",groupId:t.groupId||undefined}); break; }
+    case "compareIt": { const t=S.topics.get(id); if(!t) break; if(!(await gate())) break; const nm=t.title.slice(0,40); battleModal({q:`${nm} or …?`.slice(0,100),a:nm,cat:t.category,loc:t.location||"",groupId:t.groupId||undefined}); setTimeout(()=>{ const b=$("#bt-b"); if(b) b.focus(); },60); break; }
     case "q2battle": if(!(await gate())) break; battleModal({qTopic:id}); break;
     case "predFromBattle": { const q0=($("#bt-q")?.value||"").trim(); closeModal(false); if(!(await gate())) break; predModal({title:q0&&q0!=="Who’s right?"?q0:"",groupId:el.dataset.group||undefined}); break; }
     case "gTab": UI.gtab=el.dataset.v; UI.gtabG=id; UI.fyN=10; UI.gSel=null; schedule(); break;
