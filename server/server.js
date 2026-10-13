@@ -443,6 +443,7 @@ function write(uid, { op, col, id, data }) {
   broadcast(col, id, next, prev);
   // membership or visibility changes: affected viewers refetch everything
   if (col === "gmembers") { const mu = id.slice(id.lastIndexOf("__") + 2); reloadFor(c => c.uid === mu); }
+  if (col === "groups" && prev && next && prev.visibility !== next.visibility) reloadFor(() => true);
   if (col === "topics" && prev && next && (prev.madePublic !== next.madePublic || prev.groupId !== next.groupId)) reloadFor(() => true);
 }
 

@@ -3658,16 +3658,23 @@ document.addEventListener("click", async e=>{
       break; }
     case "copyInviteTxt": { const t=$("#sh"); if(!t) break; try{ await navigator.clipboard.writeText(t.value); toast("Copied. Paste it in WhatsApp or anywhere."); }catch{ t.select(); toast("Select and copy the text."); } break; }
     case "editGroup": {
-      const g=S.groups.get(id); if(!g||!isAdmin(id)) break;
+      const g=S.groups.get(id); if(!g||!isAdmin(id)) break; UI.egVis=g.visibility;
       openModal(`<h2>Edit group</h2>
         <label class="l">What’s it about?<input class="f" id="eg-desc" maxlength="160" value="${esc(g.desc||"")}" placeholder="e.g. Turf bookings, match debates, weekend plans"></label>
         <label class="l">City (optional)<input class="f" id="eg-city" maxlength="40" value="${esc(g.city||"")}" placeholder="e.g. Arakkonam"></label>
+        <div class="l">Who can find it?<div class="seg" id="eg-vis">${[["public","🌐 Public"],["private","🔒 Private"]].map(([k,l])=>`<button type="button" class="${g.visibility===k?"on":""}" data-act="egVis" data-v="${k}" data-id="${esc(id)}">${l}</button>`).join("")}</div><div class="hint" id="eg-vnote" style="margin-top:6px"></div></div>
         <div class="hint" id="eg-err"></div>
         <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveEditGroup" data-id="${esc(id)}">Save</button></div>`);
       break; }
+    case "egVis": { const g=S.groups.get(id); if(!g) break; UI.egVis=el.dataset.v; document.querySelectorAll("#eg-vis button").forEach(b=>b.classList.toggle("on",b.dataset.v===UI.egVis));
+      const n=$("#eg-vnote"), sv=$("[data-act=saveEditGroup]"); if(sv){ delete sv.dataset.ok; sv.textContent="Save"; }
+      if(n) n.textContent=UI.egVis===g.visibility?"":UI.egVis==="private"?"Only members will see this group and its topics. New people need the invite link. Current members stay. Topics you already made public stay public.":"Anyone on TopicTalk will be able to find this group, join it and read its topics. The group chat stays members-only."; break; }
     case "saveEditGroup": {
-      if(!isAdmin(id)) break; el.disabled=true;
-      if(await W(()=>db.doc("groups/"+id).update({desc:$("#eg-desc").value.trim().slice(0,160),city:$("#eg-city").value.trim().slice(0,40)}))){ closeModal(true); toast("Group updated"); }
+      if(!isAdmin(id)) break; const g=S.groups.get(id); if(!g) break; const nv=UI.egVis||g.visibility, changed=nv!==g.visibility;
+      if(changed&&!el.dataset.ok){ el.dataset.ok="1"; el.textContent=nv==="private"?"Confirm: make private":"Confirm: make public"; break; }
+      el.disabled=true; const patch={desc:$("#eg-desc").value.trim().slice(0,160),city:$("#eg-city").value.trim().slice(0,40)};
+      if(changed){ patch.visibility=nv; if(nv==="private"&&!g.invite) patch.invite=newCode(); }
+      if(await W(()=>db.doc("groups/"+id).update(patch))){ closeModal(true); toast(changed?(nv==="private"?"Group is now private":"Group is now public"):"Group updated"); }
       else el.disabled=false;
       break; }
     case "copyCode": {
