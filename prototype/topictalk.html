@@ -331,6 +331,12 @@ label.l{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;d
 .spk .sp-i{font-size:22px}.spk b{display:block;font-size:15px}.spk small{display:block;color:var(--muted);font-size:12.5px;margin-top:1px}
 .ptabnote{font-size:13px;margin:10px 0 6px}.setd{margin-top:28px}.setd summary{cursor:pointer;font-weight:600}
 .kpis b{display:block;font-family:var(--f-display);font-size:24px;color:var(--ink);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+.hf-seg{display:flex;gap:6px;margin:2px 0 12px}.hf-seg button{flex:1;border:1px solid var(--line);background:var(--card,#fff);border-radius:12px;padding:10px 8px;font:600 14px var(--f-body,inherit);color:var(--muted);cursor:pointer}.hf-seg button.on{border-color:var(--brand);color:var(--brand-deep);background:var(--brand-soft)}
+.hf-when{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.hf-when button{border:1px solid var(--line);background:none;border-radius:999px;padding:7px 12px;font:600 13px var(--f-body,inherit);color:var(--muted);cursor:pointer}.hf-when button.on{border-color:var(--brand);color:var(--brand-deep);background:var(--brand-soft)}
+.hf-box{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0;background:var(--card,#fff)}.hf-box .hf-st{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13.5px}.hf-chip{display:inline-flex;gap:4px;padding:3px 10px;border-radius:999px;background:var(--brand-soft);color:var(--brand-deep);font-weight:700;font-size:12.5px}.hf-chip.ok{background:var(--brand);color:#fff}
+.hf-box.ok{border-color:var(--brand)}.hf-det{margin-top:6px;font-size:14px;color:var(--ink)}.hf-helped{display:inline-flex;gap:4px;padding:2px 9px;border-radius:999px;background:var(--brand);color:#fff;font-weight:700;font-size:12px}
+.cmt.hf-win>.main{border-left:3px solid var(--brand);padding-left:10px}
+.hf-loc{margin:0 0 14px}.hf-loc .hf-row{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:14px;margin-top:6px;background:var(--card,#fff)}.hf-loc a{flex:1;min-width:0;color:inherit;text-decoration:none}.hf-loc b{display:block;font-size:14.5px}.hf-loc small{color:var(--muted)}
 .ptabs{margin-top:20px}.ptabs{gap:0}.ptabs button{padding:10px 9px;font-size:14px}.pstats{margin-top:22px}.pstats summary{cursor:pointer;font-size:13px;color:var(--muted)}.pst-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;margin:10px 0}.pst-g div{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.pst-g b{display:block;font-size:17px;color:var(--ink);text-transform:none;letter-spacing:0}
 .lvl{display:inline-flex;padding:3px 10px;border-radius:999px;border:1px solid var(--line);font-size:12.5px;font-weight:600}
 
@@ -1034,7 +1040,7 @@ const enc = s => encodeURIComponent(s);
 const rid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 const hueOf = s => { let h=0; for (const c of String(s)) h=(h*31+c.charCodeAt(0))%360; return h; };
 const catHue = c => ({Tech:205,Food:28,Movies:330,Travel:185,Apps:265,Shopping:45,Sports:120,Local:150,Services:95,Finance:60,Gaming:290,Entertainment:350}[c] ?? hueOf(c));
-const abbr = t => t.kind==="place"?"📍":t.kind==="question"?"Q?":t.kind==="battle"?"VS":t.kind==="prediction"?"P?":(t.category||"?").slice(0,2);
+const abbr = t => t.help&&t.kind==="question"?"🔎":t.kind==="place"?"📍":t.kind==="question"?"Q?":t.kind==="battle"?"VS":t.kind==="prediction"?"P?":(t.category||"?").slice(0,2);
 function ago(t){ const s=(Date.now()-t)/1000; if(s<60) return "just now"; if(s<3600) return Math.floor(s/60)+"m"; if(s<86400) return Math.floor(s/3600)+"h"; if(s<86400*30) return Math.floor(s/86400)+"d"; return new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}); }
 function left(ms){ const s=ms/1000; if(s<3600) return Math.max(1,Math.ceil(s/60))+"m"; if(s<86400) return Math.floor(s/3600)+"h "+Math.floor(s%3600/60)+"m"; return Math.floor(s/86400)+"d "+Math.floor(s%86400/3600)+"h"; }
 const fmtDate = t => new Date(t).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
@@ -1294,7 +1300,13 @@ function duelMini(d){
 }
 
 /* ---------- components ---------- */
-function typeLabel(t){ return t.kind==="question"?"❓ Question":t.kind==="place"?"📍 Place":t.kind==="battle"?"⚔️ Battle":t.kind==="prediction"?"🔮 Prediction":stat(t.id).reviews?"⭐ Reviews":"💬 Discussion"; }
+const isHelp=t=>!!(t&&t.help&&t.kind==="question");
+const HF_WHEN=[["today","Today"],["week","This week"],["any","No rush"]];
+const hfWhenLabel=k=>(HF_WHEN.find(x=>x[0]===k)||[])[1]||"";
+const hfRecs=t=>(IX.cByTopic.get(t.id)||[]).filter(c=>!c.parentId&&!c.deletedAt&&(c.text||"").trim());
+function hfStatus(t){ return t.solved?"solved":hfRecs(t).length?"getting":"open"; }
+function hfChip(t){ const st=hfStatus(t); return st==="solved"?'<span class="hf-chip ok">✅ Solved</span>':st==="getting"?'<span class="hf-chip">Getting recommendations</span>':'<span class="hf-chip">Open</span>'; }
+function typeLabel(t){ if(isHelp(t)) return "🔎 Help me find";  return t.kind==="question"?"❓ Question":t.kind==="place"?"📍 Place":t.kind==="battle"?"⚔️ Battle":t.kind==="prediction"?"🔮 Prediction":stat(t.id).reviews?"⭐ Reviews":"💬 Discussion"; }
 function topicCard(t, rank, o={}){
   const s = stat(t.id), tags=(t.tags||[]).slice(0,3);
   const extra = t.kind==="prediction" ? (()=>{ const p=IX.pv.get(t.id), n=p.yes+p.no; return `<span>${n?Math.round(100*p.yes/n):0}% say yes</span><span>${t.outcome?"Resolved":"Resolves "+fmtDate(t.resolveBy)}</span>`; })()
@@ -1308,7 +1320,7 @@ function topicCard(t, rank, o={}){
   return `<article class="tcard"><a href="#t-${t.id}">
     ${t.banner?`<img class="thumb" src="${esc(t.banner)}" alt="" loading="lazy">`:`<div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>`}
     <div class="body">
-      <div class="meta">${o.type?`<span class="ttype">${typeLabel(t)}</span>`:""}<span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${o.type?"":t.kind==="place"?"<span>📍 Place</span>":t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
+      <div class="meta">${o.type?`<span class="ttype">${typeLabel(t)}</span>`:""}<span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span>${LOCK}</span>`:""}${o.type?"":t.kind==="place"?"<span>📍 Place</span>":isHelp(t)?"<span>🔎 Help me find</span>":t.kind==="question"?"<span>Question</span>":t.kind==="prediction"?"<span>Prediction</span>":t.kind==="battle"?"<span>Battle</span>":""}${t.parentId?`<span class="brmark">↳ branched</span>`:""}${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${groupTag(t)}${rank!=null&&rank<3?`<span class="hot">Trending</span>`:""}</div>
       <h3>${esc(t.title)}</h3>
       <div class="stats">${s.reviews?`<span class="rating">★ ${s.avg.toFixed(1)}</span><span>${s.reviews} review${s.reviews>1?"s":""}</span>`:""}<span>${s.comments} comment${s.comments===1?"":"s"}</span>${s.branches?`<span>${s.branches} branch${s.branches>1?"es":""}</span>`:""}${extra}</div>
       ${snip}
@@ -1437,7 +1449,7 @@ function fCard(t){
   const st=stat(t.id), vl=videoLinks((t.title||"")+" "+(t.desc||"")), ph=(t.media||[]).filter(m=>S.media.has(m)), br=descCount(t.id)-0;
   const cap=String(t.desc||"").replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim();
   const lc=(IX.cByTopic.get(t.id)||[]).filter(c=>!c.deletedAt&&(c.text||"").trim()).sort((a,b)=>b.createdAt-a.createdAt)[0];
-  const kind=t.kind==="question"?"Question":t.kind==="place"?"Place":t.kind==="prediction"?"Prediction":"";
+  const kind=isHelp(t)?"Help me find":t.kind==="question"?"Question":t.kind==="place"?"Place":t.kind==="prediction"?"Prediction":"";
   const meta=[t.location?"📍 "+esc(t.location):"",ago(t.createdAt)].filter(Boolean).join(" · ");
   let media="";
   if(vl[0]) media=videoCardFor(vl[0],{compact:true,tid:t.id});
@@ -1457,8 +1469,8 @@ function fCard(t){
     ${latest}
     <div class="frow">
       <button type="button" class="fa${on?" on":""}" data-act="like" data-id="${t.id}" data-kind="topic" aria-pressed="${on}" aria-label="Like">${heart}<span>${lk||"Like"}</span></button>
-      <a class="fa" href="#t-${t.id}">${cmt}<span>${t.kind==="question"?(st.comments?`${st.comments} answer${st.comments===1?"":"s"}`:"Answer"):st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Comment"}</span></a>
-      ${(t.kind==="question"&&!(IX.bByTopic.get(t.id)||[]).some(b=>b.endsAt>Date.now()))||hasM?`<button type="button" class="fa" data-act="${t.kind==="question"?"q2battle":"wBattle"}" data-id="${t.id}" title="${t.kind==="question"?"Turn this question into a battle":"Start a battle about this"}">⚔️<span>Battle</span></button>`:""}
+      <a class="fa" href="#t-${t.id}">${cmt}<span>${isHelp(t)?(t.solved?"✅ Solved":st.comments?`${st.comments} recommendation${st.comments===1?"":"s"}`:"Recommend"):t.kind==="question"?(st.comments?`${st.comments} answer${st.comments===1?"":"s"}`:"Answer"):st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Comment"}</span></a>
+      ${(t.kind==="question"&&!isHelp(t)&&!(IX.bByTopic.get(t.id)||[]).some(b=>b.endsAt>Date.now()))||hasM?`<button type="button" class="fa" data-act="${t.kind==="question"?"q2battle":"wBattle"}" data-id="${t.id}" title="${t.kind==="question"?"Turn this question into a battle":"Start a battle about this"}">⚔️<span>Battle</span></button>`:""}
       ${st.reviews?`<a class="fa fstar" href="#t-${t.id}" title="${st.reviews<3?"Only "+st.reviews+" review"+(st.reviews===1?"":"s")+" so far":""}">★ ${st.avg.toFixed(1)} <small>(${st.reviews}${st.reviews<3?" · early":""})</small></a>`:br?`<a class="fa" href="#t-${t.id}" title="Topics that branched from this one">${brI}<span>${br} branch${br===1?"":"es"}</span></a>`:""}
       <button type="button" class="fa fshare" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button>
     </div></article>`;
@@ -1536,9 +1548,11 @@ function vHome(){
       const buzz=(lw.length?watchStrip({items:lw,n:6,cls:"hsec",title:"📣 Local buzz",sub:`Videos and photos people shared about ${esc(hp.name)}. They play from YouTube or Instagram.`,link:`<button type="button" class="linkb" data-act="buzzAll">See all →</button>`})
           :`<div class="bzempty"><b>📣 Local buzz</b><span>Seen a good reel or video about ${esc(hp.name)}? Share the link. Nothing is copied: it plays from YouTube or Instagram, and people can discuss it here.</span><button type="button" class="btn sm" data-act="wShare" data-loc="${esc(hp.label||hp.name)}">▶ Share a local video</button></div>`)
         +(lb.length?`<section class="hsec">${SH("🔥 Battles in "+esc(hp.name),"",lb.length>2?`<button type="button" class="linkb" data-act="hTab" data-v="bt">See all →</button>`:"")}<div class="grid b hbgrid btlive">${lb.slice(0,2).map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:"");
+      const hfl=list.filter(t=>isHelp(t)&&!t.solved).slice(0,3);
+      const hfs=hfl.length?`<section class="hsec hf-loc">${SH("🔎 Help someone find it","Open requests in "+esc(hp.name),"")}${hfl.map(t=>`<div class="hf-row"><a href="#t-${t.id}"><b>${esc(t.title)}</b><small>${[t.budget?"Budget "+esc(t.budget):"",hfRecs(t).length+" recommendation"+(hfRecs(t).length===1?"":"s")].filter(Boolean).join(" · ")}</small></a><a class="btn sm" href="#t-${t.id}">Recommend</a></div>`).join("")}</section>`:"";
       const lbIds=new Set(lb.slice(0,2).map(b=>b.topicId));
       list.splice(0,list.length,...list.filter(t=>!lbIds.has(t.id)));
-      body=buzz+`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
+      body=hfs+buzz+`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
         +(list.length?`<div class="hfeed">${list.slice(0,UI.fyN||10).map(fCard).join("")}</div>${list.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}<a class="morep" href="#city-${enc(hp.id)}">Open the ${esc(hp.name)} page →</a>`
           :emptyBox("No local discussions yet","Be the first to start one.",`<button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button>`)); }
   } else if(tab==="fo"){
@@ -2075,6 +2089,12 @@ function aiPanel(t, n){
     <div class="muted" style="font-size:12px">Summary written by Claude from the comments on this page. It can miss nuance.</div></div>`;
 }
 
+function hfBox(t){ const recs=hfRecs(t), mine=S.me===t.authorId, sc=t.solved&&t.solved.cid&&S.comments.get(t.solved.cid), sol=!!t.solved;
+  const det=[t.budget?"Budget "+esc(t.budget):"",t.when?"Needed "+esc(hfWhenLabel(t.when).toLowerCase()):"",t.location?"📍 "+esc(t.location):""].filter(Boolean).join(" · ");
+  return `<div class="hf-box${sol?" ok":""}"><div class="hf-st"><span class="hf-chip">🔎 Help me find</span>${hfChip(t)}<span class="muted">${recs.length} recommendation${recs.length===1?"":"s"}</span></div>
+    ${det?`<div class="hf-det">${det}</div>`:""}
+    ${sol?`<div class="hf-det"><b>Solved ✅</b>${sc?` ${esc(nameOf(sc.authorId))} helped: <q>${esc(sc.text.slice(0,160))}</q>`:""}${t.solved.note?`<div class="muted" style="margin-top:2px">“${esc(t.solved.note)}”</div>`:""}</div>`:""}
+    ${mine?(sol?`<div style="margin-top:8px"><button class="btn sm" data-act="helpReopen" data-tid="${esc(t.id)}">Reopen</button></div>`:`<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn sm" data-act="helpPick" data-tid="${esc(t.id)}">Mark as solved</button>${recs.some(c=>c.authorId!==S.me)?`<span class="muted" style="font-size:12.5px">or tap “This helped” on a recommendation</span>`:""}</div>`):""}</div>`; }
 function vTopic(id){
   const t=S.topics.get(id);
   if(!t){ const raw=R.topics.get(id);
@@ -2091,6 +2111,7 @@ function vTopic(id){
   const otherIds=new Set((UI.ai[id]?.other_side_ids||[]).filter(x=>S.comments.has(x)));
   if(UI.csort==="new") tops.sort((a,b)=>b.createdAt-a.createdAt);
   else tops.sort((a,b)=>likes(b)-likes(a)||b.createdAt-a.createdAt);
+  if(isHelp(t)&&t.solved?.cid){ const w=t.solved.cid; tops.sort((a,b)=>(b.id===w)-(a.id===w)); }
   if(UI.csort==="other"&&otherIds.size){ const ord=[...otherIds]; const rank=c=>{ let x=c; while(x){ const i=ord.indexOf(x.id); if(i>=0) return i; x=x.parentId&&S.comments.get(x.parentId); } return 999; }; tops.sort((a,b)=>rank(a)-rank(b)); }
   const parent=t.parentId&&S.topics.get(t.parentId), oc=t.originCommentId&&S.comments.get(t.originCommentId);
   const chain=[]; { let p=t, guard=0; while(p.parentId&&S.topics.get(p.parentId)&&guard++<20){ p=S.topics.get(p.parentId); chain.unshift(p); } }
@@ -2108,11 +2129,11 @@ function vTopic(id){
   const discussion = `
     ${aiPanel(t,cs.length)}
     ${t.deletedAt?`<div class="muted" style="margin:6px 0 12px;font-size:14px">This topic is closed for new comments.</div>`:`<div class="composer">${S.me?avatar(S.me):""}<div class="box">
-      <textarea id="newc" rows="2" placeholder="${t.kind==="question"?"Write your answer…":"Write a comment…"}"></textarea>
-      <button class="btn pri sm" data-act="postComment" data-topic="${id}">${L("Post")}</button></div></div>`}
+      <textarea id="newc" rows="2" placeholder="${isHelp(t)?"Recommend someone: name, phone or place, and why…":t.kind==="question"?"Write your answer…":"Write a comment…"}"></textarea>
+      <button class="btn pri sm" data-act="postComment" data-topic="${id}">${isHelp(t)?"Recommend":L("Post")}</button></div></div>`}
     ${sortBar}
     ${UI.csort==="other"&&!otherIds.size&&!UI.aiBusy[id]?`<div class="muted" style="font-size:13.5px;margin-bottom:10px">${sampleFn?"Claude needs to read the thread first to find the pushback.":"Finding the other side needs Claude, which isn’t available in this view."}</div>`:""}
-    ${tops.length?tops.map(c=>commentNode(c,t,0,otherIds)).join(""):emptyBox("No comments yet","Say what you think. Good comments can become topics of their own.")}`;
+    ${tops.length?tops.map(c=>commentNode(c,t,0,otherIds)).join(""):isHelp(t)?emptyBox("No recommendations yet","Know someone good? Recommend them with a name, a phone number or place, and why."):emptyBox("No comments yet","Say what you think. Good comments can become topics of their own.")}`;
   const reviews = `
     ${t.deletedAt?"":UI.rvOpen?reviewForm(t,mine):`<div style="margin-bottom:12px"><button class="btn sm ${mine?"":"pri"}" data-act="openReview">${mine?"Edit your review":L("Write a review")}</button></div>`}
     ${rs.length?`<div>${rs.map(r=>reviewNode(r)).join("")}</div>`:(UI.rvOpen?"":emptyBox("No reviews yet","Rate it from 1 to 5 and say why."))}`;
@@ -2132,13 +2153,14 @@ function vTopic(id){
     ${parent&&oc?`<div class="origin">Started from ${who(oc.authorId)}’s comment in <a href="#t-${parent.id}~${oc.id}" style="color:var(--brand-deep);font-weight:600">${esc(parent.title)}</a>: <q>${esc(oc.text.slice(0,180))}${oc.text.length>180?"…":""}</q></div>`:""}
     ${(()=>{ const gs=(t.taggedGroups||[]).map(g=>S.groups.get(g)).filter(Boolean), us=t.tagged||[]; if(!gs.length&&!us.length) return "";
       return `<div class="withrow">With ${[...gs.map(g=>`<a href="#g-${esc(g.id)}">👥 ${esc(g.name)}</a>`),...us.map(who)].join(", ")}</div>`; })()}
+    ${isHelp(t)&&!t.deletedAt?hfBox(t):""}
     ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>`:""}${t.deletedAt?"":videoCards((t.title||"")+" "+(t.desc||""))}
     ${t.deletedAt?"":phStrip([...(t.media||[]),...(IX.rByTopic.get(id)||[]).flatMap(r=>r.media||[])].slice(0,12))}
     ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
     ${t.kind==="prediction"?`<div style="margin-top:16px">${predCard(t)}</div>`:""}
     ${battles.map(b=>`<div style="margin-top:16px">${battleCard(b)}</div>`).join("")}
-    ${t.kind==="question"&&!t.deletedAt&&!battles.some(b=>b.endsAt>Date.now())?`<div class="q2b"><div><b>${splitSides(t.title)[0]?"Two clear options here?":"Is this a choice between two options?"}</b><span>Turn it into a battle so everyone can vote. The answers stay here.</span></div><button type="button" class="btn sm" data-act="q2battle" data-id="${t.id}">⚔️ Turn into a battle</button></div>`:""}
+    ${t.kind==="question"&&!isHelp(t)&&!t.deletedAt&&!battles.some(b=>b.endsAt>Date.now())?`<div class="q2b"><div><b>${splitSides(t.title)[0]?"Two clear options here?":"Is this a choice between two options?"}</b><span>Turn it into a battle so everyone can vote. The answers stay here.</span></div><button type="button" class="btn sm" data-act="q2battle" data-id="${t.id}">⚔️ Turn into a battle</button></div>`:""}
     ${t.deletedAt?"":`<div class="tbar">
       <button class="btn sm ${following?"":"pri"}" data-act="follow" data-id="${id}">${following?L("Following"):L("Follow")} · ${s.followers}</button>
       ${t.kind==="battle"&&battles[0]&&(t.authorId===S.me||S.isOwner)?`<button class="btn sm" data-act="editBattle" data-id="${battles[0].id}">Edit battle</button>`:""}
@@ -2174,8 +2196,9 @@ function commentNode(c,t,depth,otherIds){
   const open=UI.more.has(c.id)||(tgt&&kids.slice(2).some(k=>isAnc(k,tgt)));
   const shown=open?kids:kids.slice(0,2), hidden=kids.length-shown.length;
   const par=depth>=2&&c.parentId&&S.comments.get(c.parentId);
-  return `<div class="cmt${fresh?" rise":""}" id="c-${c.id}">${avatar(c.authorId,depth?"xs":"")}<div class="main">
-    <div class="head">${who(c.authorId)}${c.authorId===t.authorId?'<span class="op">OP</span>':""}${otherIds&&otherIds.has(c.id)?'<span class="otherchip">Other side</span>':""}<span class="muted">· ${ago(c.createdAt)}${c.editedAt&&!del?" · edited":""}</span>${outs.length?`<span class="op" title="Topics started from this comment">Sparked ${outs.length} topic${outs.length>1?"s":""}</span>`:""}</div>
+  const hfw=isHelp(t)&&t.solved&&t.solved.cid===c.id;
+  return `<div class="cmt${fresh?" rise":""}${hfw?" hf-win":""}" id="c-${c.id}">${avatar(c.authorId,depth?"xs":"")}<div class="main">
+    <div class="head">${who(c.authorId)}${c.authorId===t.authorId?'<span class="op">OP</span>':""}${hfw?'<span class="hf-helped">✅ Helped</span>':""}${otherIds&&otherIds.has(c.id)?'<span class="otherchip">Other side</span>':""}<span class="muted">· ${ago(c.createdAt)}${c.editedAt&&!del?" · edited":""}</span>${outs.length?`<span class="op" title="Topics started from this comment">Sparked ${outs.length} topic${outs.length>1?"s":""}</span>`:""}</div>
     ${par?`<div class="replyto">↪ replying to @${esc(nameOf(par.authorId))}</div>`:""}
     ${del?`<div class="ctext muted" style="font-style:italic">Comment deleted</div>`:(c.text?`<div class="ctext${isEmojiOnly(c.text)?" big":""}">${rich(c.text)}</div>`:"")}
     ${del?"":videoCards(c.text)}
@@ -2186,6 +2209,7 @@ function commentNode(c,t,depth,otherIds){
     <div class="actions">
       ${del?"":`<button class="act ${on?"on":""}" data-act="like" data-id="${c.id}" data-kind="comment" aria-pressed="${on}">${ICON.up}${n}</button>`}
       ${t.deletedAt?"":`<button class="act" data-act="reply" data-id="${c.id}">${ICON.reply}${L("Reply")}</button>`}
+      ${isHelp(t)&&!t.solved&&!del&&!c.parentId&&S.me===t.authorId&&c.authorId!==S.me?`<button class="act" data-act="helpPick" data-tid="${esc(t.id)}" data-id="${c.id}">✅ This helped</button>`:""}
       ${del?"":`<button class="act more" data-act="cmore" data-id="${c.id}" aria-label="More actions" title="More">⋯</button>`}
     </div>
     ${UI.replyOpen.has(c.id)?`<div class="composer" style="margin:6px 0 4px"><div class="box"><textarea id="r-${c.id}" rows="2" placeholder="Reply to ${esc(nameOf(c.authorId))}…"></textarea><div style="display:flex;gap:6px"><button class="btn sm" data-act="reply" data-id="${c.id}">Cancel</button><button class="btn pri sm" data-act="postReply" data-id="${c.id}">${L("Reply")}</button></div></div></div>`:""}
@@ -2224,7 +2248,7 @@ function groupNotifs(ns){
 function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
   const ns=notifList().sort((a,b)=>b.createdAt-a.createdAt);
-  const label={reply:"replied to you",mention:"mentioned you",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request"};
+  const label={reply:"replied to you",mention:"mentioned you",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped"};
   return `<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read||UI.keep?.has(n.id))?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
   ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}" href="${n.duelId?"#d-"+esc(n.duelId):n.type==="joined"?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
    :emptyBox("You’re all caught up","Replies, @mentions, branches and battles from your comments, and activity on topics you follow show up here.")}`;
@@ -2768,6 +2792,10 @@ async function notify(list, base){
     try{ await db.collection("notifs").add({...base,to,type,from:S.me,createdAt:Date.now(),read:false}); }catch{}
   }
 }
+function helpNotify(t,tid){ const pl=placeOf(t.location); if(!pl) return; const city=pl.type==="area"?pl.city:pl.id; const to=new Set();
+  for(const [u,h] of S.handles) if(u!==S.me&&h.homeCity===city) to.add(u);
+  for(const f of S.ufollows.values()) if(f.followingId===S.me) to.add(f.followerId);
+  const arr=[...to].filter(u=>!isSeed(u)).slice(0,30); arr.length&&notify(arr.map(u=>[u,"helpreq"]),{topicId:tid,text:t.title}); }
 function notifyGroup(gid,tid,text){ if(!gid) return; notify((IX.gMem.get(gid)||[]).map(m=>[m.userId,"grouppost"]),{topicId:tid,text,groupId:gid}); }
 const followersOf = tid => (IX.fByTopic.get(tid)||[]);
 async function ensureFollow(tid){ if(!IX.myFollows.has(tid)){ try{ await db.doc(`follows/${tid}__${S.me}`).set({topicId:tid,userId:S.me,createdAt:Date.now()}); }catch{} } }
@@ -3015,20 +3043,24 @@ function topicModal(o={}){ PH.tn=[];
   const cat=o.category||(bt?bt.category:"Tech");
   const tags=o.tags||(bt?(bt.tags||[]).slice(0,3).join(" "):"");
   UI.newKind=o.kind||"topic"; UI.locMode=(o.loc||bt?.location)?"place":null; UI.locVal=o.loc||bt?.location||""; UI.locDis=new Set(); UI.tagged=[]; UI.taggedG=[]; UI.bn="";
-  UI.newWatch=!!o.watch; UI.fromWatch=!!o.watch;
+  UI.newWatch=!!o.watch; UI.fromWatch=!!o.watch; UI.help=!!o.help&&o.kind==="question"; UI.hfWhen=o.when||"";
   const ask=o.kind==="question"&&!b&&!o.watch, gpre=o.groupId??curGroup(), gName=gpre&&S.groups.get(gpre)?.name;
-  if(ask){
-    openModal(`<div class="askf"><h2>Ask the community</h2>
-    <label class="l askq"><span>What do you want to ask?</span><textarea class="f" id="n-title" rows="2" maxlength="120" placeholder="e.g. Which turf in Arakkonam has the best lights for night cricket?">${esc(o.title||"")}</textarea></label>
+  if(ask){ const hf=UI.help;
+    if(hf&&!o.loc&&homePlace()){ UI.locMode="place"; UI.locVal=homePlace().label||homePlace().name; }
+    openModal(`<div class="askf"><h2>${hf?"Help me find":"Ask the community"}</h2>
+    <div class="hf-seg" role="tablist"><button type="button" class="${hf?"":"on"}" data-act="askMode" data-v="q">Ask a question</button><button type="button" class="${hf?"on":""}" data-act="askMode" data-v="help">🔎 Help me find</button></div>
+    <label class="l askq"><span>${hf?"What are you looking for?":"What do you want to ask?"}</span><textarea class="f" id="n-title" rows="2" maxlength="120" placeholder="${hf?"e.g. A good AC technician":"e.g. Which turf in Arakkonam has the best lights for night cricket?"}">${esc(o.title||"")}</textarea></label>
+    ${hf?`<div class="row2"><label class="l">Budget <small class="muted">optional</small><input class="f" id="n-budget" maxlength="30" inputmode="text" placeholder="₹1,500" value="${esc(o.budget||"")}"></label>
+    <div class="l">When do you need it? <small class="muted">optional</small><div class="hf-when" id="n-when">${HF_WHEN.map(([k,l])=>`<button type="button" class="${UI.hfWhen===k?"on":""}" data-act="hfWhen" data-v="${k}">${l}</button>`).join("")}</div></div></div>`:""}
     <div id="n-sim" class="simbox" aria-live="polite" hidden></div>
     <details class="askd"${o.desc?" open":""}><summary>＋ Add details <small>optional</small></summary>
     <label class="l"><span class="sr">Details</span><textarea id="n-desc" rows="3" placeholder="Give people some context. ${L("Tamil, Tanglish or English. All welcome.")}">${esc(o.desc||"")}</textarea></label>
     </details>
     <div class="row2"><label class="l">Category${catSelect("n-cat",cat)}</label>
-      <div class="l">Where is this relevant?<div class="seg" id="n-locseg"></div><div id="n-locbox"></div></div></div>
+      <div class="l">${hf?"Where?":"Where is this relevant?"}<div class="seg" id="n-locseg"></div><div id="n-locbox"></div></div></div>
     ${gName?`<div class="askg">👥 Posting in <b>${esc(gName)}</b> · you can change this in More options</div>`:""}
     <details class="askm"><summary>More options <small>hashtags, tag friends, who can see it, pictures</small></summary><div class="askm-b">
-    ${b?"":`<label class="qtog"><input type="checkbox" id="n-isq" data-act="qtog" ${UI.newKind==="question"?"checked":""}><span><b>This is a question</b><small>People answer it, and the community answer is summarised from what they say.</small></span></label>`}
+    ${b||hf?"":`<label class="qtog"><input type="checkbox" id="n-isq" data-act="qtog" ${UI.newKind==="question"?"checked":""}><span><b>This is a question</b><small>People answer it, and the community answer is summarised from what they say.</small></span></label>`}
     <label class="l">Hashtags<input class="f" id="n-tags" placeholder="iphone17 camera smartphones" value="${esc(tags)}"></label>
     <div class="l">Tag friends (optional)<div class="tagbox" id="n-tagged"></div><input class="f" id="n-tagin" autocomplete="off" maxlength="30" placeholder="Type a friend’s name, their ID, or a group name"><div class="tagsug" id="n-tagsug" hidden></div><span class="hint" style="margin:0">Tag friends or a whole group you belong to. They get a notification and are shown on the topic. Up to 10 friends.</span></div>
     ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
@@ -3037,7 +3069,7 @@ function topicModal(o={}){ PH.tn=[];
     <div class="l">Photos (optional)${phBox("tn")}</div>
     </div></details>
     <div class="hint" id="n-err"></div>
-    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">Post question</button></div></div>`);
+    <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="saveTopic" data-branch="${esc(o.branchFrom||"")}">${hf?"Post request":"Post question"}</button></div></div>`);
     locRender(); if(o.title) simRender(); setTimeout(()=>{ const t=$("#n-title"); if(t&&!o.title) t.focus(); },50);
     return;
   }
@@ -3263,7 +3295,18 @@ document.addEventListener("click", async e=>{
     case "create": createMenu(); break;
     case "closeModal": closeModal(false); break;
     case "newTopic": topicModal({tags:el.dataset.tag||"",title:el.dataset.title||"",loc:el.dataset.loc||"",groupId:el.dataset.group}); break;
-    case "newQuestion": topicModal({kind:"question",category:"Other",title:el.dataset.title||"",groupId:el.dataset.group||undefined}); break;
+    case "askMode": { const v=el.dataset.v==="help"; const gv=$("#n-group")?.value; const pl=UI.locMode==="place"?($("#n-loc")?.value||UI.locVal||""):"";
+      topicModal({kind:"question",help:v,title:$("#n-title")?.value||"",desc:$("#n-desc")?.value||"",category:$("#n-cat")?.value||"Other",loc:pl,budget:$("#n-budget")?.value||"",when:UI.hfWhen,groupId:gv||undefined}); break; }
+    case "hfWhen": { UI.hfWhen=UI.hfWhen===el.dataset.v?"":el.dataset.v; document.querySelectorAll("#n-when button").forEach(b=>b.classList.toggle("on",b.dataset.v===UI.hfWhen)); break; }
+    case "helpPick": { const t=S.topics.get(el.dataset.tid); if(!t||t.authorId!==S.me) break; const c=el.dataset.id&&S.comments.get(el.dataset.id);
+      openModal(`<h2>Mark as solved</h2>${c?`<div class="origin" style="margin:0 0 10px">${esc(nameOf(c.authorId))} recommended: <q>${esc(c.text.slice(0,200))}</q></div>`:`<p class="muted" style="margin:0 0 10px">Solved without picking a recommendation.</p>`}
+        <label class="l">One line for the next person <small class="muted">optional</small><input class="f" id="hs-note" maxlength="140" placeholder="e.g. Fixed my AC the same day"></label><div class="hint" id="hs-err"></div>
+        <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="helpSolve" data-tid="${esc(t.id)}" data-id="${esc(c?c.id:"")}">Mark as solved</button></div>`); break; }
+    case "helpSolve": { const t=S.topics.get(el.dataset.tid); if(!t||t.authorId!==S.me) break; const cid=el.dataset.id||"", note=($("#hs-note")?.value||"").trim().slice(0,140); el.disabled=true;
+      const sv={at:Date.now()}; if(cid) sv.cid=cid; if(note) sv.note=note;
+      if(await W(()=>db.doc("topics/"+t.id).update({solved:sv}))){ closeModal(true); toast("Marked as solved. Thanks, this will help the next person."); const c=cid&&S.comments.get(cid); if(c) notify([[c.authorId,"helped"]],{topicId:t.id,text:t.title}); } else el.disabled=false; break; }
+    case "helpReopen": { const t=S.topics.get(el.dataset.tid); if(!t||t.authorId!==S.me) break; await W(()=>db.doc("topics/"+t.id).update({solved:null})); break; }
+    case "newQuestion": topicModal({kind:"question",help:el.dataset.help==="1",category:"Other",title:el.dataset.title||"",groupId:el.dataset.group||undefined}); break;
     case "askAnswer": { const r=searchAll(UI.query,5); askAnswer(UI.query.trim(),r.topics); break; }
     case "writeAnswer": writeAnswer(id); break;
     case "newBattle": if(!(await gate())) break; battleModal({loc:el.dataset.loc||"",groupId:el.dataset.group}); break;
@@ -3663,6 +3706,7 @@ document.addEventListener("click", async e=>{
       { const tl=videoLinks(title); if(tl.length){ const rest=title.replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim(); const dEl=$("#n-desc"); if(dEl&&!dEl.value.includes(tl[0].url)) dEl.value=(tl[0].url+"\n"+dEl.value).trim(); title=rest.length>=3?rest:(tl[0].prov==="yt"?"YouTube video":tl[0].kind==="p"?"Instagram post":"Instagram reel"); } }
       let loc=""; if(UI.locMode==="place"){ const pl=placeOf($("#n-loc")?.value||UI.locVal); if(!pl){ err.textContent="Choose a place from the list, or pick Everywhere."; break; } loc=pl.label; }
       if(title.length<3){ err.textContent="Give it a title of at least 3 characters."; break; }
+      if(UI.help&&!el.dataset.branch&&!loc){ err.textContent="Choose where you need it, for example Arakkonam."; break; }
       const dupe=[...S.topics.values()].find(t=>t.title.toLowerCase()===title.toLowerCase());
       if(dupe){ err.innerHTML=`That topic already exists: <a href="#t-${dupe.id}" style="color:var(--brand-deep);font-weight:600" data-act="simOpen" data-id="${dupe.id}">open it</a>.`; break; }
       if(!(await gate())) break;
@@ -3673,6 +3717,7 @@ document.addEventListener("click", async e=>{
         else if(UI.newWatch&&!(PH.tn||[]).length){ err.textContent="Add a YouTube or Instagram link, or a photo."; break; } }
       const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:loc,authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
         groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null)};
+      if(UI.help&&!oc){ t.help=true; const bu=($("#n-budget")?.value||"").trim().slice(0,30); if(bu) t.budget=bu; if(UI.hfWhen) t.when=UI.hfWhen; }
       let acc=$("#n-acc")?.value||"open"; if(acc==="selected") acc="invite";
       if(acc!=="open"&&t.groupId){ err.textContent="Choose a group or a privacy level, not both."; break; }
       if(acc!=="open") t.access=acc; if(UI.bn) t.banner=UI.bn;
@@ -3687,6 +3732,7 @@ document.addEventListener("click", async e=>{
           mu.length&&notify(mu.map(u=>[u,"mention"]),{topicId:tid,text:t.title});
           tg.size&&notify([...tg].map(u=>[u,"tagged"]),{topicId:tid,text:t.title}); }
         notifyGroup(t.groupId,tid,t.title);
+        if(t.help&&!t.groupId&&acc==="open") helpNotify(t,tid);
         if(UI.fromWatch){ ev("watch_topic_created"); UI.fromWatch=false; }
         if(inGChat()&&t.groupId===UI.gcLast){ stayInChat(); break; }
         if(videoLinks(t.title+" "+t.desc).length||(t.media||[]).length) setTimeout(()=>openCard("topic",tid,"feed",{title:"🎬 Posted!",sub:"Share it so people join the conversation."}),650);
