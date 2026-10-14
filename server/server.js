@@ -654,6 +654,20 @@ const server = http.createServer(async (req, res) => {
     }
     if (!uid) return json(res, 401, { error: { code: "unauthenticated", message: "Log in to do that." } });
 
+    if (p === "/api/password") {
+      const cur = String(body.current || ""), pw = String(body.password || "");
+      if (limited("pwchg:" + uid, 8, 36e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many tries. Try again in an hour." } });
+      if (pw.length < 8 || pw.length > 200) return json(res, 400, { error: { code: "bad_request", message: "Use a new password of at least 8 characters." } });
+      const u = q.userById.get(uid);
+      const ok = u && crypto.timingSafeEqual(Buffer.from(hashPw(cur, u.salt), "hex"), Buffer.from(u.hash, "hex"));
+      if (!ok) return json(res, 400, { error: { code: "bad_request", message: "Your current password isn’t right." } });
+      const salt = crypto.randomBytes(16).toString("hex");
+      q.setPw.run(salt, hashPw(pw, salt), uid);
+      q.dropUserSessions.run(uid);   // sign out every other device, then keep this one signed in
+      setSession(res, uid);
+      return json(res, 200, { ok: true });
+    }
+
     if (p === "/api/card") {
       if (!uid) throw new Deny("permission_denied", "Sign in first.");
       const t = DOCS.topics.get(String(body.topicId || "")); if (!t || t.deletedAt || !OPEN(t.access) || t.groupId) return json(res, 200, { ok: false });
