@@ -796,6 +796,7 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .gacts2{display:flex;gap:2px;margin-top:2px}.gm.me .gacts2{justify-content:flex-end}.gm:not(.me) .gacts2{grid-column:2}.gacts2 .act{font-size:12.5px}
 .gitem{margin:12px 0 4px;display:grid;gap:6px}.gsys{text-align:center;font-size:12.5px;color:var(--muted)}.gsys b{color:var(--ink)}
 .gcw{max-width:560px;width:100%;margin:0 auto}.gcw .battle{box-shadow:none}
+.gshared{margin:0 0 4px}.gshared .gcw{margin:0}.gshared .gsys{padding:2px 0 4px;font-size:12px}.gx{opacity:.7}
 .gtopic{display:grid;gap:3px;max-width:520px;width:100%;margin:0 auto;padding:11px 14px;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none}.gtopic:hover{border-color:var(--brand)}
 .gtopic b{font-size:15px;line-height:1.3}.gt-d{font-size:13px;color:var(--muted);line-height:1.4}.gt-m{font-size:12.5px;font-weight:700;color:var(--brand-deep)}.gt-k{font-size:11px;font-weight:800;color:var(--muted)}
 .gtopic.gt-in{margin:6px 0 2px;padding:8px 10px;max-width:none;background:color-mix(in srgb,var(--bg) 70%,var(--surface))}
@@ -1822,13 +1823,21 @@ function gLinkCards(text){
   return ids.map(id=>{ const t=S.topics.get(id); if(!t||t.deletedAt) return ""; const s=stat(t.id);
     return `<a class="gtopic gt-in" href="#t-${t.id}"><span class="gt-k">${typeLabel(t)}</span><b>${esc(t.title)}</b><span class="gt-m">${s.reviews?`★ ${s.avg.toFixed(1)} · ${s.reviews} review${s.reviews===1?"":"s"} · `:""}${s.comments} comment${s.comments===1?"":"s"}</span></a>`; }).join("");
 }
+const gShareOK=t=>!!t&&!!S.me&&(!t.access||t.access==="open")&&canSee(t)&&(!t.groupId||t.madePublic||S.groups.get(t.groupId)?.visibility==="public")&&S.myGroups.size>0;
+function gShareEmbed(tid){
+  const t=S.topics.get(tid); if(!t||t.stub) return `<div class="gtopic gx"><b>Shared post</b><span class="gt-d">This post isn’t available any more.</span></div>`;
+  if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[]).sort((x,y)=>y.createdAt-x.createdAt)[0]; if(b) return `<div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}</div>`; }
+  if(t.kind==="prediction") return `<div class="gcw">${predCard(t)}</div>`;
+  const s=stat(t.id);
+  return `<a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open →</span></a>`;
+}
 function gMsgHTML(m,prev,gid){
   const mine=m.authorId===S.me, cont=prev&&prev.m&&prev.m.authorId===m.authorId&&m.createdAt-prev.m.createdAt<5*6e4&&dayLbl(prev.at)===dayLbl(m.createdAt);
   const rep=m.replyTo&&gMsgs(gid).find(x=>x.id===m.replyTo);
   const body=m.deletedAt?`<i class="gdel">🚫 This message was deleted</i>`
     :`${rep?`<button type="button" class="gq" data-act="gJump" data-id="${esc(rep.id)}"><b>${esc(rep.authorId===S.me?"You":nameOf(rep.authorId))}</b><span>${esc(rep.deletedAt?"Deleted message":(rep.text||"📷 Photo").slice(0,90))}</span></button>`:""}
       ${(m.media||[]).length?`<div class="gph">${m.media.map(id=>{ const x=gMedia(id); return x?`<button type="button" data-act="viewMedia" data-id="${esc(id)}" aria-label="Open photo"><img src="${x.data}" alt="" loading="lazy" style="aspect-ratio:${x.w||4}/${x.h||3}"></button>`:`<span class="gph-x">📷</span>`; }).join("")}</div>`:""}
-      ${m.text?`<div class="gtx">${rich(m.text).replace(/\n/g,"<br>")}</div>`:""}${gLinkCards(m.text)}`;
+      ${m.ref?`<div class="gshared"><div class="gsys" style="text-align:left">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:""}${m.text?`<div class="gtx">${rich(m.text).replace(/\n/g,"<br>")}</div>`:""}${gLinkCards(m.text)}`;
   const sel=UI.gSel===m.id&&!m.deletedAt, canDel=mine||isAdmin(gid);
   return `<div class="gm ${mine?"me":""} ${cont?"cont":""}" id="gm-${esc(m.id)}">
     ${!mine&&!cont?`<a class="gm-av" href="#u-${esc(m.authorId)}">${avatar(m.authorId,"xs")}</a>`:""}
@@ -3065,7 +3074,7 @@ async function openCard(kind,id,fmt,prompt){
     <div class="seg" style="margin:0 0 6px"><button class="${fmt==="feed"?"on":""}" data-act="cardFmt" data-f="feed">Post · WhatsApp</button><button class="${fmt==="story"?"on":""}" data-act="cardFmt" data-f="story">Story · Status</button></div>
     <p class="muted" style="margin:0;font-size:13px">${fmt==="story"?"Full-screen 9:16 for Instagram Stories and WhatsApp Status. Add the link as a sticker.":"4:5 for Instagram posts and WhatsApp chats."} ${downloads?"":"On a phone, press and hold the image to save it."}</p>
     <textarea id="sh" rows="2" readonly>${esc(txt)}</textarea>
-    <div class="acts">${navigator.share?`<button class="btn pri" data-act="shareNative">Share image</button>`:""}<button class="btn" data-act="copyShare">Copy text &amp; link</button>${downloads?`<button class="btn${navigator.share?"":" pri"}" data-act="saveCard">Save image</button>`:""}<button class="btn" data-act="closeModal">Done</button></div>`);
+    <div class="acts">${navigator.share?`<button class="btn pri" data-act="shareNative">Share image</button>`:""}<button class="btn" data-act="copyShare">Copy text &amp; link</button>${gShareOK(t)?`<button class="btn" data-act="shareGroup" data-id="${t.id}">👥 Share to a group</button>`:""}${downloads?`<button class="btn${navigator.share?"":" pri"}" data-act="saveCard">Save image</button>`:""}<button class="btn" data-act="closeModal">Done</button></div>`);
   if(prompt){ const m=$("#modal"), h=m&&m.querySelector("h2");
     if(h){ h.textContent=prompt.title; h.insertAdjacentHTML("afterend",`<p class="muted sp-sub">${esc(prompt.sub)}</p>`); m.querySelector(".modal")?.classList.add("sp-mode"); }
     const wa="https://wa.me/?text="+encodeURIComponent($("#sh")?.value||"");
@@ -3741,6 +3750,16 @@ document.addEventListener("click", async e=>{
     case "cardFmt": closeModal(); openCard(openCard.kind,openCard.id,el.dataset.f); break;
     case "shareBattle": openCard("battle",id); break;
     case "sharePred": openCard("pred",id); break;
+    case "shareGroup": { const t=S.topics.get(id); if(!gShareOK(t)) break;
+      const gs=[...S.myGroups].map(x=>S.groups.get(x)).filter(Boolean);
+      openModal(`<h2>Share to a group</h2><p class="muted" style="margin:0 0 8px">“${esc(t.title.slice(0,80))}” will appear in the group chat. Only members of that group will see the message.</p>
+        <textarea id="gsnote" rows="2" maxlength="300" placeholder="Add a note (optional)"></textarea>
+        <div class="list" style="margin-top:8px">${gs.map(g=>`<button type="button" class="btn" style="display:flex;width:100%;justify-content:space-between;margin:0 0 6px" data-act="shareGroupGo" data-id="${t.id}" data-g="${esc(g.id)}"><span>${esc(g.name)}</span><span class="muted">${g.visibility==="private"?"🔒 Private":"🌐 Public"}</span></button>`).join("")}</div>
+        <div class="acts"><button class="btn" data-act="closeModal">Cancel</button></div>`); break; }
+    case "shareGroupGo": { const gid=el.dataset.g, t=S.topics.get(id); if(!t||!memberOf(gid)||!gShareOK(t)) break; if(!(await gate())) break; if(el.disabled) break; el.disabled=true;
+      const note=($("#gsnote")?.value||"").trim().slice(0,300);
+      try{ await db.doc("gmsgs/"+rid("gm")).set({groupId:gid,authorId:S.me,text:note,ref:id,createdAt:Date.now()}); closeModal(); toast("Shared to "+(S.groups.get(gid)?.name||"the group")); try{ localStorage.setItem("tt_gread_"+gid,String(Date.now())); }catch{} }
+      catch(ex){ el.disabled=false; toast((ex&&ex.message)||"Couldn’t share. Try again."); } break; }
     case "spStatus": case "spStory": case "spPost": {
       const story=a!=="spPost", file=story?openCard.storyFile:openCard.file, cv=story?openCard.storyCanvas:openCard.canvas, text=$("#sh")?.value||"";
       const hint=a==="spStatus"?"Image saved. In WhatsApp tap Updates → Status ＋ and pick it. The link is copied, add it as text.":a==="spStory"?"Image saved. In Instagram tap ＋ → Story and pick it. The link is copied: add it with a Link sticker.":"Image saved. In Instagram tap ＋ → Post and pick it. The link is copied for the caption or your bio.";

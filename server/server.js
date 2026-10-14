@@ -337,12 +337,13 @@ function check(op, col, id, prev, next, patch, uid) {
         deny();
       }
       if (next.authorId !== uid) deny();
-      if (!onlyKeys(next, ["groupId", "authorId", "text", "createdAt", "replyTo", "media"])) bad();
+      if (!onlyKeys(next, ["groupId", "authorId", "text", "createdAt", "replyTo", "media", "ref"])) bad();
       if (typeof next.text !== "string" || next.text.length > 2000) bad("Keep messages under 2000 characters.");
       const media = next.media || [];
       if (!Array.isArray(media) || media.length > 3) bad("Up to 3 photos per message.");
       for (const m of media) { const md = DOCS.media.get(m); if (!md || md.by !== uid || md.gmsgId !== id) bad("That photo isn’t ready yet."); }
-      if (!next.text.trim() && !media.length) bad("Type a message first.");
+      if (next.ref != null) { const rt = typeof next.ref === "string" && DOCS.topics.get(next.ref); if (!rt || !topicVisible(rt, null)) bad("That post can’t be shared."); }
+      if (!next.text.trim() && !media.length && next.ref == null) bad("Type a message first.");
       if (next.replyTo != null) { const r = DOCS.gmsgs.get(next.replyTo); if (typeof next.replyTo !== "string" || !r || r.groupId !== gid) bad("That message is gone."); }
       next.createdAt = Date.now();
       return;
