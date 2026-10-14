@@ -896,6 +896,9 @@ body:not(.ingchat) .gsticky{display:none}
 .stars.hi,.starpick.hi button.on{color:#F2A900}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) .stars.hi,:root:not([data-theme=light]) .starpick.hi button.on{color:#FFC93C}}
 :root[data-theme=dark] .stars.hi,:root[data-theme=dark] .starpick.hi button.on{color:#FFC93C}
+.gnw{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.04em;color:#fff;background:var(--brand);border-radius:999px;padding:1px 6px;margin-right:6px}
+.gm.gnew .gb{border-color:var(--brand)}
+.gnewchip{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--gch,72px) + 14px);z-index:31;border:0;border-radius:999px;background:var(--brand);color:var(--on-brand,#fff);font:inherit;font-weight:800;font-size:13.5px;padding:9px 16px;box-shadow:0 6px 18px rgba(0,0,0,.22);cursor:pointer}.gnewchip[hidden]{display:none}
 @media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
@@ -1993,16 +1996,16 @@ function gShareEmbed(tid){
   return `<a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open →</span></a>`;
 }
 function gMsgHTML(m,prev,gid,nested){
-  const mine=m.authorId===S.me, cont=prev&&prev.m&&prev.m.authorId===m.authorId&&m.createdAt-prev.m.createdAt<5*6e4&&dayLbl(prev.at)===dayLbl(m.createdAt);
+  const mine=m.authorId===S.me, isNew=!mine&&!m.deletedAt&&UI.gBaseG===gid&&m.createdAt>UI.gBase, cont=prev&&prev.m&&prev.m.authorId===m.authorId&&m.createdAt-prev.m.createdAt<5*6e4&&dayLbl(prev.at)===dayLbl(m.createdAt);
   const rep=!nested&&m.replyTo&&gMsgs(gid).find(x=>x.id===m.replyTo);
   const body=m.deletedAt?`<i class="gdel">🚫 This message was deleted</i>`
     :`${rep?`<button type="button" class="gq" data-act="gJump" data-id="${esc(rep.id)}"><b>${esc(rep.authorId===S.me?"You":nameOf(rep.authorId))}</b><span>${esc(rep.deletedAt?"Deleted message":(rep.text||"📷 Photo").slice(0,90))}</span></button>`:""}
       ${(m.media||[]).length?`<div class="gph">${m.media.map(id=>{ const x=gMedia(id); return x?`<button type="button" data-act="viewMedia" data-id="${esc(id)}" aria-label="Open photo"><img src="${x.data}" alt="" loading="lazy" style="aspect-ratio:${x.w||4}/${x.h||3}"></button>`:`<span class="gph-x">📷</span>`; }).join("")}</div>`:""}
       ${m.ref&&m.text?`<div class="gtx gtx-note">${rich(m.text).replace(/\n/g,"<br>")}</div>`:""}${m.ref?`<div class="gshared"><div class="gshl">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:(m.text?`<div class="gtx">${rich(m.text).replace(/\n/g,"<br>")}</div>`:"")}${gLinkCards(m.text)}`;
   const sel=UI.gSel===m.id&&!m.deletedAt, canDel=mine||isAdmin(gid);
-  return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}" id="gm-${esc(m.id)}" data-day="${esc(dayLbl(m.createdAt))}" data-who="${esc(mine?"You":nameOf(m.authorId))}">
+  return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}${isNew?" gnew":""}" id="gm-${esc(m.id)}" data-day="${esc(dayLbl(m.createdAt))}" data-who="${esc(mine?"You":nameOf(m.authorId))}">
     ${!mine&&!cont?`<a class="gm-av" href="#u-${esc(m.authorId)}">${avatar(m.authorId,"xs")}</a>`:""}
-    <div class="gb" data-act="gTap" data-id="${esc(m.id)}">${!mine&&!cont?`<div class="gn">${esc(nameOf(m.authorId))}</div>`:""}${body}<span class="gt">${hhmm(m.createdAt)}${m._pending?" · sending…":""}</span></div>
+    <div class="gb" data-act="gTap" data-id="${esc(m.id)}">${!mine&&!cont?`<div class="gn">${esc(nameOf(m.authorId))}</div>`:""}${body}<span class="gt">${isNew?`<em class="gnw">NEW</em>`:""}${hhmm(m.createdAt)}${m._pending?" · sending…":""}</span></div>
     ${sel?`<div class="gacts2"><button type="button" class="act" data-act="gReply" data-id="${esc(m.id)}">↩ Reply</button>${m.text?`<button type="button" class="act" data-act="gCopy" data-id="${esc(m.id)}">Copy</button>${[...S.topics.values()].some(t=>t.branchOf===m.id&&!t.deletedAt)?"":`<button type="button" class="act" data-act="gBranch" data-id="${esc(m.id)}">🌿 Branch into a topic</button>`}`:""}${canDel?`<button type="button" class="act" data-act="gDel" data-id="${esc(m.id)}">Delete</button>`:""}</div>`:""}
   </div>`;
 }
@@ -2024,6 +2027,7 @@ function vGroup(gid){
   const tabs=[...(member?[["chat","💬 Chat",tab==="chat"?0:gUnread(gid)]]:[]),["tp","Topics",disc.length],...(gbs.length?[["bt","⚔️ Battles",gbs.length]]:[]),...(preds.length?[["pr","🔮 Predictions",preds.length]]:[])];
   if(!tabs.some(x=>x[0]===tab)) tab=tabs[0][0];
   UI.gcView=member&&tab==="chat"?gid:null;
+  if(UI.gcView&&UI.gBaseG!==gid){ UI.gBaseG=gid; let b=0; try{ b=+localStorage.getItem("tt_gread_"+gid)||0; }catch{} UI.gBase=b||Date.now(); UI.gSeen=new Set(); }
   const tabsH=`<nav class="gtabs" role="tablist">${tabs.map(([k,l,n])=>`<button type="button" role="tab" aria-selected="${tab===k}" class="${tab===k?"on":""}" data-act="gTab" data-v="${k}" data-id="${esc(gid)}">${l}${n?` <small class="${k==="chat"?"gun":""}">${n}</small>`:""}</button>`).join("")}</nav>`;
   let body="";
   if(tab==="chat"){
@@ -2144,17 +2148,29 @@ function gStickyInit(){
     clearTimeout(gStickyT); gStickyT=setTimeout(()=>chip.classList.remove("on"),1300);
   },{passive:true});
 }
+function gNewUpdate(){
+  let chip=document.getElementById("gnewchip");
+  if(!chip){ chip=document.createElement("button"); chip.id="gnewchip"; chip.type="button"; chip.className="gnewchip"; chip.dataset.act="gNewGo"; chip.hidden=true; document.body.appendChild(chip); }
+  if(!UI.gcView){ chip.hidden=true; return; }
+  const top=64, bot=innerHeight-(document.getElementById("gcomp")?.offsetHeight||72)-8; let up=0,down=0;
+  for(const e of document.querySelectorAll(".gm.gnew")){ if(UI.gSeen.has(e.id)) continue; const r=e.getBoundingClientRect();
+    if(r.bottom>top&&r.top<bot) UI.gSeen.add(e.id); else if(r.bottom<=top) up++; else down++; }
+  const n=up+down; if(!n){ chip.hidden=true; return; }
+  chip.textContent=(down?"↓ ":"↑ ")+n+" new message"+(n===1?"":"s"); chip.hidden=false;
+}
+window.addEventListener("scroll",()=>{ if(UI.gcView) gNewUpdate(); },{passive:true});
 function gcSync(changed,atBottom){
   gStickyInit();
   const gid=UI.gcView, c=gcEl(), on=!!gid&&!!S.me;
   document.body.classList.toggle("ingchat",on); c.hidden=!on;
-  if(!on){ UI.gcLast=null; return; }
+  if(!on){ UI.gcLast=null; UI.gBaseG=null; const nc=document.getElementById("gnewchip"); if(nc) nc.hidden=true; return; }
   const gm=c.querySelectorAll("[data-act=newTopic],[data-act=newBattle],[data-act=newPred],[data-act=newQuestion]"); gm.forEach(b=>b.dataset.group=gid);
   if(UI.gcLast!==gid){ const ta=$("#gc-ta"); let d=""; try{ d=sessionStorage.getItem("tt_gdraft_"+gid)||""; }catch{} ta.value=d; UI.gcReply=null; PH.gc=[]; UI.gcRetry=null; gcBar(); UI.gcLast=gid; changed=true; }
   if(UI.gcFocus){ const f=UI.gcFocus; requestAnimationFrame(()=>{ const t=document.getElementById("gm-"+f); if(t){ UI.gcFocus=null; t.scrollIntoView({block:"center"}); } }); }
   else if(UI.gKeepY!=null){ window.scrollTo(0,document.documentElement.scrollHeight-UI.gKeepY); UI.gKeepY=null; }
   else { if(changed){ UI.gcHold=Date.now()+3000; const toEnd=()=>{ if(UI.gcView&&Date.now()<(UI.gcHold||0)) window.scrollTo(0,document.documentElement.scrollHeight); }; setTimeout(toEnd,350); setTimeout(toEnd,1200); } if(changed||atBottom||UI.gcStick||Date.now()<(UI.gcHold||0)){ requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight)); UI.gcStick=false; } }
   try{ localStorage.setItem("tt_gread_"+gid,String(Date.now())); }catch{}
+  setTimeout(gNewUpdate,120); setTimeout(gNewUpdate,700);
 }
 function vJoin(code){
   code=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8);
@@ -3932,6 +3948,7 @@ document.addEventListener("click", async e=>{
     case "gInfo": gInfoModal(id); break;
     case "gTap": { if(e.target.closest("a,button:not(.gb)")&&e.target.closest("a,button")!==el) break; UI.gSel=UI.gSel===id?null:id; schedule(); break; }
     case "gReply": { const m=gMsgs(UI.gcView||"").find(x=>x.id===id); if(!m) break; UI.gcReply=id; UI.gSel=null; gcBar(); schedule(); $("#gc-ta")?.focus(); break; }
+    case "gNewGo": { const list=[...document.querySelectorAll(".gm.gnew")].filter(e=>!UI.gSeen.has(e.id)); const dn=list.find(e=>e.getBoundingClientRect().top>=innerHeight/2)||list[0]; if(dn){ dn.scrollIntoView({block:"center",behavior:"smooth"}); dn.classList.add("flash"); setTimeout(()=>{ dn.classList.remove("flash"); gNewUpdate(); },1600); } break; }
     case "gReplyX": UI.gcReply=null; gcBar(); break;
     case "gCopy": { const m=gMsgs(UI.gcView||"").find(x=>x.id===id); UI.gSel=null; try{ await navigator.clipboard.writeText(m?.text||""); toast("Copied"); }catch{ toast("Couldn’t copy"); } schedule(); break; }
     case "gDel": { if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Tap again to delete for everyone"; break; }
