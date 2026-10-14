@@ -892,6 +892,10 @@ body:not(.ingchat) .gsticky{display:none}
 .mb-f{display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--muted)}.mb-f a{color:var(--brand-deep);font-weight:800;text-decoration:none}
 .mbdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}.mbdot.a{background:var(--brand)}.mbdot.b{background:#E0A02B}
 .gitem:has(.mb){margin:4px 0}
+.rvr{display:flex;align-items:center;gap:8px}.rof{font-size:12.5px;font-weight:700;color:var(--muted)}.starpick{align-items:center}.starpick .rof{margin-left:8px;font-size:13.5px}
+.stars.hi,.starpick.hi button.on{color:#F2A900}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .stars.hi,:root:not([data-theme=light]) .starpick.hi button.on{color:#FFC93C}}
+:root[data-theme=dark] .stars.hi,:root[data-theme=dark] .starpick.hi button.on{color:#FFC93C}
 @media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
@@ -2486,7 +2490,7 @@ function commentNode(c,t,depth,otherIds){
 function reviewNode(r){
   const n=likes(r), on=IX.myLikes.has(r.id);
   return `<div class="rv"><div class="head" style="display:flex;gap:8px;align-items:center;font-size:13.5px">${avatar(r.authorId)}<div>${who(r.authorId)}<div class="muted" style="font-size:12px">${ago(r.createdAt)}${r.updatedAt?" · edited":""}</div></div></div>
-    <div class="stars" style="margin-top:8px">${stars(r.rating)}</div>
+    <div class="rvr" style="margin-top:8px"><span class="stars ${r.rating>=4?"hi":""}">${stars(r.rating)}</span><span class="rof">${r.rating} out of 5</span></div>
     ${r.title?`<h4>${esc(r.title)}</h4>`:""}
     ${r.text?`<div class="ctext">${rich(r.text)}</div>${videoCards(r.text)}`:""}
     ${r.pros||r.cons?`<div class="pros">${r.pros?`<div class="p"><b>Pros</b>${esc(r.pros)}</div>`:""}${r.cons?`<div class="c"><b>Cons</b>${esc(r.cons)}</div>`:""}</div>`:""}
@@ -2496,7 +2500,7 @@ function reviewNode(r){
 function reviewForm(t,mine){
   if (UI.rvRating===0 && mine) UI.rvRating=mine.rating;
   return `<div class="form"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><b style="font-family:var(--f-display);font-size:18px">${mine?"Edit your review":"Your review"}</b>
-    <div class="starpick" role="radiogroup" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button class="${n<=UI.rvRating?"on":""}" data-act="star" data-v="${n}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}</div></div>
+    <div class="starpick ${UI.rvRating>=4?"hi":""}" role="radiogroup" aria-label="Rating">${[1,2,3,4,5].map(n=>`<button class="${n<=UI.rvRating?"on":""}" data-act="star" data-v="${n}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}${UI.rvRating?`<span class="rof">${UI.rvRating} out of 5</span>`:""}</div></div>
     <input class="f" id="rv-title" placeholder="Headline (e.g. Best zoom camera I’ve used)" maxlength="100" value="${esc(mine?.title||"")}">
     <textarea id="rv-text" rows="4" placeholder="What was it like?">${esc(mine?.text||"")}</textarea>
     <div class="row2"><input class="f" id="rv-pros" placeholder="Pros, comma separated" value="${esc(mine?.pros||"")}"><input class="f" id="rv-cons" placeholder="Cons, comma separated" value="${esc(mine?.cons||"")}"></div>
