@@ -1,7 +1,7 @@
 <title>TopicTalk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Schibsted+Grotesk:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap">
 <style>
 /* Layout: sticky top bar, centred 1120px column; topic page = discussion column + graph rail; phone = bottom tab bar */
 :root{
@@ -9,7 +9,7 @@
   --brand:#1F9D63; --brand-deep:#0E7045; --brand-soft:#E3F3EA; --on-brand:#FFFFFF;
   --chip:#EEF2F0; --star:#B87A0B; --danger:#B4412F; --shadow:0 1px 2px rgba(18,32,27,.06),0 4px 14px rgba(18,32,27,.05);
   --tile-l:90%; --tile-ink:26%; --bar-off:#E1E8E4; --bar-off2:#CBD6D0;
-  --f-display:"Bricolage Grotesque","Noto Sans Tamil","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-display:"Schibsted Grotesk","Noto Sans Tamil","Helvetica Neue","Segoe UI",system-ui,sans-serif;
   --f-body:"Schibsted Grotesk","Noto Sans Tamil","Helvetica Neue","Segoe UI",system-ui,sans-serif;
   --r:14px;
 }
@@ -3071,7 +3071,7 @@ function wrap(x, text, maxW, maxLines){
 async function makeCard(kind, id, fmt){
   try{ await document.fonts.ready; }catch{}
   const W=1080,H=1350, CH=fmt==="story"?1920:1350, c=document.createElement("canvas"); c.width=W; c.height=CH; const x=c.getContext("2d");
-  const D='"Bricolage Grotesque","Noto Sans Tamil",system-ui,sans-serif', B='"Schibsted Grotesk","Noto Sans Tamil",system-ui,sans-serif';
+  const D='"Schibsted Grotesk","Noto Sans Tamil",system-ui,sans-serif', B='"Schibsted Grotesk","Noto Sans Tamil",system-ui,sans-serif';
   const bg="#0C2A1E", ink="#F2F7F4", mut="#9DB8AC", acc="#5BD69A", star="#F2B544", soft="#14402E";
   x.fillStyle=bg; x.fillRect(0,0,W,CH);
   x.fillStyle=soft; x.beginPath(); x.arc(W+60,-60,420,0,Math.PI*2); x.fill();
