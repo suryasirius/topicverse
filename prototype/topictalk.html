@@ -774,6 +774,12 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .home2 .bdone .bd-lab,.home2 .bdone .bd-sum{font-size:13.5px;line-height:1.4}.home2 .bdone .bd-foot{margin-top:0;padding-top:2px}.home2 .bdone .bd-disc{font-size:14px}.home2 .bdone .bd-r{font-size:12.5px}
 .home2 .ftitle,.home2 .wtitle,.home2 .bc2 .bc-q,.home2 .bdone .bd-q{font-family:var(--f-body,inherit);font-weight:600;letter-spacing:0;line-height:1.4}
 .home2 .sech h2{font-family:var(--f-body,inherit);font-weight:700;letter-spacing:0}
+.home2 .fhelp{padding:18px 18px 8px}.home2 .fhelp .ftitle{font-size:17.5px;line-height:1.5;margin:14px 0 0}
+.home2 .fhelp .fsnip{font-size:14.5px;line-height:1.55;color:var(--muted);font-weight:400;margin:8px 0 0}
+.home2 .fhelp .fhf{gap:6px 16px;margin:14px 0 2px;font-size:13px;font-weight:400}.home2 .fhelp .fhf .fhn{color:var(--ink);font-weight:600}
+.home2 .fhelp .fcat{font-size:10px;letter-spacing:.04em;padding:3px 8px}.home2 .fhelp .wwho{min-width:0}.home2 .fhelp .wwho .muted{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home2 .fhelp .frow{margin-top:14px;padding-top:6px}
+@media(max-width:480px){.home2 .fhelp{padding:16px 16px 6px}.home2 .fhelp .ftitle{font-size:17px}}
 @media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
@@ -1506,23 +1512,26 @@ function fCard(t){
   else if(ph[0]){ const m=S.media.get(ph[0]), r=m.w&&m.h?Math.max(4/5,Math.min(16/9,m.w/m.h)):4/3;
     media=`<button type="button" class="wphoto fph" data-act="viewMedia" data-id="${esc(ph[0])}" aria-label="Open photo" style="aspect-ratio:${r.toFixed(3)}"><img src="${m.data}" alt="${esc(cleanTitle(t))}" loading="lazy">${ph.length>1?`<span class="wmore">+${ph.length-1}</span>`:""}</button>`; }
   else if(t.banner) media=`<a class="fban" href="#t-${t.id}"><img src="${esc(t.banner)}" alt="" loading="lazy"></a>`;
+  let hfT=cleanTitle(t), hfD="";
+  if(isHelp(t)&&hfT.length>70){ const m=hfT.match(/^(.{12,}?[.?!])\s+(\S[\s\S]*)$/); if(m&&m[1].length<=140){ hfT=m[1]; hfD=m[2]; } }
   const hasM=!!(vl[0]||ph[0]), lk=likes(t), on=IX.myLikes.has(t.id), gen=GENERIC_T.test(cleanTitle(t));
   const latest=lc?`<a class="flatest" href="#t-${t.id}~${lc.id}">${avatar(lc.authorId,"xs")}<span><b>${esc(nameOf(lc.authorId))}</b> ${esc(lc.text.replace(/https?:\/\/\S+/g,"").slice(0,110))}${lc.text.length>110?"…":""}</span></a>`:"";
   const heart='<svg width="17" height="17" viewBox="0 0 24 24" fill="'+(on?"currentColor":"none")+'" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-8.7C1.3 8.4 3 5 6.4 5c2 0 3.3 1.1 4.1 2.3h3C14.3 6.1 15.6 5 17.6 5 21 5 22.7 8.4 21.2 11.3 19 15.6 12 20 12 20z"/></svg>';
   const cmt='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
   const brI='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-11 6"/></svg>';
-  return `<article class="fitem fcard">
+  return `<article class="fitem fcard${isHelp(t)?" fhelp":""}">
     <div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${meta}</div></div>${kind?`<span class="fcat">${esc(kind)}${t.kind==="question"&&!isHelp(t)?"":" · "+esc(t.category)}</span>`:""}</div>
-    ${gen?(cap?`<a class="wtitle ftitle" href="#t-${t.id}">${esc(cap.slice(0,120))}${cap.length>120?"…":""}</a>`:""):`<a class="wtitle ftitle" href="#t-${t.id}">${esc(cleanTitle(t))}</a>`}
-    ${isHelp(t)?`<div class="fhf">${hfChip(t)}<span>${[hfRecs(t).length?hfRecs(t).length+" recommendation"+(hfRecs(t).length===1?"":"s"):"No recommendations yet",t.when?"Needed "+esc(hfWhenLabel(t.when).toLowerCase()):"",t.budget?"Budget "+esc(t.budget):""].filter(Boolean).join(" · ")}</span></div>`:""}
+    ${gen?(cap?`<a class="wtitle ftitle" href="#t-${t.id}">${esc(cap.slice(0,120))}${cap.length>120?"…":""}</a>`:""):`<a class="wtitle ftitle" href="#t-${t.id}">${esc(isHelp(t)?hfT:cleanTitle(t))}</a>`}
+    ${isHelp(t)&&hfD?`<p class="fsnip">${esc(hfD)}</p>`:""}
+    ${isHelp(t)?`<div class="fhf">${hfChip(t)}${(n=>`<span class="fhn">${n?n+" recommendation"+(n===1?"":"s"):"No recommendations yet"}</span>`)(hfRecs(t).length)}${t.budget?`<span>Budget ${esc(t.budget)}</span>`:""}${t.when?`<span>Needed ${esc(hfWhenLabel(t.when).toLowerCase())}</span>`:""}</div>`:""}
     ${t.kind==="place"?`<div class="fpl">${st.reviews?`<span class="fstar2">★ ${st.avg.toFixed(1)}</span> ${st.reviews} review${st.reviews===1?"":"s"}${st.reviews<3?" · early":""}`:"No reviews yet"}</div>`:""}
-    ${cap&&!gen&&!cap.startsWith(cleanTitle(t).replace(/…$/,"").slice(0,40))?`<p class="fsnip">${esc(cap.slice(0,160))}${cap.length>160?"…":""}</p>`:""}
+    ${cap&&!gen&&!hfD&&!cap.startsWith(cleanTitle(t).replace(/…$/,"").slice(0,40))?`<p class="fsnip">${esc(cap.slice(0,160))}${cap.length>160?"…":""}</p>`:""}
     ${media}
     ${latest}
     <div class="frow">
       ${isHelp(t)?"":`<button type="button" class="fa${on?" on":""}" data-act="like" data-id="${t.id}" data-kind="topic" aria-pressed="${on}" aria-label="Like">${heart}<span>${lk||"Like"}</span></button>`}
       ${isHelp(t)&&!t.solved&&t.authorId!==S.me?`<a class="btn pri sm frec" href="#t-${t.id}">Recommend someone</a>`:t.kind==="place"?`<button type="button" class="btn sm frate" data-act="rateIt" data-id="${t.id}">★ Rate it</button>`:""}
-      ${isHelp(t)&&!t.solved&&t.authorId!==S.me?"":`<a class="fa" href="#t-${t.id}">${cmt}<span>${isHelp(t)?(t.solved?"✅ Solved":st.comments?`${st.comments} recommendation${st.comments===1?"":"s"}`:"Recommendations"):t.kind==="question"?(st.comments?`${st.comments} answer${st.comments===1?"":"s"}`:"Answer"):st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Comment"}</span></a>`}
+      ${`<a class="fa" href="#t-${t.id}">${isHelp(t)?"":cmt}<span>${isHelp(t)?"View request →":t.kind==="question"?(st.comments?`${st.comments} answer${st.comments===1?"":"s"}`:"Answer"):st.comments?`${st.comments} comment${st.comments===1?"":"s"}`:"Comment"}</span></a>`}
       ${(t.kind==="question"&&!isHelp(t)&&!(IX.bByTopic.get(t.id)||[]).some(b=>b.endsAt>Date.now()))||hasM?`<button type="button" class="fa" data-act="${t.kind==="question"?"q2battle":"wBattle"}" data-id="${t.id}" title="${t.kind==="question"?"Turn this question into a battle":"Start a battle about this"}">⚔️<span>Battle</span></button>`:""}
       ${st.reviews&&t.kind!=="place"?`<a class="fa fstar" href="#t-${t.id}" title="${st.reviews<3?"Only "+st.reviews+" review"+(st.reviews===1?"":"s")+" so far":""}">★ ${st.avg.toFixed(1)} <small>(${st.reviews}${st.reviews<3?" · early":""})</small></a>`:br?`<a class="fa" href="#t-${t.id}" title="Topics that branched from this one">${brI}<span>${br} branch${br===1?"":"es"}</span></a>`:""}
       <button type="button" class="fa fshare" data-act="shareTopic" data-id="${t.id}" aria-label="Share">${ICON.share}</button>
