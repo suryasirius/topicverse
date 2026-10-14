@@ -876,6 +876,15 @@ body.ingchat{scroll-padding-bottom:calc(var(--gch,72px) + 24px)}
 body:not(.ingchat) .gsticky{display:none}
 .gc-typing{font-size:12.5px;color:var(--muted);padding:0 6px 6px;font-weight:600}.gc-typing[hidden]{display:none}
 .gc-typing::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--brand);margin-right:7px;animation:pulse 1.2s infinite}
+.gtopic.gbr{display:flex;align-items:center;gap:10px;padding:6px 6px 6px 12px;border-left-width:3px;border-radius:10px;max-width:none;min-height:0}
+.gtopic.gbr b{flex:1;min-width:0;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtopic.gbr .gt-m{flex:none;font-size:12.5px;font-weight:800;color:var(--brand-deep);background:var(--brand-soft);border-radius:999px;padding:4px 10px}
+.gitem:has(.gbr){margin:6px 0 2px;gap:3px}.gitem:has(.gbr) .gsys{font-size:11.5px}
+.gthread{margin:2px 0 0 14px;padding-left:10px;border-left:2px solid color-mix(in srgb,var(--brand) 28%,var(--line))}
+.gthread .gm,.gthread .gm.hasref{max-width:100%;margin-top:6px;margin-left:0}.gthread .gm.me{grid-template-columns:minmax(0,1fr);justify-items:start}
+.gthread .gm.cont{margin-top:2px}.gthread.d2,.gthread.d3{margin-left:10px}
+.gbp{margin:3px 0 0 38px}.gbp.me{margin:3px 0 0;text-align:right}
+.gbp a{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:800;color:var(--brand-deep);background:var(--brand-soft);border-radius:999px;padding:4px 11px;text-decoration:none}
 @media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
@@ -1949,7 +1958,8 @@ function gTopicCard(t){
     if(b) return `<div class="gsys">⚔️ <b>${who}</b> started a battle</div><div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}<a class="gopen" href="#t-${t.id}">Open battle →</a></div>`; }
   if(t.kind==="prediction") return `<div class="gsys">🔮 <b>${who}</b> made a prediction</div><div class="gcw">${predCard(t)}</div>`;
   return `<div class="gsys">${t.branchOf?"🌿":t.kind==="question"?"❓":"💬"} <b>${who}</b> ${t.branchOf?"branched a message into a topic":"started a "+(t.kind==="question"?"question":"topic")}</div>
-    <a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open discussion →</span></a>`;
+    ${t.branchOf?`<a class="gtopic gbr" href="#t-${t.id}"><b>${esc(t.title)}</b><span class="gt-m">${s.comments?`💬 ${s.comments}`:"Open"} →</span></a>`
+    :`<a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open discussion →</span></a>`}`;
 }
 function gLinkCards(text){
   const ids=[...new Set([...String(text||"").matchAll(/(?:#t-|\/t\/)([A-Za-z0-9_-]{3,60})/g)].map(m=>m[1]))].slice(0,2);
@@ -1964,9 +1974,9 @@ function gShareEmbed(tid){
   const s=stat(t.id);
   return `<a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open →</span></a>`;
 }
-function gMsgHTML(m,prev,gid){
+function gMsgHTML(m,prev,gid,nested){
   const mine=m.authorId===S.me, cont=prev&&prev.m&&prev.m.authorId===m.authorId&&m.createdAt-prev.m.createdAt<5*6e4&&dayLbl(prev.at)===dayLbl(m.createdAt);
-  const rep=m.replyTo&&gMsgs(gid).find(x=>x.id===m.replyTo);
+  const rep=!nested&&m.replyTo&&gMsgs(gid).find(x=>x.id===m.replyTo);
   const body=m.deletedAt?`<i class="gdel">🚫 This message was deleted</i>`
     :`${rep?`<button type="button" class="gq" data-act="gJump" data-id="${esc(rep.id)}"><b>${esc(rep.authorId===S.me?"You":nameOf(rep.authorId))}</b><span>${esc(rep.deletedAt?"Deleted message":(rep.text||"📷 Photo").slice(0,90))}</span></button>`:""}
       ${(m.media||[]).length?`<div class="gph">${m.media.map(id=>{ const x=gMedia(id); return x?`<button type="button" data-act="viewMedia" data-id="${esc(id)}" aria-label="Open photo"><img src="${x.data}" alt="" loading="lazy" style="aspect-ratio:${x.w||4}/${x.h||3}"></button>`:`<span class="gph-x">📷</span>`; }).join("")}</div>`:""}
@@ -1975,7 +1985,7 @@ function gMsgHTML(m,prev,gid){
   return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}" id="gm-${esc(m.id)}" data-day="${esc(dayLbl(m.createdAt))}" data-who="${esc(mine?"You":nameOf(m.authorId))}">
     ${!mine&&!cont?`<a class="gm-av" href="#u-${esc(m.authorId)}">${avatar(m.authorId,"xs")}</a>`:""}
     <div class="gb" data-act="gTap" data-id="${esc(m.id)}">${!mine&&!cont?`<div class="gn">${esc(nameOf(m.authorId))}</div>`:""}${body}<span class="gt">${hhmm(m.createdAt)}${m._pending?" · sending…":""}</span></div>
-    ${sel?`<div class="gacts2"><button type="button" class="act" data-act="gReply" data-id="${esc(m.id)}">↩ Reply</button>${m.text?`<button type="button" class="act" data-act="gCopy" data-id="${esc(m.id)}">Copy</button><button type="button" class="act" data-act="gBranch" data-id="${esc(m.id)}">🌿 Branch into a topic</button>`:""}${canDel?`<button type="button" class="act" data-act="gDel" data-id="${esc(m.id)}">Delete</button>`:""}</div>`:""}
+    ${sel?`<div class="gacts2"><button type="button" class="act" data-act="gReply" data-id="${esc(m.id)}">↩ Reply</button>${m.text?`<button type="button" class="act" data-act="gCopy" data-id="${esc(m.id)}">Copy</button>${[...S.topics.values()].some(t=>t.branchOf===m.id&&!t.deletedAt)?"":`<button type="button" class="act" data-act="gBranch" data-id="${esc(m.id)}">🌿 Branch into a topic</button>`}`:""}${canDel?`<button type="button" class="act" data-act="gDel" data-id="${esc(m.id)}">Delete</button>`:""}</div>`:""}
   </div>`;
 }
 function vGroup(gid){
@@ -2003,8 +2013,20 @@ function vGroup(gid){
     const n=UI.gcNG===gid?UI.gcN:80, shown=items.slice(-n), hidden=items.length-shown.length;
     const serverMore=!UI.gNoMore?.[gid]&&[...S.gmsgs.values()].filter(m=>m.groupId===gid).length>=100;
     let out="", prev=null, lastDay="";
+    const ids=new Set(shown.filter(i=>i.m).map(i=>i.m.id)), kids=new Map(), brBy=new Map();
+    for(const it of shown){ if(it.m&&it.m.replyTo&&ids.has(it.m.replyTo)&&it.m.replyTo!==it.m.id){ if(!kids.has(it.m.replyTo)) kids.set(it.m.replyTo,[]); kids.get(it.m.replyTo).push(it); } }
+    for(const it of shown){ if(it.t&&it.t.branchOf&&ids.has(it.t.branchOf)) brBy.set(it.t.branchOf,it.t); }
+    const emit=(it,depth,pv)=>{ const m=it.m, own=m.authorId===S.me;
+      let h=gMsgHTML(m,pv,gid,depth>0&&ids.has(m.replyTo));
+      const bt=brBy.get(m.id); if(bt){ const n=stat(bt.id).comments; h+=`<div class="gbp ${own?"me":""}"><a href="#t-${esc(bt.id)}">🌿 Open discussion${n?` · 💬 ${n}`:""} →</a></div>`; }
+      const ks=(kids.get(m.id)||[]).sort((a,b)=>a.at-b.at);
+      if(ks.length){ let pk=null; const inner=ks.map(k=>{ const r=emit(k,Math.min(depth+1,3),pk); pk=k; return r; }).join("");
+        h+=depth>=3?inner:`<div class="gthread d${depth+1}">${inner}</div>`; }
+      return h; };
     for(const it of shown){ const d=dayLbl(it.at); if(d!==lastDay){ out+=`<div class="gday"><span>${d}</span></div>`; lastDay=d; prev=null; }
-      out+=it.m?gMsgHTML(it.m,prev,gid):`<div class="gitem" data-day="${esc(d)}" data-who="${esc(nameOf(it.t.authorId))}">${gTopicCard(it.t)}</div>`; prev=it; }
+      if(it.m){ if(it.m.replyTo&&ids.has(it.m.replyTo)&&it.m.replyTo!==it.m.id) continue; out+=emit(it,0,prev); }
+      else { if(it.t.branchOf&&ids.has(it.t.branchOf)) continue; out+=`<div class="gitem" data-day="${esc(d)}" data-who="${esc(nameOf(it.t.authorId))}">${gTopicCard(it.t)}</div>`; }
+      prev=it; }
     const intro=`<div class="gintro">${g.desc?`<p>${esc(g.desc)}</p>`:""}<span class="muted">${priv?"Only members can read this chat.":"Only members can read this chat, even in a public group."}</span>${mem.length<3?`<button type="button" class="linkb" data-act="copyInvite" data-id="${esc(gid)}">🔗 Invite friends</button>`:""}</div>`;
     body=`<div class="gchat" id="gchat">${hidden>0||serverMore?`<button type="button" class="btn sm gold" data-act="gOlder" data-id="${esc(gid)}">Load earlier messages</button>`:intro}
       ${items.length?out:`<div class="gempty"><b>No messages yet</b><span>Say hi 👋, or tap ＋ to start a topic, a battle or a prediction.</span></div>`}</div>`;
@@ -2066,7 +2088,7 @@ async function gSend(){
     let media=[];
     if(photos.length){ media=await phSave("gc",{gmsgId:id,groupId:gid}); if(!media) throw {message:"The photo didn’t upload. Tap send to try again."}; PH.gc=photos.map((a,i)=>({...a,mid:media[i]})); }
     ta.value=""; ta.style.height=""; try{ sessionStorage.removeItem("tt_gdraft_"+gid); }catch{}
-    UI.gcStick=true;
+    if(replyTo) UI.gcFocus=id; else UI.gcStick=true;
     await db.doc("gmsgs/"+id).set({groupId:gid,authorId:S.me,text,createdAt:Date.now(),...(replyTo?{replyTo}:{}),...(media.length?{media}:{})});
     UI.gcRetry=null; UI.gcReply=null; PH.gc=[]; gcBar();
     try{ localStorage.setItem("tt_gread_"+gid,String(Date.now())); }catch{}
@@ -2111,7 +2133,8 @@ function gcSync(changed,atBottom){
   if(!on){ UI.gcLast=null; return; }
   const gm=c.querySelectorAll("[data-act=newTopic],[data-act=newBattle],[data-act=newPred],[data-act=newQuestion]"); gm.forEach(b=>b.dataset.group=gid);
   if(UI.gcLast!==gid){ const ta=$("#gc-ta"); let d=""; try{ d=sessionStorage.getItem("tt_gdraft_"+gid)||""; }catch{} ta.value=d; UI.gcReply=null; PH.gc=[]; UI.gcRetry=null; gcBar(); UI.gcLast=gid; changed=true; }
-  if(UI.gKeepY!=null){ window.scrollTo(0,document.documentElement.scrollHeight-UI.gKeepY); UI.gKeepY=null; }
+  if(UI.gcFocus){ const f=UI.gcFocus; requestAnimationFrame(()=>{ const t=document.getElementById("gm-"+f); if(t){ UI.gcFocus=null; t.scrollIntoView({block:"center"}); } }); }
+  else if(UI.gKeepY!=null){ window.scrollTo(0,document.documentElement.scrollHeight-UI.gKeepY); UI.gKeepY=null; }
   else { if(changed){ UI.gcHold=Date.now()+3000; const toEnd=()=>{ if(UI.gcView&&Date.now()<(UI.gcHold||0)) window.scrollTo(0,document.documentElement.scrollHeight); }; setTimeout(toEnd,350); setTimeout(toEnd,1200); } if(changed||atBottom||UI.gcStick||Date.now()<(UI.gcHold||0)){ requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight)); UI.gcStick=false; } }
   try{ localStorage.setItem("tt_gread_"+gid,String(Date.now())); }catch{}
 }
@@ -3892,7 +3915,7 @@ document.addEventListener("click", async e=>{
       if(!(await gate())) break;
       const txt=m.text.replace(/\s+/g," ").trim(), cut=txt.length>110, title=cut?txt.slice(0,107).replace(/\s+\S*$/,"")+"…":txt, tid=rid("t");
       UI.gSel=null;
-      try{ await db.doc("topics/"+tid).set({title,desc:cut?m.text.slice(0,2000):"",category:"Other",kind:"topic",tags:[],location:"",authorId:S.me,parentId:null,originCommentId:null,createdAt:Date.now(),groupId:gid,branchOf:id,branchFrom:m.authorId}); UI.gcStick=true; toast("Branched into a topic"); }
+      try{ await db.doc("topics/"+tid).set({title,desc:cut?m.text.slice(0,2000):"",category:"Other",kind:"topic",tags:[],location:"",authorId:S.me,parentId:null,originCommentId:null,createdAt:Date.now(),groupId:gid,branchOf:id,branchFrom:m.authorId}); toast("Branched into a topic"); }
       catch(ex){ toast((ex&&ex.message)||"Couldn’t branch that message"); }
       schedule(); break; }
     case "gJump": { const t=document.getElementById("gm-"+id); if(t){ t.scrollIntoView({block:"center",behavior:"smooth"}); t.classList.add("flash"); setTimeout(()=>t.classList.remove("flash"),1600); } else toast("That message is further up. Tap Load earlier messages."); break; }
