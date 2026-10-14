@@ -111,7 +111,9 @@ function limited(key, max, windowMs) {
   arr.push(now); hits.set(key, arr); return arr.length > max;
 }
 setInterval(() => { const now = Date.now(); for (const [k, a] of hits) if (!a.some(t => now - t < 36e5)) hits.delete(k); }, 6e5).unref();
-const ipOf = req => (TRUST_PROXY && req.headers["x-forwarded-for"]?.split(",")[0].trim()) || req.socket.remoteAddress || "?";
+const isLoop = a => a === "127.0.0.1" || a === "::1" || a === "::ffff:127.0.0.1";
+// behind nginx every request arrives from loopback, so trust X-Forwarded-For then (only a local proxy can connect from loopback); otherwise everyone shares one IP and one rate-limit bucket
+const ipOf = req => ((TRUST_PROXY || isLoop(req.socket.remoteAddress)) && req.headers["x-forwarded-for"]?.split(",")[0].trim()) || req.socket.remoteAddress || "?";
 
 // ---------- visibility ----------
 const role = (gid, uid) => (uid && DOCS.gmembers.get(`${gid}__${uid}`)?.role) || null;
@@ -692,6 +694,14 @@ const server = http.createServer(async (req, res) => {
       const page = older.slice(0, 100), ids = new Set(page.flatMap(x => x.data.media || []));
       const media = [...ids].map(m => DOCS.media.get(m) && { id: m, data: outDoc("media", m, DOCS.media.get(m), uid) }).filter(Boolean);
       return json(res, 200, { msgs: page, media, more: older.length > 100 });
+    }
+    if (p === "/api/typing") {
+      // "someone is typing" ping: held only in memory, sent live to the other members of the group, never stored
+      const gid = String(body.groupId || "");
+      if (!uid || !role(gid, uid)) return json(res, 200, { ok: true });
+      if (limited("typing:" + uid + ":" + gid, 12, 3e4)) return json(res, 200, { ok: true });
+      for (const c of clients) if (c.uid && c.uid !== uid && role(gid, c.uid)) send(c, { t: "typing", g: gid, u: uid });
+      return json(res, 200, { ok: true });
     }
     if (p === "/api/join") {
       if (limited("join:" + uid, 20, 6e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many tries. Wait a few minutes." } });

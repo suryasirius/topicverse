@@ -30,6 +30,7 @@
       let m; try { m = JSON.parse(e.data); } catch { return; }
       if (m.t === "doc") { if (m.data) col(m.col).set(m.id, m.data); else col(m.col).delete(m.id); emit(m.col); }
       else if (m.t === "reload") loadAll().catch(() => { });
+      else if (m.t === "typing") { try { window.dispatchEvent(new CustomEvent("tt-typing", { detail: m })); } catch { } }
     };
     es.onerror = () => { dropped = true; };
     es.onopen = () => { if (dropped) { dropped = false; loadAll().catch(() => { }); } };

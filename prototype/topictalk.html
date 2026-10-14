@@ -868,6 +868,14 @@ body.ingchat{scroll-padding-bottom:calc(var(--gch,72px) + 24px)}
 .fcard .whead .wwho .muted{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
 .fcard .fcat,.fcat{border:1px solid color-mix(in srgb,currentColor 25%,transparent);border-radius:999px}
 .fo-h{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+/* GROUP CHAT v5: turn spacing + floating day/sender chip */
+.gm:not(.cont){margin-top:16px}.gday+.gm{margin-top:6px}
+.gsticky{position:fixed;left:50%;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:8px;padding:5px 13px;border-radius:999px;background:var(--surface);border:1px solid color-mix(in srgb,var(--brand) 35%,var(--line));box-shadow:0 3px 12px rgba(0,0,0,.12);font-size:12.5px;color:var(--muted);opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;max-width:80vw}
+.gsticky.on{opacity:1}.gsticky b{color:var(--brand-deep);font-weight:800;overflow:hidden;text-overflow:ellipsis}.gsticky span{font-weight:700;color:var(--ink)}
+.gsticky i{width:3px;height:3px;border-radius:50%;background:var(--muted);flex:none}
+body:not(.ingchat) .gsticky{display:none}
+.gc-typing{font-size:12.5px;color:var(--muted);padding:0 6px 6px;font-weight:600}.gc-typing[hidden]{display:none}
+.gc-typing::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--brand);margin-right:7px;animation:pulse 1.2s infinite}
 @media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
@@ -1964,7 +1972,7 @@ function gMsgHTML(m,prev,gid){
       ${(m.media||[]).length?`<div class="gph">${m.media.map(id=>{ const x=gMedia(id); return x?`<button type="button" data-act="viewMedia" data-id="${esc(id)}" aria-label="Open photo"><img src="${x.data}" alt="" loading="lazy" style="aspect-ratio:${x.w||4}/${x.h||3}"></button>`:`<span class="gph-x">📷</span>`; }).join("")}</div>`:""}
       ${m.ref&&m.text?`<div class="gtx gtx-note">${rich(m.text).replace(/\n/g,"<br>")}</div>`:""}${m.ref?`<div class="gshared"><div class="gshl">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:(m.text?`<div class="gtx">${rich(m.text).replace(/\n/g,"<br>")}</div>`:"")}${gLinkCards(m.text)}`;
   const sel=UI.gSel===m.id&&!m.deletedAt, canDel=mine||isAdmin(gid);
-  return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}" id="gm-${esc(m.id)}">
+  return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}" id="gm-${esc(m.id)}" data-day="${esc(dayLbl(m.createdAt))}" data-who="${esc(mine?"You":nameOf(m.authorId))}">
     ${!mine&&!cont?`<a class="gm-av" href="#u-${esc(m.authorId)}">${avatar(m.authorId,"xs")}</a>`:""}
     <div class="gb" data-act="gTap" data-id="${esc(m.id)}">${!mine&&!cont?`<div class="gn">${esc(nameOf(m.authorId))}</div>`:""}${body}<span class="gt">${hhmm(m.createdAt)}${m._pending?" · sending…":""}</span></div>
     ${sel?`<div class="gacts2"><button type="button" class="act" data-act="gReply" data-id="${esc(m.id)}">↩ Reply</button>${m.text?`<button type="button" class="act" data-act="gCopy" data-id="${esc(m.id)}">Copy</button>`:""}${canDel?`<button type="button" class="act" data-act="gDel" data-id="${esc(m.id)}">Delete</button>`:""}</div>`:""}
@@ -1996,7 +2004,7 @@ function vGroup(gid){
     const serverMore=!UI.gNoMore?.[gid]&&[...S.gmsgs.values()].filter(m=>m.groupId===gid).length>=100;
     let out="", prev=null, lastDay="";
     for(const it of shown){ const d=dayLbl(it.at); if(d!==lastDay){ out+=`<div class="gday"><span>${d}</span></div>`; lastDay=d; prev=null; }
-      out+=it.m?gMsgHTML(it.m,prev,gid):`<div class="gitem">${gTopicCard(it.t)}</div>`; prev=it; }
+      out+=it.m?gMsgHTML(it.m,prev,gid):`<div class="gitem" data-day="${esc(d)}" data-who="${esc(nameOf(it.t.authorId))}">${gTopicCard(it.t)}</div>`; prev=it; }
     const intro=`<div class="gintro">${g.desc?`<p>${esc(g.desc)}</p>`:""}<span class="muted">${priv?"Only members can read this chat.":"Only members can read this chat, even in a public group."}</span>${mem.length<3?`<button type="button" class="linkb" data-act="copyInvite" data-id="${esc(gid)}">🔗 Invite friends</button>`:""}</div>`;
     body=`<div class="gchat" id="gchat">${hidden>0||serverMore?`<button type="button" class="btn sm gold" data-act="gOlder" data-id="${esc(gid)}">Load earlier messages</button>`:intro}
       ${items.length?out:`<div class="gempty"><b>No messages yet</b><span>Say hi 👋, or tap ＋ to start a topic, a battle or a prediction.</span></div>`}</div>`;
@@ -2023,7 +2031,8 @@ function gInfoModal(gid){
 function gcEl(){
   let c=$("#gcomp"); if(c) return c;
   c=document.createElement("div"); c.id="gcomp"; c.className="gcomp"; c.hidden=true;
-  c.innerHTML=`<div class="gc-bar" id="gc-bar" hidden></div>
+  c.innerHTML=`<div class="gc-typing" id="gc-typing" hidden aria-live="polite"></div>
+    <div class="gc-bar" id="gc-bar" hidden></div>
     <div class="gc-menu" id="gc-menu" hidden><button type="button" data-act="newQuestion" class="gc-mi">❓ Ask the group</button><button type="button" data-act="newBattle" class="gc-mi">⚔️ Battle</button><button type="button" data-act="newTopic" class="gc-mi">💬 Topic</button><label class="gc-mi">📷 Photo<input type="file" id="gc-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></label></div>
     <div class="gc-row"><button type="button" class="gc-plus" data-act="gPlus" aria-label="Start a topic, battle or prediction, or add a photo">＋</button>
       <textarea id="gc-ta" rows="1" maxlength="2000" placeholder="Message" aria-label="Message"></textarea>
@@ -2033,7 +2042,7 @@ function gcEl(){
   try{ new ResizeObserver(()=>{ const nearEnd=window.innerHeight+scrollY>=document.documentElement.scrollHeight-160; setH(); if(nearEnd&&UI.gcView) window.scrollTo(0,document.documentElement.scrollHeight); }).observe(c); }catch{}
   try{ window.visualViewport?.addEventListener("resize",()=>{ if(UI.gcView&&document.activeElement?.id==="gc-ta") setTimeout(()=>window.scrollTo(0,document.documentElement.scrollHeight),60); }); }catch{}
   const ta=c.querySelector("#gc-ta"); const grow=()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,132)+"px"; };
-  ta.addEventListener("input",()=>{ grow(); try{ if(UI.gcView) sessionStorage.setItem("tt_gdraft_"+UI.gcView,ta.value); }catch{} });
+  ta.addEventListener("input",()=>{ grow(); gTypingPing(); try{ if(UI.gcView) sessionStorage.setItem("tt_gdraft_"+UI.gcView,ta.value); }catch{} });
   ta.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&matchMedia("(hover:hover) and (pointer:fine)").matches){ e.preventDefault(); gSend(); } });
   ta.addEventListener("focus",()=>{ const m=$("#gc-menu"); if(m) m.hidden=true; });
   c.querySelector("#gc-file").addEventListener("change",async e=>{ const fs=[...e.target.files]; e.target.value=""; PH.gc=PH.gc||[]; $("#gc-menu").hidden=true;
@@ -2066,7 +2075,37 @@ async function gSend(){
 }
 const inGChat=()=>!!UI.gcLast&&location.hash==="#g-"+UI.gcLast&&!$("#gcomp")?.hidden;
 function stayInChat(){ UI.gcStick=true; toast("Posted in the group chat"); schedule(); }
+const GT={last:0,m:new Map()};
+function gTypingPing(){
+  const gid=UI.gcView; if(!gid||!S.me) return; const now=Date.now(); if(now-GT.last<2500) return;
+  if(!($("#gc-ta")?.value||"").trim()) return; GT.last=now;
+  try{ fetch("/api/typing",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({groupId:gid}),keepalive:true}).catch(()=>{}); }catch{}
+}
+function gTypingRender(){
+  const el=$("#gc-typing"); if(!el) return; const gid=UI.gcView, now=Date.now(); let n=0;
+  const g=GT.m.get(gid); if(g){ for(const [u,t] of g) if(t<now) g.delete(u); n=g.size; }
+  if(!gid||!n){ el.hidden=true; el.textContent=""; return; }
+  el.textContent=n===1?"1 person is typing…":n+" people are typing…"; el.hidden=false;
+}
+window.addEventListener("tt-typing",e=>{ const m=e.detail||{}; if(!m.g||!m.u) return; let g=GT.m.get(m.g); if(!g) GT.m.set(m.g,g=new Map()); g.set(m.u,Date.now()+4500); gTypingRender(); clearTimeout(GT.tm); GT.tm=setTimeout(gTypingRender,4700); });
+setInterval(()=>{ if(UI.gcView) gTypingRender(); },1000);
+let gStickyT=0;
+function gStickyInit(){
+  if(window._gsk) return; window._gsk=1;
+  const chip=document.createElement("div"); chip.id="gsticky"; chip.className="gsticky"; chip.hidden=true; chip.setAttribute("aria-hidden","true"); document.body.appendChild(chip);
+  addEventListener("scroll",()=>{
+    if(!UI.gcView){ chip.hidden=true; return; }
+    const top=($(".top")?.getBoundingClientRect().bottom||56)+6; let cur=null;
+    for(const e of document.querySelectorAll("#gchat .gm, #gchat .gitem")){ const r=e.getBoundingClientRect(); if(r.bottom>top+4){ cur=e; break; } }
+    if(!cur){ chip.hidden=true; return; }
+    chip.style.top=top+"px";
+    chip.innerHTML=`<span>${cur.dataset.day||""}</span><i></i><b>${cur.dataset.who||""}</b>`;
+    chip.hidden=false; chip.classList.add("on");
+    clearTimeout(gStickyT); gStickyT=setTimeout(()=>chip.classList.remove("on"),1300);
+  },{passive:true});
+}
 function gcSync(changed,atBottom){
+  gStickyInit();
   const gid=UI.gcView, c=gcEl(), on=!!gid&&!!S.me;
   document.body.classList.toggle("ingchat",on); c.hidden=!on;
   if(!on){ UI.gcLast=null; return; }
