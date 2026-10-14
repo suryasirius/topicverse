@@ -759,6 +759,20 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .pfeed .tcard>a{padding:10px 12px;gap:11px;align-items:flex-start}.pfeed .tcard .thumb,.pfeed .tcard .tile{width:44px!important;height:44px!important;border-radius:10px;font-size:14px!important;flex:none}
 .pfeed .tcard .body{gap:3px}.pfeed .tcard h3{overflow-wrap:anywhere;word-break:break-word;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .pfeed .tcard .meta{font-size:12px;gap:4px 8px}.pfeed .tcard .stats{font-size:12.5px;gap:4px 10px}.pfeed .tcard .csnip,.pfeed .tcard .tgs{display:none}
+/* TYPE & SPACE PASS: calmer Home. scale: 12.5 meta / 14 body / 16-17 titles / 20 headings */
+.home2 .sech{margin-bottom:12px}.home2 .sech h2,.home2 .hsec .sech h2,.home2 .hstrip .sech h2{font-size:20px;line-height:1.25}
+.home2 .hsec,.home2 .hstrip{margin:0 0 26px}.home2 .harea{font-size:14px;margin:4px 0 16px}.home2 .harea .linkb{font-size:14px}
+.home2 .hfeed{gap:14px}.home2 .fcard{padding:16px 16px 8px}.home2 .ftitle{font-size:17px;line-height:1.35;margin:12px 0 4px}
+.home2 .hbattles{gap:14px}.home2 .hbattles>.battle,.home2 .btlive>.battle{flex-basis:min(88%,360px)}
+.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2{padding:16px;gap:14px}
+.home2 .bc2 .bc-top{font-size:12.5px}.home2 .bc2 .bc-live,.home2 .bc2 .bc-end{font-size:11.5px}
+.home2 .bc2 .bc-q{font-size:17px;line-height:1.35}
+.home2 .bc2 .bc-sides{gap:12px}.home2 .bc2 .bc-side{padding:12px;gap:8px}.home2 .bc2 .bc-name{font-size:14px;line-height:1.3}.home2 .bc2 .bc-pct{font-size:28px}
+.home2 .bc2 .bc-mom{font-size:13px;line-height:1.4}.home2 .btlive .bc-mom3 .bc-ml2,.home2 .bc-mom3 .bc-ml2{font-size:13px}.home2 .bc2 .bc-early{font-size:11px}
+.home2 .bc2 .bc-foot{padding-top:12px;margin-top:2px}.home2 .bc2 .bc-by{font-size:12.5px}.home2 .bc2 .bc-btn,.home2 .bc2 .bc-acts .act{font-size:13px}
+.home2 .bdone{padding:16px;gap:12px}.home2 .bdone .bd-top{font-size:12.5px}.home2 .bdone .bd-q{font-size:16.5px;line-height:1.35}.home2 .bdone .bd-win{font-size:16px}
+.home2 .bdone .bd-lab,.home2 .bdone .bd-sum{font-size:13.5px;line-height:1.4}.home2 .bdone .bd-foot{margin-top:0;padding-top:2px}.home2 .bdone .bd-disc{font-size:14px}.home2 .bdone .bd-r{font-size:12.5px}
+@media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
 .htabs{gap:4px;padding:0 2px}.htabs button{display:inline-flex;align-items:center;gap:6px;font:600 14px var(--f-body,inherit);padding:9px 12px 8px;line-height:1.2}
@@ -3436,7 +3450,7 @@ document.addEventListener("click", async e=>{
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
-    case "hTab": UI.htab=el.dataset.v; UI.fyN=10; UI.foSeen0=null; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); } break;
+    case "hTab": UI.htab=el.dataset.v; UI.fyN=10; UI.foSeen0=null; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); }setTimeout(()=>{ const tb=document.querySelector(".htabs"), on=tb&&tb.querySelector(".on"); if(on) tb.scrollLeft=Math.max(0,on.offsetLeft-(tb.clientWidth-on.offsetWidth)/2); },150); break;
     case "bFilter": UI.bf=el.dataset.v; UI.fyN=10; UI.btEndAll=false; schedule(); break;
     case "btEndAll": UI.btEndAll=!UI.btEndAll; schedule(); break;
     case "fyMore": UI.fyN=(UI.fyN||10)+10; schedule(); break;
