@@ -197,7 +197,7 @@
     setStep("email");
   }
   window.ttLogin = () => openLogin();
-  window.ttLogout = async () => { try { await api("/api/logout", {}); } catch { } location.reload(); };
+  window.ttLogout = async () => { try { const reg = await navigator.serviceWorker?.getRegistration(); const sub = reg && await reg.pushManager.getSubscription(); if (sub) { await api("/api/push/unsubscribe", { endpoint: sub.endpoint }); await sub.unsubscribe(); } } catch { } try { await api("/api/logout", {}); } catch { } location.reload(); };
   window.ttJoin = async code => { const j = await api("/api/join", { code }); await loadAll(); return j.groupId; };
   document.addEventListener("click", e => {
     if (e.target.closest("[data-act=ttLogin]")) { e.preventDefault(); openLogin(); }

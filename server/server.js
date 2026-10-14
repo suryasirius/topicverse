@@ -20,6 +20,7 @@ const SECURE_COOKIE = process.env.SECURE_COOKIE === "1";
 
 fs.mkdirSync(path.join(DATA_DIR, "backups"), { recursive: true });
 const sql = new DatabaseSync(path.join(DATA_DIR, "topictalk.db"));
+const push = require("./push")({ sql, dir: DATA_DIR, subject: "https://topictalk.duckdns.org" });
 sql.exec(`
   PRAGMA journal_mode = WAL;
   PRAGMA synchronous = NORMAL;
@@ -392,7 +393,18 @@ function addMember(tid, mu, by) {
   if (!t || t.authorId === mu || DOCS.tmembers.has(k) || !DOCS.handles.has(mu)) return;
   apply("tmembers", k, { topicId: tid, userId: mu, role: "member", addedBy: by || t.authorId, createdAt: Date.now() });
 }
+const PUSH_LABEL = { reply: "replied to you", mention: "mentioned you", tagged: "tagged you in a topic", comment: "commented on a topic you follow", branch: "branched your comment into a new topic", newbranch: "started a branch from a topic you follow", review: "reviewed a topic you follow", like: "liked your post", battle: "started a battle about your comment", newbattle: "started a battle in a topic you follow", resolved: "resolved a prediction you voted on", grouppost: "posted in your group", joined: "joined your group", duel_challenge: "challenged you to a debate duel", duel_accept: "accepted your debate challenge", duel_decline: "declined your debate challenge", duel_turn: "replied in your debate. Your turn", duel_vote: "finished a debate. Voting is open", friend_req: "sent you a friend request", friend_ok: "accepted your friend request", follow: "started following you", invited: "invited you to a discussion", helpreq: "needs help finding something near you", helped: "marked your recommendation as the one that helped" };
+function pushLatest(uid) {
+  let n = 0, last = null;
+  for (const [id, d] of DOCS.notifs) if (d.to === uid && !d.read) { n++; if (!last || d.createdAt > last.d.createdAt) last = { id, d }; }
+  if (!last) return { title: "TopicTalk", body: "You have new activity.", url: "/#alerts", tag: "tt-none" };
+  const d = last.d, who = (DOCS.handles.get(d.from) || {}).handle || "Someone";
+  const what = PUSH_LABEL[d.type] || "has new activity for you";
+  const text = d.text ? `: ${String(d.text).slice(0, 90)}` : "";
+  return { title: n > 1 ? `TopicTalk · ${n} new` : "TopicTalk", body: `${who} ${what}${text}`, url: d.topicId ? `/#t-${d.topicId}` : d.groupId ? `/#g-${d.groupId}` : "/#alerts", tag: "tt-" + last.id };
+}
 function afterWrite(col, id, prev, next) {
+  if (col === "notifs" && next && !prev && next.to) push.notify(next.to);
   if (col === "topics" && next) {
     if (prev && OPEN(prev.access) && !OPEN(next.access)) {
       for (const c of DOCS.comments.values()) if (c.topicId === id) addMember(id, c.authorId);
@@ -520,6 +532,8 @@ const server = http.createServer(async (req, res) => {
 
     const uid = currentUser(req);
     if (req.method === "GET" && p === "/api/config") return json(res, 200, { emailSignup: mail.enabled() });
+    if (req.method === "GET" && p === "/api/push/key") return json(res, 200, { key: push.key() });
+    if (req.method === "GET" && p === "/api/push/latest") { if (!uid) return json(res, 401, { error: { code: "unauthenticated", message: "Log in." } }); return json(res, 200, pushLatest(uid)); }
     if (req.method === "GET" && p === "/api/all") return json(res, 200, { me: meFor(uid), cols: snapshotFor(uid) });
     { const mi = p.match(/^\/api\/img\/([mab])\/([A-Za-z0-9_\-.~:@+]{1,200})$/);
       if (req.method === "GET" && mi) {
@@ -657,6 +671,13 @@ const server = http.createServer(async (req, res) => {
       const stats = {}; for (const e of EVENTS) { let n = 0; for (let d = 0; d < 7; d++) { const r = q.getMeta.get("ev:" + e + ":" + new Date(Date.now() - d * 864e5).toISOString().slice(0, 10)); n += +(r && r.v) || 0; } stats[e] = n; }
       return json(res, 200, { stats });
     }
+    if (p === "/api/push/subscribe" || p === "/api/push/unsubscribe") {
+      if (!uid) deny("Log in first.");
+      const ep = body.endpoint; if (!push.ok(ep)) bad("Bad subscription.");
+      if (limited("push:" + uid, 30, 6e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Try again in a few minutes." } });
+      if (p.endsWith("/subscribe")) push.subscribe(uid, ep); else push.unsubscribe(uid, ep);
+      return json(res, 200, { ok: true });
+    }
     if (p === "/api/write") {
       if (limited("w:" + uid, 150, 6e4)) return json(res, 429, { error: { code: "resource_exhausted", message: "Slow down a little, then try again." } });
       write(uid, body);
@@ -682,7 +703,7 @@ const server = http.createServer(async (req, res) => {
         broadcast("gmembers", mid, DOCS.gmembers.get(mid), null);
         for (const [, m] of DOCS.gmembers) if (m.groupId === gid && m.role === "admin" && m.userId !== uid) {
           const nid = newId("n", 9), n = { to: m.userId, from: uid, type: "joined", groupId: gid, topicId: "", text: g.name, createdAt: Date.now(), read: false };
-          apply("notifs", nid, n); broadcast("notifs", nid, n, null);
+          apply("notifs", nid, n); broadcast("notifs", nid, n, null); push.notify(m.userId);
         }
         reloadFor(c => c.uid === uid);
       }

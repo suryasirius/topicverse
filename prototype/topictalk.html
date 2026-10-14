@@ -781,6 +781,9 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .home2 .fhelp .frow{margin-top:14px;padding-top:6px}
 @media(max-width:480px){.home2 .fhelp{padding:16px 16px 6px}.home2 .fhelp .ftitle{font-size:17px}}
 .bc2 .bc-mom3{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:10px}.bc2 .bc-mom3 .bc-ml{flex:none}.bc2 .bc-mom3 .bc-why{margin:0;white-space:nowrap}
+.pushcard{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--brand) 22%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--brand-soft) 55%,var(--surface));font-size:14px}
+.pushcard .pc-t{display:flex;flex-direction:column;gap:2px;min-width:0}.pushcard .pc-t span{font-size:13px;color:var(--muted);line-height:1.35}.pushcard .pc-b{display:flex;align-items:center;gap:4px;flex:none}.pushcard .pc-x{border:0;background:none;color:var(--muted);font-size:16px;padding:6px 8px;cursor:pointer}.pushcard.ok{background:var(--surface);border-color:var(--line)}
+.pushcard.slim{margin:0 0 12px}
 @media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
@@ -1585,7 +1588,7 @@ function vHome(){
       <button type="button" class="ha ha-rv" data-act="reviewPick"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/></svg></i><span class="ha-tx"><b>Write a review</b><span>Rate places and things</span></span></button>
       <button type="button" class="ha ha-ask" data-act="newQuestion"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6"/></svg></i><span class="ha-tx"><b>Ask the community</b><span>Ask people who know</span></span></button>
       <button type="button" class="ha ha-bt" data-act="newBattle"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg></i><span class="ha-tx"><b>Start a battle</b><span>Two sides, you vote</span></span></button>
-    </div><div class="hmore2"><button type="button" class="linkb" data-act="create">More: topic, video or photo, group ›</button></div>
+    </div><div class="hmore2"><button type="button" class="linkb" data-act="create">More: topic, video or photo, group ›</button></div>${pushCard(true)}
   <nav class="htabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" aria-selected="${tab===k}" class="${tab===k?"on":""}" data-act="hTab" data-v="${k}">${l}</button>`).join("")}</nav><button type="button" class="hfban" data-act="newQuestion" data-help="1"><i class="hfb-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></i><span class="hfb-tx"><b>Help someone find it</b><span>Ask for recommendations from people in your area.</span></span><svg class="hfb-ch" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>`;
   let body="";
   if(tab==="fy"){
@@ -2336,6 +2339,29 @@ function reviewForm(t,mine){
     <div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn sm" data-act="closeReview">Cancel</button><button class="btn pri sm" data-act="saveReview" data-topic="${t.id}">${mine?"Update review":"Post review"}</button></div></div>`;
 }
 
+/* ---------- phone alerts (Web Push) ---------- */
+const PUSH={sup:("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window),sub:false,checked:false};
+const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const IS_STANDALONE=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+const b64uToU8=v=>{ const b=atob(v.replace(/-/g,"+").replace(/_/g,"/")+"=".repeat((4-v.length%4)%4)); return Uint8Array.from(b,c=>c.charCodeAt(0)); };
+const pushPost=(path,endpoint)=>fetch(path,{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({endpoint})});
+async function pushRefresh(){
+  if(!PUSH.sup||!S.me) return; PUSH.checked=true;
+  try{ const reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(), on=!!sub&&Notification.permission==="granted", was=PUSH.sub;
+    if(on) await pushPost("/api/push/subscribe",sub.endpoint);
+    PUSH.sub=on; if(was!==on) schedule(); }catch{}
+}
+function pushCard(slim){
+  if(!S.me) return "";
+  if(PUSH.sub) return slim?"":`<div class="pushcard ok"><span>🔔 Phone alerts are on</span><button type="button" class="linkb" data-act="pushOff">Turn off</button></div>`;
+  let later=false; try{ later=slim&&localStorage.getItem("tt_pushlater")==="1"; }catch{}
+  if(later) return "";
+  if(IS_IOS&&!IS_STANDALONE) return slim?"":`<div class="pushcard"><span class="pc-t"><b>🔔 Get alerts on your iPhone</b><span>Tap Share, then “Add to Home Screen”. Open TopicTalk from that icon and turn alerts on here.</span></span></div>`;
+  if(!PUSH.sup) return "";
+  if(Notification.permission==="denied") return slim?"":`<div class="pushcard"><span class="pc-t"><b>Alerts are blocked</b><span>Allow notifications for this site in your browser settings to get them.</span></span></div>`;
+  return `<div class="pushcard${slim?" slim":""}"><span class="pc-t"><b>🔔 Get alerts on your phone</b><span>Replies, mentions and help requests, even when TopicTalk is closed.</span></span><span class="pc-b"><button type="button" class="btn pri sm" data-act="pushOn">Turn on</button>${slim?`<button type="button" class="pc-x" data-act="pushLater" aria-label="Not now">✕</button>`:""}</span></div>`;
+}
+setTimeout(()=>pushRefresh(),4000);
 function groupNotifs(ns){
   const G=/^(reply|comment|mention|like|review)$/, out=[];
   for(const n of ns){
@@ -2348,7 +2374,8 @@ function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
   const ns=notifList().sort((a,b)=>b.createdAt-a.createdAt);
   const label={reply:"replied to you",mention:"mentioned you",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped"};
-  return `<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read||UI.keep?.has(n.id))?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
+  if(!PUSH.checked) pushRefresh();
+  return pushCard(false)+`<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read||UI.keep?.has(n.id))?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
   ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}" href="${n.duelId?"#d-"+esc(n.duelId):n.type==="joined"?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
    :emptyBox("You’re all caught up","Replies, @mentions, branches and battles from your comments, and activity on topics you follow show up here.")}`;
 }
@@ -3786,6 +3813,16 @@ document.addEventListener("click", async e=>{
     case "cardFmt": closeModal(); openCard(openCard.kind,openCard.id,el.dataset.f); break;
     case "shareBattle": openCard("battle",id); break;
     case "sharePred": openCard("pred",id); break;
+    case "pushOn": { el.disabled=true;
+      try{ const perm=await Notification.requestPermission(); if(perm!=="granted"){ toast("Alerts stay off. You can allow them in your browser settings."); break; }
+        const reg=await navigator.serviceWorker.ready, key=(await (await fetch("/api/push/key")).json()).key; let sub=await reg.pushManager.getSubscription();
+        if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToU8(key)});
+        const r=await pushPost("/api/push/subscribe",sub.endpoint); if(!r.ok) throw new Error("save");
+        PUSH.sub=true; toast("Phone alerts are on"); }
+      catch(ex){ toast("Couldn’t turn on alerts on this device."); }
+      el.disabled=false; schedule(); break; }
+    case "pushOff": { try{ const reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){ await pushPost("/api/push/unsubscribe",sub.endpoint); await sub.unsubscribe(); } PUSH.sub=false; toast("Phone alerts are off"); }catch{ toast("Couldn’t turn off alerts."); } schedule(); break; }
+    case "pushLater": try{ localStorage.setItem("tt_pushlater","1"); }catch{} schedule(); break;
     case "shareGroup": { const t=S.topics.get(id); if(!gShareOK(t)) break;
       const gs=[...S.myGroups].map(x=>S.groups.get(x)).filter(Boolean);
       openModal(`<h2>Share to a group</h2><p class="muted" style="margin:0 0 8px">“${esc(t.title.slice(0,80))}” will appear in the group chat. Only members of that group will see the message.</p>
