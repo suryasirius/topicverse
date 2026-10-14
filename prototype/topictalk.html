@@ -794,6 +794,24 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .pred .winner{color:var(--accent-deep)}
 .duelmini{border-left:3px solid var(--accent)}.duelmini:hover{border-color:var(--accent)}
 .ttype{color:var(--muted)}
+/* GROUP CHAT v2: calmer conversation */
+.gch{margin:0 0 2px}.gch .tile{width:40px;height:40px;font-size:14px;border-radius:12px}.gch-t h1{font-size:18px}.gch-s{font-size:12.5px}.gch-i{width:36px;height:36px;font-size:16px}
+.gtabs{margin:0 0 6px}.gtabs button{padding:9px 12px;font-size:14px}
+.gchat{gap:0;padding-bottom:4px}
+.gday{margin:14px 0 4px}.gday span{border:0;background:none;padding:2px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.gm{margin-top:10px;max-width:84%}.gm.cont{margin-top:2px}
+.gb{padding:6px 11px 6px;border-radius:5px 18px 18px 18px;box-shadow:none}.gm.cont .gb{border-radius:18px}.gm.me .gb{border-radius:18px 5px 18px 18px}.gm.me.cont .gb{border-radius:18px}
+.gtx{font-size:15.5px;line-height:1.4}.gb>.gtx{display:inline}
+.gt{display:inline-block;float:right;margin:8px 0 -2px 12px;font-size:10.5px;opacity:.85}.gb::after{content:"";display:block;clear:both}
+.gn{font-size:12.5px;margin-bottom:0}
+.gitem{margin:14px 0 6px;gap:8px}.gsys{font-size:12.5px}
+.gcw{max-width:100%;border-radius:18px}
+.gopen{display:flex;align-items:center;justify-content:center;margin:8px 0 0;padding:11px 14px;border-radius:12px;background:var(--brand-soft);color:var(--brand-deep);font-weight:800;font-size:14.5px;text-decoration:none}
+.gopen:hover{background:color-mix(in srgb,var(--brand) 22%,var(--surface))}
+.gshared .gcw{margin:4px 0 0}
+.gcomp{padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))}
+.gc-plus,.gc-send{width:42px;height:42px}
+@media(max-width:480px){.gm{max-width:90%}}
 @media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
@@ -1862,7 +1880,7 @@ const dayLbl=t=>{ const d=new Date(t), n=new Date(), y=new Date(Date.now()-864e5
 function gTopicCard(t){
   const who=esc(nameOf(t.authorId)), s=stat(t.id);
   if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[]).sort((x,y)=>y.createdAt-x.createdAt)[0];
-    if(b) return `<div class="gsys">⚔️ <b>${who}</b> started a battle</div><div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}</div>`; }
+    if(b) return `<div class="gsys">⚔️ <b>${who}</b> started a battle</div><div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}<a class="gopen" href="#t-${t.id}">Open battle →</a></div>`; }
   if(t.kind==="prediction") return `<div class="gsys">🔮 <b>${who}</b> made a prediction</div><div class="gcw">${predCard(t)}</div>`;
   return `<div class="gsys">${t.kind==="question"?"❓":"💬"} <b>${who}</b> started a ${t.kind==="question"?"question":"topic"}</div>
     <a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open discussion →</span></a>`;
@@ -1875,7 +1893,7 @@ function gLinkCards(text){
 const gShareOK=t=>!!t&&!!S.me&&(!t.access||t.access==="open")&&canSee(t)&&(!t.groupId||t.madePublic||S.groups.get(t.groupId)?.visibility==="public")&&S.myGroups.size>0;
 function gShareEmbed(tid){
   const t=S.topics.get(tid); if(!t||t.stub) return `<div class="gtopic gx"><b>Shared post</b><span class="gt-d">This post isn’t available any more.</span></div>`;
-  if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[]).sort((x,y)=>y.createdAt-x.createdAt)[0]; if(b) return `<div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}</div>`; }
+  if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[]).sort((x,y)=>y.createdAt-x.createdAt)[0]; if(b) return `<div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}<a class="gopen" href="#t-${t.id}">Open battle →</a></div>`; }
   if(t.kind==="prediction") return `<div class="gcw">${predCard(t)}</div>`;
   const s=stat(t.id);
   return `<a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open →</span></a>`;
