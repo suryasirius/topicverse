@@ -1948,7 +1948,7 @@ function gTopicCard(t){
   if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[]).sort((x,y)=>y.createdAt-x.createdAt)[0];
     if(b) return `<div class="gsys">⚔️ <b>${who}</b> started a battle</div><div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}<a class="gopen" href="#t-${t.id}">Open battle →</a></div>`; }
   if(t.kind==="prediction") return `<div class="gsys">🔮 <b>${who}</b> made a prediction</div><div class="gcw">${predCard(t)}</div>`;
-  return `<div class="gsys">${t.kind==="question"?"❓":"💬"} <b>${who}</b> started a ${t.kind==="question"?"question":"topic"}</div>
+  return `<div class="gsys">${t.branchOf?"🌿":t.kind==="question"?"❓":"💬"} <b>${who}</b> ${t.branchOf?"branched a message into a topic":"started a "+(t.kind==="question"?"question":"topic")}</div>
     <a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open discussion →</span></a>`;
 }
 function gLinkCards(text){
@@ -1975,7 +1975,7 @@ function gMsgHTML(m,prev,gid){
   return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}" id="gm-${esc(m.id)}" data-day="${esc(dayLbl(m.createdAt))}" data-who="${esc(mine?"You":nameOf(m.authorId))}">
     ${!mine&&!cont?`<a class="gm-av" href="#u-${esc(m.authorId)}">${avatar(m.authorId,"xs")}</a>`:""}
     <div class="gb" data-act="gTap" data-id="${esc(m.id)}">${!mine&&!cont?`<div class="gn">${esc(nameOf(m.authorId))}</div>`:""}${body}<span class="gt">${hhmm(m.createdAt)}${m._pending?" · sending…":""}</span></div>
-    ${sel?`<div class="gacts2"><button type="button" class="act" data-act="gReply" data-id="${esc(m.id)}">↩ Reply</button>${m.text?`<button type="button" class="act" data-act="gCopy" data-id="${esc(m.id)}">Copy</button>`:""}${canDel?`<button type="button" class="act" data-act="gDel" data-id="${esc(m.id)}">Delete</button>`:""}</div>`:""}
+    ${sel?`<div class="gacts2"><button type="button" class="act" data-act="gReply" data-id="${esc(m.id)}">↩ Reply</button>${m.text?`<button type="button" class="act" data-act="gCopy" data-id="${esc(m.id)}">Copy</button><button type="button" class="act" data-act="gBranch" data-id="${esc(m.id)}">🌿 Branch into a topic</button>`:""}${canDel?`<button type="button" class="act" data-act="gDel" data-id="${esc(m.id)}">Delete</button>`:""}</div>`:""}
   </div>`;
 }
 function vGroup(gid){
@@ -2373,7 +2373,7 @@ function vTopic(id){
     ${t.banner&&!t.deletedAt?`<div class="banner"><img src="${esc(t.banner)}" alt=""></div>`:""}
     ${chain.length?`<div class="lineage"><span>Branched from</span>${chain.map(p=>`<a href="#t-${p.id}">${esc(p.deletedAt?"Deleted topic":p.title)}</a>`).join("<span>›</span>")}</div>`:""}
     <div class="thead"><div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>
-      <div style="min-width:0"><div class="meta">${catChip(t.category)}${accOf(t)!=="open"?`<span class="tag c-gen" title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span class="tag c-gen">${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" class="tag c-loc">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}${t.editedAt?" · edited":""}</span></div>
+      <div style="min-width:0"><div class="meta">${catChip(t.category)}${accOf(t)!=="open"?`<span class="tag c-gen" title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span class="tag c-gen">${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.branchOf?`<span class="tag c-gen">🌿 From group chat</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" class="tag c-loc">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}${t.editedAt?" · edited":""}</span></div>
       <h1>${t.deletedAt?`<span class="muted" style="font-style:italic">Topic deleted by creator</span>`:esc(t.title)}</h1></div></div>
     ${t.deletedAt&&t.mergedInto&&S.topics.get(t.mergedInto)?`<div class="gbanner">This page was merged into <a href="#t-${esc(t.mergedInto)}">${esc(S.topics.get(t.mergedInto).title)}</a>.</div>`:t.deletedAt?`<div class="gbanner">The creator deleted this topic. The discussion stays, but new comments, reviews and votes are closed.</div>`:""}
     ${(()=>{ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private";
@@ -3885,6 +3885,16 @@ document.addEventListener("click", async e=>{
     case "gCopy": { const m=gMsgs(UI.gcView||"").find(x=>x.id===id); UI.gSel=null; try{ await navigator.clipboard.writeText(m?.text||""); toast("Copied"); }catch{ toast("Couldn’t copy"); } schedule(); break; }
     case "gDel": { if(!el.dataset.confirm){ el.dataset.confirm="1"; el.textContent="Tap again to delete for everyone"; break; }
       UI.gSel=null; try{ await db.doc("gmsgs/"+id).update({deletedAt:Date.now(),text:"",media:[]}); }catch(ex){ toast(ex.message||"Couldn’t delete"); } break; }
+    case "gBranch": {
+      const gid=UI.gcView, m=gMsgs(gid||"").find(x=>x.id===id); if(!m||!m.text||m.deletedAt||!memberOf(gid)) break;
+      const had=[...S.topics.values()].find(t=>t.branchOf===id&&!t.deletedAt);
+      if(had){ UI.gSel=null; toast("That message already has a topic."); location.hash="#t-"+had.id; break; }
+      if(!(await gate())) break;
+      const txt=m.text.replace(/\s+/g," ").trim(), cut=txt.length>110, title=cut?txt.slice(0,107).replace(/\s+\S*$/,"")+"…":txt, tid=rid("t");
+      UI.gSel=null;
+      try{ await db.doc("topics/"+tid).set({title,desc:cut?m.text.slice(0,2000):"",category:"Other",kind:"topic",tags:[],location:"",authorId:S.me,parentId:null,originCommentId:null,createdAt:Date.now(),groupId:gid,branchOf:id,branchFrom:m.authorId}); UI.gcStick=true; toast("Branched into a topic"); }
+      catch(ex){ toast((ex&&ex.message)||"Couldn’t branch that message"); }
+      schedule(); break; }
     case "gJump": { const t=document.getElementById("gm-"+id); if(t){ t.scrollIntoView({block:"center",behavior:"smooth"}); t.classList.add("flash"); setTimeout(()=>t.classList.remove("flash"),1600); } else toast("That message is further up. Tap Load earlier messages."); break; }
     case "gOlder": {
       UI.gcHold=0; const gid=id, have=gMsgs(gid); const total=have.length+(IX.tByGroup.get(gid)||[]).length, n=UI.gcNG===gid?UI.gcN:80;
