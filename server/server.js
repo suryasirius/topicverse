@@ -621,9 +621,10 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, { ok: true });
     }
     if (p === "/api/reset") {
-      if (limited("reset:" + ip, 10, 36e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many tries. Try again later." } });
       const email = normEmail(body.email), password = String(body.password || ""), given = String(body.code || "").replace(/\D/g, "");
       if (!email) return json(res, 400, { error: { code: "bad_request", message: "Enter a valid email address." } });
+      // per-email guard (each code also allows only 5 guesses, and codes are limited to 5/hour) plus a generous per-IP ceiling
+      if (limited("reset-em:" + email, 20, 36e5) || limited("reset:" + ip, 60, 36e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many attempts. Ask for a new code in a little while." } });
       if (password.length < 8) return json(res, 400, { error: { code: "bad_request", message: "Use a password of at least 8 characters." } });
       const key = "reset:" + email, c = CODES.get(key), u = q.userByEmail.get(email);
       if (!c || c.exp < Date.now() || !u) return json(res, 400, { error: { code: "bad_request", message: "That code has expired. Ask for a new one." } });
