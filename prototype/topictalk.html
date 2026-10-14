@@ -827,6 +827,47 @@ body.ingchat{scroll-padding-bottom:calc(var(--gch,72px) + 24px)}
 .gcw .bdone .bd-sum,.gcw .bdone .bd-disc,.gcw .bdone .bd-r{font-size:14px}
 .gcw .bdone .bd-bar{height:8px}
 .gopen{padding:12px 14px;font-size:15px}
+/* GROUP CHAT v4: shared content as native attachments, rhythm by event type */
+.gday{margin:6px 0 0!important}.gday span{border:0!important;background:none!important;padding:0 8px!important;font-size:11px!important;letter-spacing:.06em;text-transform:uppercase}
+.gchat{gap:0!important}
+.gm.hasref{max-width:100%;width:100%}
+.gm.hasref.me{width:auto;max-width:94%}.gm.hasref:not(.me){max-width:94%}
+.gm.hasref .gb{padding:5px 5px 4px;overflow:hidden}
+.gm.hasref .gb .gn{padding:2px 6px 0}
+.gm.hasref .gtx{display:block;padding:4px 7px 0}
+.gm.hasref .gt{margin:2px 7px 2px 12px}
+.gm.hasref .gtx-note{padding:2px 7px 2px}.gshl{font-size:11.5px;font-weight:700;color:var(--muted);padding:2px 6px 4px;letter-spacing:.02em}
+.gm.hasref .gshared{margin:0}.gm.hasref .gcw{max-width:none;margin:0;box-shadow:none}
+.gm.hasref .gcw .battle,.gm.hasref .gcw .bdone{border-radius:14px;box-shadow:none}
+.gm.hasref .gtopic{margin:0;max-width:none}
+.gm.hasref .gopen{margin-top:6px;padding:10px 12px}
+.gm.isdel .gb{padding:4px 10px;background:transparent;border-style:dashed;box-shadow:none}.gm.isdel .gt{margin-top:3px}
+.gitem{margin:8px 0 2px;gap:4px}
+.gitem .gsys{font-size:12px;padding:0 2px}
+.gitem .gcw{border-radius:16px}
+.gitem .gopen{margin-top:6px;padding:10px 12px;font-size:14.5px}
+.gtopic{padding:9px 12px;gap:2px;border-radius:12px;max-width:none}
+.gtopic b{font-size:15.5px;line-height:1.3}
+.gt-d{display:none}
+.gitem .gt-d,.gm.hasref .gt-d{display:block;font-size:13px;-webkit-line-clamp:1;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+.gt-m{font-size:13px}
+/* CHIPS v1: meaning-based tints for categories, location and type labels */
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;line-height:1.3;padding:2px 9px;border-radius:999px;border:1px solid;white-space:nowrap;text-decoration:none;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tag.c-food{background:#E9F5EC;color:#1F6B3A;border-color:#C6E4CF}
+.tag.c-place{background:#E8F0FA;color:#2F5C94;border-color:#C5D7EE}
+.tag.c-svc{background:#E6F3F3;color:#216B6B;border-color:#C2E1E1}
+.tag.c-deal{background:#FBF1DC;color:#8A5A0E;border-color:#EFDBA9}
+.tag.c-ev{background:#F0EAF7;color:#6A3FA3;border-color:#DACBEB}
+.tag.c-fin{background:#EAEEF9;color:#3F4DB8;border-color:#CDD4F0}
+.tag.c-sport{background:#EAF4E2;color:#4A7418;border-color:#D0E5BC}
+.tag.c-gen{background:#EEF1EF;color:#4C5B53;border-color:#DDE3DF}
+.tag.c-loc{background:var(--surface);color:#3E4F46;border-color:var(--line)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .tag.c-food{background:#1A3326;color:#8FD3A6;border-color:#2A4D39}:root:not([data-theme=light]) .tag.c-place{background:#18283C;color:#9CC0EC;border-color:#2A425F}:root:not([data-theme=light]) .tag.c-svc{background:#173133;color:#8DCFCF;border-color:#27494B}:root:not([data-theme=light]) .tag.c-deal{background:#382C16;color:#EBC27A;border-color:#574625}:root:not([data-theme=light]) .tag.c-ev{background:#2A203B;color:#C9A9EB;border-color:#42335A}:root:not([data-theme=light]) .tag.c-fin{background:#1C2142;color:#B4BDF7;border-color:#313A6B}:root:not([data-theme=light]) .tag.c-sport{background:#22321A;color:#B5D98A;border-color:#38502B}:root:not([data-theme=light]) .tag.c-gen{background:#1C2622;color:#A9B8B0;border-color:#2F3D36}:root:not([data-theme=light]) .tag.c-loc{color:#C3D0C9;border-color:#2F3D36}}
+:root[data-theme=dark] .tag.c-food{background:#1A3326;color:#8FD3A6;border-color:#2A4D39}:root[data-theme=dark] .tag.c-place{background:#18283C;color:#9CC0EC;border-color:#2A425F}:root[data-theme=dark] .tag.c-svc{background:#173133;color:#8DCFCF;border-color:#27494B}:root[data-theme=dark] .tag.c-deal{background:#382C16;color:#EBC27A;border-color:#574625}:root[data-theme=dark] .tag.c-ev{background:#2A203B;color:#C9A9EB;border-color:#42335A}:root[data-theme=dark] .tag.c-fin{background:#1C2142;color:#B4BDF7;border-color:#313A6B}:root[data-theme=dark] .tag.c-sport{background:#22321A;color:#B5D98A;border-color:#38502B}:root[data-theme=dark] .tag.c-gen{background:#1C2622;color:#A9B8B0;border-color:#2F3D36}:root[data-theme=dark] .tag.c-loc{color:#C3D0C9;border-color:#2F3D36}
+.meta{gap:6px 6px}.exm{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.fcard .whead .wwho .muted{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.fcard .fcat,.fcat{border:1px solid color-mix(in srgb,currentColor 25%,transparent);border-radius:999px}
+.fo-h{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
 @media(max-width:480px){.home2 .hsec,.home2 .hstrip{margin-bottom:22px}.home2 .hbattles>.battle.bc2,.home2 .btlive>.battle.bc2,.home2 .bdone{padding:14px;gap:12px}.home2 .fcard{padding:14px 14px 6px}.home2 .bc2 .bc-side{padding:11px 10px}.home2 .bc2 .bc-pct{font-size:26px}}
 
 .htabs .lcl{display:none}
@@ -1408,6 +1449,9 @@ const hfWhenLabel=k=>(HF_WHEN.find(x=>x[0]===k)||[])[1]||"";
 const hfRecs=t=>(IX.cByTopic.get(t.id)||[]).filter(c=>!c.parentId&&!c.deletedAt&&(c.text||"").trim());
 function hfStatus(t){ return t.solved?"solved":hfRecs(t).length?"getting":"open"; }
 function hfChip(t){ const st=hfStatus(t); return st==="solved"?'<span class="hf-chip ok">✅ Solved</span>':st==="getting"?'<span class="hf-chip">Getting recommendations</span>':'<span class="hf-chip">Open</span>'; }
+const CAT_TONE={Food:"food",Travel:"place",Local:"place",Services:"svc",Cars:"svc",Bikes:"svc",Shopping:"deal",Entertainment:"ev",Movies:"ev",Gaming:"ev",Finance:"fin",Tech:"fin",Apps:"fin",Education:"fin",Sports:"sport",Health:"sport"};
+const catChip=c=>c?`<span class="tag c-${CAT_TONE[c]||"gen"}">${esc(c)}</span>`:"";
+const locChip=l=>l?`<span class="tag c-loc">📍 ${esc(l)}</span>`:"";
 function typeLabel(t){ if(isHelp(t)) return "🔎 Help me find";  return t.kind==="question"?"❓ Question":t.kind==="place"?"📍 Place":t.kind==="battle"?"⚔️ Battle":t.kind==="prediction"?"🔮 Prediction":stat(t.id).reviews?"⭐ Reviews":"💬 Discussion"; }
 function topicCard(t, rank, o={}){
   const s = stat(t.id), tags=(t.tags||[]).slice(0,3);
@@ -1543,7 +1587,7 @@ function hotRows(skip){
   return out.join("");
 }
 const areaRow=t=>{ const s=stat(t.id); const bits=[t.kind==="battle"?"Battle":t.kind==="prediction"?"Prediction":t.kind==="place"?"📍 Place":t.category, s.reviews?`★ ${s.avg.toFixed(1)}`:"", `${s.comments} comment${s.comments===1?"":"s"}`].filter(Boolean);
-  return `<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px;flex:none">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta">${bits.map(x=>`<span>${esc(x)}</span>`).join("")}</div></div></a>`; };
+  return `<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px;flex:none">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta">${bits.map((x,i)=>i===0&&x===t.category?catChip(x):`<span>${esc(x)}</span>`).join("")}</div></div></a>`; };
 /* ---------- HOME v2: tabs + one feed (old page kept as vHomeClassic) ---------- */
 function lastAct(t){ let m=t.createdAt; for(const c of (IX.cByTopic.get(t.id)||[])) if(!c.deletedAt&&c.createdAt>m) m=c.createdAt; for(const r of (IX.rByTopic.get(t.id)||[])) { const x=r.updatedAt||r.createdAt; if(x>m) m=x; } return m; }
 function fCard(t){
@@ -1552,7 +1596,7 @@ function fCard(t){
   const cap=String(t.desc||"").replace(/https?:\/\/\S+/g,"").replace(/\s+/g," ").trim();
   const lc=(IX.cByTopic.get(t.id)||[]).filter(c=>!c.deletedAt&&(c.text||"").trim()).sort((a,b)=>b.createdAt-a.createdAt)[0];
   const kind=isHelp(t)?"Help me find":t.kind==="question"?"Question":t.kind==="place"?"Place":t.kind==="prediction"?"Prediction":"";
-  const meta=[t.location?"📍 "+esc(t.location):"",ago(t.createdAt)].filter(Boolean).join(" · ");
+  const meta=[locChip(t.location),`<span>${ago(t.createdAt)}</span>`].filter(Boolean).join(" ");
   let media="";
   if(vl[0]) media=videoCardFor(vl[0],{compact:true,tid:t.id});
   else if(ph[0]){ const m=S.media.get(ph[0]), r=m.w&&m.h?Math.max(4/5,Math.min(16/9,m.w/m.h)):4/3;
@@ -1566,7 +1610,7 @@ function fCard(t){
   const cmt='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
   const brI='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-11 6"/></svg>';
   return `<article class="fitem fcard${isHelp(t)?" fhelp":""}">
-    <div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${meta}</div></div>${kind?`<span class="fcat${(t.kind==="question"&&!isHelp(t))||t.kind==="prediction"?" fq":""}">${esc(kind)}${t.kind==="question"&&!isHelp(t)?"":" · "+esc(t.category)}</span>`:""}</div>
+    <div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${meta}</div></div>${kind?`<span class="fcat${(t.kind==="question"&&!isHelp(t))||t.kind==="prediction"?" fq":""}">${esc(kind)}${t.kind==="question"&&!isHelp(t)?"":" · "+esc(t.category)}</span>`:catChip(t.category)}</div>
     ${gen?(cap?`<a class="wtitle ftitle" href="#t-${t.id}">${esc(cap.slice(0,120))}${cap.length>120?"…":""}</a>`:""):`<a class="wtitle ftitle" href="#t-${t.id}">${esc(isHelp(t)?hfT:cleanTitle(t))}</a>`}
     ${isHelp(t)&&hfD?`<p class="fsnip">${esc(hfD)}</p>`:""}
     ${isHelp(t)?`<div class="fhf">${hfChip(t)}${(n=>`<span class="fhn">${n?n+" recommendation"+(n===1?"":"s"):"No recommendations yet"}</span>`)(hfRecs(t).length)}${t.budget?`<span>Budget ${esc(t.budget)}</span>`:""}${t.when?`<span>Needed ${esc(hfWhenLabel(t.when).toLowerCase())}</span>`:""}</div>`:""}
@@ -1602,7 +1646,7 @@ function foCard(e,seen){
   const t=e.t, n=e.n, parts=[n.t?"🆕 New topic":"",n.c?`💬 ${n.c} new comment${n.c===1?"":"s"}`:"",n.r?`⭐ ${n.r} new review${n.r===1?"":"s"}`:"",n.b?`⚔️ ${n.b===1?"New battle":n.b+" new battles"}`:""].filter(Boolean).join(" · ");
   const pw=[...e.why].find(w=>w.startsWith("p:")), why=e.why.has("t")?(t.kind==="place"?"A place you follow":"A topic you follow"):pw?`From ${esc(nameOf(pw.slice(2)))}, who you follow`:"";
   const s2=stat(t.id), txt=String(e.ev?.txt||"").replace(/\s+/g," ").trim();
-  return `<a class="focard" href="#t-${t.id}"><div class="fo-h"><span class="gt-k">${typeLabel(t)}</span>${t.location?`<span class="muted">📍 ${esc(t.location)}</span>`:""}${e.last>seen?`<i class="fo-new">New</i>`:""}<span class="fo-t">${ago(e.last)}</span></div>
+  return `<a class="focard" href="#t-${t.id}"><div class="fo-h"><span class="gt-k">${typeLabel(t)}</span>${locChip(t.location)}${e.last>seen?`<i class="fo-new">New</i>`:""}<span class="fo-t">${ago(e.last)}</span></div>
     <b class="fo-ti">${esc(t.title)}</b>${s2.reviews?`<span class="fo-rt">★ ${s2.avg.toFixed(1)} · ${s2.reviews} review${s2.reviews===1?"":"s"}</span>`:""}
     <div class="fo-what">${parts}</div>
     ${e.ev&&txt&&e.ev.k!=="t"?`<div class="fo-last">${avatar(e.ev.who,"xs")}<span><b>${esc(nameOf(e.ev.who))}:</b> ${esc(txt.slice(0,110))}</span></div>`:""}
@@ -1762,7 +1806,7 @@ function vHomeClassic(){
       ${preds.length?`<section class="sec">${SH(L("Predictions"),"Call it before it happens.",`<a href="#explore" data-act="exGo" data-v="predictions">${L("See all")} →</a>`)}<div class="grid preds" style="grid-template-columns:1fr">${preds.map(t=>`<div><a href="#t-${t.id}" style="display:block;font-family:var(--f-display);font-weight:700;font-size:17px;margin-bottom:8px">${esc(t.title)}</a>${predCard(t)}</div>`).join("")}</div>${preds.length>1?`<a class="morep" href="#explore" data-act="exGo" data-v="predictions">More predictions →</a>`:""}</section>`:""}
       ${(()=>{ const ds=[...S.duels.values()].filter(d=>duelState(d).phase==="voting"&&!IX.myDV.has(d.id)&&d.challengerId!==S.me&&d.opponentId!==S.me).slice(0,2); return ds.length?`<section class="sec">${SH(L("Debates to judge"),"",`<a href="#explore" data-act="exGo" data-v="duels">${L("See all")} →</a>`)}<div class="grid b">${ds.map(duelMini).join("")}</div></section>`:""; })()}
       <section class="sec">${SH(L("New topics"),"Fresh conversations to join.")}
-        <div class="list feed compact">${newList.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span><span>by ${esc(nameOf(t.authorId))}</span><span>${ago(t.createdAt)}</span></div></div></a>`).join("")}</div></section>
+        <div class="list feed compact">${newList.map(t=>`<a href="#t-${t.id}"><div class="tile" style="--h:${catHue(t.category)};width:38px;height:38px;font-size:13px">${esc(abbr(t))}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta">${catChip(t.category)}<span>by ${esc(nameOf(t.authorId))}</span><span>${ago(t.createdAt)}</span></div></div></a>`).join("")}</div></section>
       ${S.myGroups.size?`<section class="sec"><div class="sech"><h2>Your groups</h2><a href="#groups">All groups</a></div><div class="grid">${[...S.myGroups].map(id=>S.groups.get(id)).filter(Boolean).map(groupCard).join("")}</div></section>`:""}
     </div>
     <div>
@@ -1793,7 +1837,7 @@ function exCard(t){
   else if(t.kind==="prediction"){ const p=IX.pv.get(t.id)||{yes:0,no:0}, n=p.yes+p.no; status=`<span class="exs">${t.outcome?"Resolved":n?Math.round(100*p.yes/n)+"% say yes":"Prediction"}</span>`; }
   else if(s.reviews) status=`<span class="exs star">★ ${s.avg.toFixed(1)} <small>(${s.reviews})</small></span>`;
   else if(UI.exSort==="branched"&&s.branches) status=`<span class="exs">↳ ${s.branches} branch${s.branches>1?"es":""}</span>`;
-  const meta=[esc(t.category),t.location?"📍 "+esc(t.location):"",accOf(t)!=="open"?LOCK:""].filter(Boolean).join(" · ");
+  const meta=[catChip(t.category),locChip(t.location),accOf(t)!=="open"?`<span class="tag c-gen">${LOCK}</span>`:""].filter(Boolean).join("");
   const lbl=isHelp(t)?"recommendation":t.kind==="question"?"answer":"comment";
   return `<article class="excard"><a href="#t-${t.id}">
     ${img?`<img class="exth" src="${esc(img)}" alt="" loading="lazy">`:`<span class="exic" style="--h:${catHue(t.category)}" aria-hidden="true">${icon}</span>`}
@@ -1918,9 +1962,9 @@ function gMsgHTML(m,prev,gid){
   const body=m.deletedAt?`<i class="gdel">🚫 This message was deleted</i>`
     :`${rep?`<button type="button" class="gq" data-act="gJump" data-id="${esc(rep.id)}"><b>${esc(rep.authorId===S.me?"You":nameOf(rep.authorId))}</b><span>${esc(rep.deletedAt?"Deleted message":(rep.text||"📷 Photo").slice(0,90))}</span></button>`:""}
       ${(m.media||[]).length?`<div class="gph">${m.media.map(id=>{ const x=gMedia(id); return x?`<button type="button" data-act="viewMedia" data-id="${esc(id)}" aria-label="Open photo"><img src="${x.data}" alt="" loading="lazy" style="aspect-ratio:${x.w||4}/${x.h||3}"></button>`:`<span class="gph-x">📷</span>`; }).join("")}</div>`:""}
-      ${m.ref?`<div class="gshared"><div class="gsys" style="text-align:left">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:""}${m.text?`<div class="gtx">${rich(m.text).replace(/\n/g,"<br>")}</div>`:""}${gLinkCards(m.text)}`;
+      ${m.ref&&m.text?`<div class="gtx gtx-note">${rich(m.text).replace(/\n/g,"<br>")}</div>`:""}${m.ref?`<div class="gshared"><div class="gshl">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:(m.text?`<div class="gtx">${rich(m.text).replace(/\n/g,"<br>")}</div>`:"")}${gLinkCards(m.text)}`;
   const sel=UI.gSel===m.id&&!m.deletedAt, canDel=mine||isAdmin(gid);
-  return `<div class="gm ${mine?"me":""} ${cont?"cont":""}" id="gm-${esc(m.id)}">
+  return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}" id="gm-${esc(m.id)}">
     ${!mine&&!cont?`<a class="gm-av" href="#u-${esc(m.authorId)}">${avatar(m.authorId,"xs")}</a>`:""}
     <div class="gb" data-act="gTap" data-id="${esc(m.id)}">${!mine&&!cont?`<div class="gn">${esc(nameOf(m.authorId))}</div>`:""}${body}<span class="gt">${hhmm(m.createdAt)}${m._pending?" · sending…":""}</span></div>
     ${sel?`<div class="gacts2"><button type="button" class="act" data-act="gReply" data-id="${esc(m.id)}">↩ Reply</button>${m.text?`<button type="button" class="act" data-act="gCopy" data-id="${esc(m.id)}">Copy</button>`:""}${canDel?`<button type="button" class="act" data-act="gDel" data-id="${esc(m.id)}">Delete</button>`:""}</div>`:""}
@@ -2290,7 +2334,7 @@ function vTopic(id){
     ${t.banner&&!t.deletedAt?`<div class="banner"><img src="${esc(t.banner)}" alt=""></div>`:""}
     ${chain.length?`<div class="lineage"><span>Branched from</span>${chain.map(p=>`<a href="#t-${p.id}">${esc(p.deletedAt?"Deleted topic":p.title)}</a>`).join("<span>›</span>")}</div>`:""}
     <div class="thead"><div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>
-      <div style="min-width:0"><div class="meta"><span>${esc(t.category)}</span>${accOf(t)!=="open"?`<span title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span>${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" style="color:var(--brand-deep);font-weight:600">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}${t.editedAt?" · edited":""}</span></div>
+      <div style="min-width:0"><div class="meta">${catChip(t.category)}${accOf(t)!=="open"?`<span class="tag c-gen" title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span class="tag c-gen">${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" class="tag c-loc">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}${t.editedAt?" · edited":""}</span></div>
       <h1>${t.deletedAt?`<span class="muted" style="font-style:italic">Topic deleted by creator</span>`:esc(t.title)}</h1></div></div>
     ${t.deletedAt&&t.mergedInto&&S.topics.get(t.mergedInto)?`<div class="gbanner">This page was merged into <a href="#t-${esc(t.mergedInto)}">${esc(S.topics.get(t.mergedInto).title)}</a>.</div>`:t.deletedAt?`<div class="gbanner">The creator deleted this topic. The discussion stays, but new comments, reviews and votes are closed.</div>`:""}
     ${(()=>{ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private";
@@ -3418,14 +3462,14 @@ function reviewPicker(){
 }
 function mgRender(){ const q=($("#mg-q")?.value||"").trim().toLowerCase(), box=$("#mg-res"); if(!box) return;
   const ts=LIVE().filter(t=>t.id!==UI.mgFrom&&t.kind!=="battle"&&t.kind!=="prediction"&&(!q||t.title.toLowerCase().includes(q)||simScore(q,t.title)>=.67)).slice(0,8);
-  box.innerHTML=ts.map(t=>`<a href="#" data-act="mergePick" data-id="${esc(t.id)}"><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}<span>${stat(t.id).reviews} reviews</span></div></div></a>`).join("")||`<div class="muted" style="padding:8px">No match.</div>`; }
+  box.innerHTML=ts.map(t=>`<a href="#" data-act="mergePick" data-id="${esc(t.id)}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${catChip(t.category)}${locChip(t.location)}<span>${stat(t.id).reviews} reviews</span></div></div></a>`).join("")||`<div class="muted" style="padding:8px">No match.</div>`; }
 function rpHits(){
   const q=($("#rp-name")?.value||"").trim().toLowerCase(), box=$("#rp-hits"); if(!box) return;
   const hp=homePlace();
   const base=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&t.kind!=="question");
   let ts=q?base.filter(t=>t.title.toLowerCase().includes(q)||simScore(q,t.title)>=.67):base.filter(t=>t.kind==="place"||stat(t.id).reviews).sort((a,b)=>((hp&&inPlace(b,hp))?1:0)-((hp&&inPlace(a,hp))?1:0)||stat(b.id).reviews-stat(a.id).reviews);
   ts=ts.slice(0,6);
-  box.innerHTML=ts.map(t=>{ const s=stat(t.id); return `<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${t.kind==="place"?"<span>📍 Place</span>":""}<span>${esc(t.category)}</span>${t.location?`<span>${esc(t.location)}</span>`:""}<span>${s.reviews?"★ "+s.avg.toFixed(1)+" · "+s.reviews+" review"+(s.reviews===1?"":"s"):"No reviews yet"}</span></div></div></a>`; }).join("")||"";
+  box.innerHTML=ts.map(t=>{ const s=stat(t.id); return `<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${t.kind==="place"?"<span>📍 Place</span>":""}${catChip(t.category)}${locChip(t.location)}<span>${s.reviews?"★ "+s.avg.toFixed(1)+" · "+s.reviews+" review"+(s.reviews===1?"":"s"):"No reviews yet"}</span></div></div></a>`; }).join("")||"";
   const nw=$("#rp-new"); if(nw) nw.hidden=q.length<3;
 }
 const NSTOP=new Set(["hotel","restaurant","the","shop","store","mobiles","mobile","salon","and","cafe","centre","center","bakery","sweets","tailors","tailor","clinic","bhavan","in","at","of"]);
@@ -3461,7 +3505,7 @@ function vReviews(){
   <div class="tabs" role="tablist">${[["all","All"],["place","Places"],["thing","Products"]].map(([k,l])=>`<button class="${kind===k?"on":""}" data-act="rvKind" data-v="${k}">${l}</button>`).join("")}${hp?`<button class="${near?"on":""}" data-act="rvNear">${near?"📍 Near "+esc(hp.name):"Everywhere"}</button>`:""}</div>
   <div class="tagrow catrow" style="margin-bottom:16px">${cats.map(c=>`<button class="chip ${cat===c?"on":""}" data-act="rvCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>
   ${rated.length?`<div class="list rvlist">${rated.map(row).join("")}</div>`:emptyBox("Nothing rated here yet","Be the first. Pick a place you know and rate it from 1 to 5.",`<button class="btn pri" data-act="reviewPick">Review something</button>`)}
-  ${unrated.length?`<section class="sec"><div class="sech"><h2>Waiting for a first review</h2></div><div class="list">${unrated.slice(0,8).map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}<span>No reviews yet</span></div></div></a>`).join("")}</div></section>`:""}`;
+  ${unrated.length?`<section class="sec"><div class="sech"><h2>Waiting for a first review</h2></div><div class="list">${unrated.slice(0,8).map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${catChip(t.category)}${locChip(t.location)}<span>No reviews yet</span></div></div></a>`).join("")}</div></section>`:""}`;
 }
 
 /* ---------- events ---------- */
