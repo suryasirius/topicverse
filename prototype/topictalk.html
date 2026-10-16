@@ -977,7 +977,7 @@ body:not(.ingchat) .gsticky{display:none}
 .gm.cont:not(.me) .gb{grid-column:2}.gm-av{grid-row:span 2;align-self:start;margin-top:2px}
 .gb{background:var(--surface);border:1px solid var(--line);border-radius:4px 16px 16px 16px;padding:7px 10px 5px;min-width:0;cursor:pointer;position:relative;overflow-wrap:anywhere;box-shadow:0 1px 1px rgba(21,32,26,.05)}
 .gm.cont .gb{border-radius:16px}.gm.me .gb{background:var(--brand-soft);border-color:color-mix(in srgb,var(--brand) 30%,var(--line));border-radius:16px 4px 16px 16px}.gm.me.cont .gb{border-radius:16px}
-.gn{font-size:12px;font-weight:800;color:var(--brand-deep);margin-bottom:1px}.gtx{font-size:15px;line-height:1.42}.gtx a{word-break:break-all}
+.gn{font-size:12px;font-weight:800;color:var(--brand-deep);margin-bottom:1px}.gtx{font-size:15px;line-height:1.42}.gtx a{word-break:break-all}.gtx a.mention,.gtx a.tag{color:var(--brand-deep);font-weight:650;word-break:normal}.gtx a.mention.isme{background:color-mix(in srgb,var(--brand) 18%,transparent);border-radius:6px;padding:0 3px}
 .gt{display:block;text-align:right;font-size:10.5px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
 .gdel{color:var(--muted);font-size:14px}
 .gq{display:grid;gap:1px;width:100%;text-align:left;border:0;border-left:3px solid var(--brand);background:color-mix(in srgb,var(--ink) 6%,transparent);border-radius:8px;padding:5px 8px;margin:2px 0 5px;font:inherit;font-size:12.5px;color:var(--ink);cursor:pointer}.gq b{font-size:12px;color:var(--brand-deep)}.gq span{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -996,6 +996,7 @@ body:not(.ingchat) .gsticky{display:none}
 .gc-plus,.gc-send{flex:none;width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer}
 .gc-plus{background:var(--surface);border:1px solid var(--line);color:var(--brand-deep);font-size:24px;line-height:1}
 .gc-send{background:var(--brand);color:#fff}.gc-send:disabled{opacity:.6}
+.gm.gflash .gb{box-shadow:0 0 0 2px var(--brand);transition:box-shadow .3s}
 #gc-ta{flex:1;min-width:0;resize:none;border:1px solid var(--line);border-radius:22px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px;line-height:1.4;padding:10px 16px;max-height:132px;outline:none}#gc-ta:focus{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 18%,transparent)}
 .gc-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:8px}.gc-mi{display:flex;align-items:center;gap:8px;justify-content:center;padding:11px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .gc-bar{margin-bottom:6px;display:grid;gap:6px}.gc-rep{display:flex;align-items:center;gap:8px;font-size:13px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:10px;padding:6px 8px}.gc-rep span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1276,7 +1277,7 @@ const TAGRE = /(^|[\s(])#([\p{L}\p{M}\p{N}_]{2,40})/gu;
 function rich(text){
   return esc(text)
     .replace(TAGRE,(m,p,t)=>`${p}<a class="tag" href="#tag-${enc(t.toLowerCase())}">#${t}</a>`)
-    .replace(/(^|[\s(])@([A-Za-z0-9_]{2,24})/g,(m,p,h)=>{ const id=handleToId(h); return id?`${p}<a class="mention" href="#u-${esc(id)}">@${h}</a>`:`${p}@${h}`; })
+    .replace(/(^|[\s(])@([A-Za-z0-9_]{2,24})/g,(m,p,h)=>{ const id=handleToId(h); return id?`${p}<a class="mention${id===S.me?" isme":""}" href="#u-${esc(id)}">@${h}</a>`:`${p}@${h}`; })
     .replace(/(^|[\s(])(https?:\/\/[^\s<]{3,300})/g,(m,p,u)=>{ const tail=u.match(/[.,;:!?)]+$/); const clean=tail?u.slice(0,-tail[0].length):u; return `${p}<a href="${clean}" target="_blank" rel="noopener noreferrer nofollow" class="ext">${clean.replace(/^https?:\/\/(www\.)?/,"").slice(0,48)}${clean.length>60?"…":""}</a>${tail?tail[0]:""}`; });
 }
 // ---- video links: YouTube / Instagram play inside our pages, nothing is stored but the link ----
@@ -1381,7 +1382,7 @@ const TS_Z={s:.94,m:1.07,l:1.2,x:1.33}; let curTS="";
 function applyTheme(v){ const r=document.documentElement; if(v==="dark"||v==="light") r.dataset.theme=v; else delete r.dataset.theme; }
 const getTheme=()=>{ try{ return localStorage.getItem("tt_theme")||"auto"; }catch{ return "auto"; } };
 applyTheme(getTheme());
-const NG={reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like"};
+const NG={reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like"};
 let NPOFF=new Set(); try{ NPOFF=new Set(JSON.parse(localStorage.getItem("tt-npoff")||"[]")); }catch{}
 function applyTS(v){ if(!TS_Z[v]) v="m"; curTS=v; document.documentElement.style.setProperty("--tz",TS_Z[v]); }
 try{ applyTS(localStorage.getItem("tt_ts")||"m"); }catch{ applyTS("m"); }
@@ -2134,7 +2135,7 @@ function gcEl(){
   try{ new ResizeObserver(()=>{ const nearEnd=window.innerHeight+scrollY>=document.documentElement.scrollHeight-160; setH(); if(nearEnd&&UI.gcView) window.scrollTo(0,document.documentElement.scrollHeight); }).observe(c); }catch{}
   try{ window.visualViewport?.addEventListener("resize",()=>{ if(UI.gcView&&document.activeElement?.id==="gc-ta") setTimeout(()=>window.scrollTo(0,document.documentElement.scrollHeight),60); }); }catch{}
   const ta=c.querySelector("#gc-ta"); const grow=()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,132)+"px"; };
-  ta.addEventListener("input",()=>{ grow(); gTypingPing(); try{ if(UI.gcView) sessionStorage.setItem("tt_gdraft_"+UI.gcView,ta.value); }catch{} });
+  ta.addEventListener("input",()=>{ grow(); acUpdate(ta); gTypingPing(); try{ if(UI.gcView) sessionStorage.setItem("tt_gdraft_"+UI.gcView,ta.value); }catch{} });
   ta.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&matchMedia("(hover:hover) and (pointer:fine)").matches){ e.preventDefault(); gSend(); } });
   ta.addEventListener("focus",()=>{ const m=$("#gc-menu"); if(m) m.hidden=true; });
   const addImgs=async fs=>{ PH.gc=PH.gc||[]; for(const f of fs){ if(PH.gc.length>=3){ toast("Up to 3 photos per message."); break; } try{ PH.gc.push(await prepMedia(f)); }catch(ex){ toast(ex.message||"Couldn’t add that sticker."); } } gcBar(); };
@@ -2165,6 +2166,8 @@ async function gSend(){
     if(replyTo) UI.gcFocus=id; else UI.gcStick=true;
     await db.doc("gmsgs/"+id).set({groupId:gid,authorId:S.me,text,createdAt:Date.now(),...(replyTo?{replyTo}:{}),...(media.length?{media}:{})});
     UI.gcRetry=null; UI.gcReply=null; PH.gc=[]; gcBar();
+    { const mem=new Set((IX.gMem.get(gid)||[]).map(m=>m.userId)), mu=mentionsIn(text).filter(u=>mem.has(u)&&u!==S.me);
+      if(mu.length) notify(mu.map(u=>[u,"gmention"]),{groupId:gid,gmsgId:id,topicId:"",text:text.slice(0,140)}); }
     try{ localStorage.setItem("tt_gread_"+gid,String(Date.now())); }catch{}
   }catch(ex){ if(!ta.value) ta.value=text; toast((ex&&ex.message)||"Not sent. Tap send to try again."); }
   btn.disabled=false; ta.focus({preventScroll:true});
@@ -2218,7 +2221,7 @@ function gcSync(changed,atBottom){
   if(!on){ UI.gcLast=null; UI.gBaseG=null; const nc=document.getElementById("gnewchip"); if(nc) nc.hidden=true; return; }
   const gm=c.querySelectorAll("[data-act=newTopic],[data-act=newBattle],[data-act=newPred],[data-act=newQuestion]"); gm.forEach(b=>b.dataset.group=gid);
   if(UI.gcLast!==gid){ const ta=$("#gc-ta"); let d=""; try{ d=sessionStorage.getItem("tt_gdraft_"+gid)||""; }catch{} ta.value=d; UI.gcReply=null; PH.gc=[]; UI.gcRetry=null; gcBar(); UI.gcLast=gid; changed=true; }
-  if(UI.gcFocus){ const f=UI.gcFocus; requestAnimationFrame(()=>{ const t=document.getElementById("gm-"+f); if(t){ UI.gcFocus=null; t.scrollIntoView({block:"center"}); } }); }
+  if(UI.gcFocus){ const f=UI.gcFocus; requestAnimationFrame(()=>{ const t=document.getElementById("gm-"+f); UI.gcFocus=null; if(t){ t.scrollIntoView({block:"center"}); t.classList.add("gflash"); setTimeout(()=>t.classList.remove("gflash"),2200); } else window.scrollTo(0,document.documentElement.scrollHeight); }); }
   else if(UI.gKeepY!=null){ window.scrollTo(0,document.documentElement.scrollHeight-UI.gKeepY); UI.gKeepY=null; }
   else { if(changed){ UI.gcHold=Date.now()+3000; const toEnd=()=>{ if(UI.gcView&&Date.now()<(UI.gcHold||0)) window.scrollTo(0,document.documentElement.scrollHeight); }; setTimeout(toEnd,350); setTimeout(toEnd,1200); } if(changed||atBottom||UI.gcStick||Date.now()<(UI.gcHold||0)){ requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight)); UI.gcStick=false; } }
   try{ localStorage.setItem("tt_gread_"+gid,String(Date.now())); }catch{}
@@ -2612,10 +2615,10 @@ function groupNotifs(ns){
 function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
   const ns=notifList().sort((a,b)=>b.createdAt-a.createdAt);
-  const label={reply:"replied to you",mention:"mentioned you",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped"};
+  const label={reply:"replied to you",mention:"mentioned you",gmention:"mentioned you in",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped"};
   if(!PUSH.checked) pushRefresh();
   return pushCard(false)+`<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read||UI.keep?.has(n.id))?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
-  ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}" href="${n.duelId?"#d-"+esc(n.duelId):n.type==="joined"?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
+  ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}"${n.gmsgId?` data-gm="${esc(n.gmsgId)}"`:""} href="${n.duelId?"#d-"+esc(n.duelId):(n.type==="joined"||n.type==="gmention")?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
    :emptyBox("You’re all caught up","Replies, @mentions, branches and battles from your comments, and activity on topics you follow show up here.")}`;
 }
 
@@ -3012,6 +3015,9 @@ function acUpdate(ta){
     const sc=x=>{ const words=x.n.split(" "); return words.includes(qq)?0:words.some(w=>w.startsWith(qq))?1:x.n.includes(qq)?2:9; };
     const rec=recentEmoji();
     items=EMOJI_ALL.map(x=>({v:x.e,n:x.n,k:sc(x)})).filter(x=>x.k<9).sort((a,b)=>a.k-b.k||(rec.indexOf(a.v)<0?99:rec.indexOf(a.v))-(rec.indexOf(b.v)<0?99:rec.indexOf(b.v))||pop(a.v)-pop(b.v)||a.n.split(" ")[0].length-b.n.split(" ")[0].length).slice(0,7);
+  } else if(kind==="@"&&ta.id==="gc-ta"){
+    const gid=UI.gcView, sc=(h,n)=>h.startsWith(qq)?0:n.startsWith(qq)?1:(h.includes(qq)||n.includes(qq))?2:9;
+    items=(IX.gMem.get(gid)||[]).map(m=>m.userId).filter(id=>id!==S.me&&S.handles.get(id)?.handle).map(id=>{ const h=S.handles.get(id).handle; return {id,v:h,k:sc(h.toLowerCase(),nameOf(id).toLowerCase())}; }).filter(x=>x.k<9).sort((a,b)=>a.k-b.k||a.v.localeCompare(b.v)).slice(0,6);
   } else if(kind==="@"){
     items=[...S.handles].filter(([id,d])=>d.handle&&id!==S.me).map(([id,d])=>({id,v:d.handle,k:(d.handle.toLowerCase().startsWith(qq)?0:d.handle.toLowerCase().includes(qq)?1:9)})).filter(x=>x.k<9).sort((a,b)=>a.k-b.k||a.v.localeCompare(b.v)).slice(0,6);
   } else {
@@ -3020,7 +3026,7 @@ function acUpdate(ta){
   }
   if(!items.length){ acClose(); return; }
   TY.ac={ta,kind,start:pos-m[3].length-1,items,i:0};
-  acEl.innerHTML=items.map((x,i)=>`<button type="button" class="aci${i===0?" on":""}" data-i="${i}" role="option">${kind===":"?`<span class="ace">${x.v}</span><span><b>:${esc(x.n.split(" ")[0])}:</b> <span class="muted">${esc(x.n.split(" ").slice(1).filter(w=>w.startsWith(qq)).concat(x.n.split(" ").slice(1)).filter((w,i,a)=>a.indexOf(w)===i).slice(0,2).join(" "))}</span></span>`:kind==="@"?avatar(x.id,"xs")+`<span><b>@${esc(x.v)}</b>${isSeed(x.id)?' <span class="sample">sample</span>':""}</span>`:`<span class="acht">#</span><span><b>${esc(x.v)}</b>${x.isNew?' <span class="muted">new tag</span>':""}</span>`}</button>`).join("");
+  acEl.innerHTML=items.map((x,i)=>`<button type="button" class="aci${i===0?" on":""}" data-i="${i}" role="option">${kind===":"?`<span class="ace">${x.v}</span><span><b>:${esc(x.n.split(" ")[0])}:</b> <span class="muted">${esc(x.n.split(" ").slice(1).filter(w=>w.startsWith(qq)).concat(x.n.split(" ").slice(1)).filter((w,i,a)=>a.indexOf(w)===i).slice(0,2).join(" "))}</span></span>`:kind==="@"?avatar(x.id,"xs")+`<span><b>@${esc(x.v)}</b>${nameOf(x.id)!==x.v?` <span class="muted">${esc(nameOf(x.id))}</span>`:""}${isSeed(x.id)?' <span class="sample">sample</span>':""}</span>`:`<span class="acht">#</span><span><b>${esc(x.v)}</b>${x.isNew?' <span class="muted">new tag</span>':""}</span>`}</button>`).join("");
   const r=caretRect(ta), w=Math.min(280, window.innerWidth-24);
   acEl.style.width=w+"px"; acEl.style.left=Math.max(12,Math.min(r.left-8, window.innerWidth-w-12))+"px";
   acEl.hidden=false;
@@ -3060,7 +3066,7 @@ function toolAct(b){ const ta=b.closest(".composer")?.querySelector("textarea");
   else if(b.dataset.tool==="emoji"){ if(!epEl.hidden&&EP.ta===ta) epClose(true); else { acClose(); epOpen(ta,b); } }
   else if(b.dataset.tool==="gif"){ gifTarget=ta; gifInput.click(); } }
 document.addEventListener("mousedown",e=>{ const b=e.target.closest(".tbtn"); if(!b) return; e.preventDefault(); toolAct(b); });
-document.addEventListener("click",e=>{ const v=e.target.closest("[data-go]"); if(v){ e.preventDefault(); location.hash=v.dataset.go; return; } const a=e.target.closest("a[data-nids]"); if(a&&!e.target.closest("[data-act]")&&typeof db!=="undefined"&&db) for(const id of a.dataset.nids.split(",")){ const n=S.notifs.find(x=>x.id===id); if(n&&!n.read) db.doc("notifs/"+id).update({read:true}).catch(()=>{}); } });
+document.addEventListener("click",e=>{ const v=e.target.closest("[data-go]"); if(v){ e.preventDefault(); location.hash=v.dataset.go; return; } const a=e.target.closest("a[data-nids]"); if(a&&a.dataset.gm) UI.gcFocus=a.dataset.gm; if(a&&!e.target.closest("[data-act]")&&typeof db!=="undefined"&&db) for(const id of a.dataset.nids.split(",")){ const n=S.notifs.find(x=>x.id===id); if(n&&!n.read) db.doc("notifs/"+id).update({read:true}).catch(()=>{}); } });
 document.addEventListener("click",()=>{ UI.vClick=Date.now(); },true);
 document.addEventListener("click",e=>{ const b=e.target.closest(".tbtn"); if(b&&e.detail===0) toolAct(b); });
 document.addEventListener("keydown",e=>{
