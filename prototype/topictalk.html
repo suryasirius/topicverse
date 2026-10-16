@@ -226,6 +226,7 @@ body{font-kerning:normal;font-variant-ligatures:common-ligatures contextual;text
 .attach{display:flex;align-items:center;gap:10px;width:100%;padding:6px;border:1px dashed var(--line);border-radius:12px;font-size:13px;animation:rise .25s ease}
 .attach img{width:64px;height:64px;object-fit:cover;border-radius:9px}
 @media(max-width:420px){.ep-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
+.ac.ac-in{position:absolute;top:auto;bottom:calc(100% + 6px)}
 .ac{position:fixed;z-index:80;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(10,20,16,.16),0 2px 6px rgba(10,20,16,.06);padding:5px;display:grid;gap:1px;animation:pop .12s ease-out}
 @keyframes pop{from{opacity:0;transform:translateY(-3px) scale(.98)}}
 .aci{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;border:0;background:none;text-align:left;font-size:14px;color:var(--ink);width:100%}
@@ -3026,6 +3027,11 @@ function acUpdate(ta){
   if(!items.length){ acClose(); return; }
   TY.ac={ta,kind,start:pos-m[3].length-1,items,i:0};
   acEl.innerHTML=items.map((x,i)=>`<button type="button" class="aci${i===0?" on":""}" data-i="${i}" role="option">${kind===":"?`<span class="ace">${x.v}</span><span><b>:${esc(x.n.split(" ")[0])}:</b> <span class="muted">${esc(x.n.split(" ").slice(1).filter(w=>w.startsWith(qq)).concat(x.n.split(" ").slice(1)).filter((w,i,a)=>a.indexOf(w)===i).slice(0,2).join(" "))}</span></span>`:kind==="@"?avatar(x.id,"xs")+`<span><b>@${esc(x.v)}</b>${nameOf(x.id)!==x.v?` <span class="muted">${esc(nameOf(x.id))}</span>`:""}${isSeed(x.id)?' <span class="sample">sample</span>':""}</span>`:`<span class="acht">#</span><span><b>${esc(x.v)}</b>${x.isNew?' <span class="muted">new tag</span>':""}</span>`}</button>`).join("");
+  // group chat: the list lives inside the message bar, so it always sits right above it (iPhone keyboards move the screen around)
+  const bar=ta.id==="gc-ta"?$("#gcomp"):null;
+  if(bar){ if(acEl.parentNode!==bar) bar.append(acEl); acEl.classList.add("ac-in"); acEl.hidden=false; const k=zk(acEl), br=bar.getBoundingClientRect(), tr=ta.getBoundingClientRect(), w=Math.min(280, br.width-24);
+    acEl.style.top=""; acEl.style.width=w/k+"px"; acEl.style.left=Math.max(12,Math.min(tr.left-br.left, br.width-w-12))/k+"px"; return; }
+  if(acEl.parentNode!==document.body){ document.body.append(acEl); acEl.classList.remove("ac-in"); }
   const r=caretRect(ta), w=Math.min(280, window.innerWidth-24);
   acEl.hidden=false; const k=zk(acEl);
   acEl.style.width=w/k+"px"; acEl.style.left=Math.max(12,Math.min(r.left-8, window.innerWidth-w-12))/k+"px";
@@ -3042,6 +3048,7 @@ function acPick(i){
   acClose(); ta.focus(); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 acEl.addEventListener("mousedown",e=>{ const b=e.target.closest(".aci"); if(b){ e.preventDefault(); acPick(+b.dataset.i); } });
+acEl.addEventListener("touchstart",e=>{ const b=e.target.closest(".aci"); if(b){ e.preventDefault(); acPick(+b.dataset.i); } },{passive:false});
 function acMove(d){ const a=TY.ac; if(!a) return; a.i=(a.i+d+a.items.length)%a.items.length; acEl.querySelectorAll(".aci").forEach((b,i)=>b.classList.toggle("on",i===a.i)); }
 function insertToken(ta,ch){
   const s0=ta.selectionStart, before=ta.value.slice(0,s0), pad=before&&!/\s$/.test(before)?" ":"";
