@@ -235,6 +235,8 @@ function check(op, col, id, prev, next, patch, uid) {
     case "topics":
       if (next && next.banner && String(next.banner).length > 52000) bad("That banner is too large.");
       if (next && !OPEN(next.access) && !["request", "invite", "friends", "selected", "private"].includes(next.access)) bad();
+      // a place's map pin: just two numbers
+      if (next && next.geo != null) { const g = next.geo; if (typeof g !== "object" || Object.keys(g).some(k => k !== "lat" && k !== "lng") || !Number.isFinite(g.lat) || !Number.isFinite(g.lng) || Math.abs(g.lat) > 90 || Math.abs(g.lng) > 180) bad("That map pin isn’t valid."); }
       if (next && !OPEN(next.access) && next.groupId) bad("A topic can be in a group or private, not both.");
       if (!prev && next.parentId) { const par = DOCS.topics.get(next.parentId); if (par && !topicVisible(par, uid)) deny("You can’t branch from a topic you can’t see."); }
       if (!prev && next.kind === "place" && !admin) { let n = 0; const since = Date.now() - 864e5; for (const t of DOCS.topics.values()) if (t.authorId === uid && t.kind === "place" && t.createdAt > since) n++; if (n >= 5) deny("You can add up to 5 places a day. Try again tomorrow."); }
@@ -502,7 +504,7 @@ function meFor(uid) {
 }
 const CARD_DIR = path.join(DATA_DIR, "cards"); fs.mkdirSync(CARD_DIR, { recursive: true }); const CARDMETA = new Map();
 const STATIC = {};
-for (const [p, f, t] of [["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json"], ["/sw.js", "sw.js", "text/javascript; charset=utf-8"], ["/icon-192.png", "icon-192.png", "image/png"], ["/icon-512.png", "icon-512.png", "image/png"], ["/icon-maskable.png", "icon-maskable.png", "image/png"]])
+for (const [p, f, t] of [["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json"], ["/sw.js", "sw.js", "text/javascript; charset=utf-8"], ["/icon-192.png", "icon-192.png", "image/png"], ["/icon-512.png", "icon-512.png", "image/png"], ["/icon-maskable.png", "icon-maskable.png", "image/png"], ["/leaflet.js", "leaflet.js", "text/javascript; charset=utf-8"], ["/leaflet.css", "leaflet.css", "text/css; charset=utf-8"]])
   STATIC[p] = { t, b: fs.readFileSync(path.join(__dirname, "static", f)) };
 const SEC = { "X-Content-Type-Options": "nosniff", "Referrer-Policy": "same-origin", "X-Frame-Options": "DENY" };
 
@@ -691,6 +693,25 @@ const server = http.createServer(async (req, res) => {
       if (!isAdmin(uid)) deny("Only the owner can see this.");
       const stats = {}; for (const e of EVENTS) { let n = 0; for (let d = 0; d < 7; d++) { const r = q.getMeta.get("ev:" + e + ":" + new Date(Date.now() - d * 864e5).toISOString().slice(0, 10)); n += +(r && r.v) || 0; } stats[e] = n; }
       return json(res, 200, { stats });
+    }
+    // a Google Maps short link (maps.app.goo.gl) only says where it points: follow its redirects, Google Maps hosts only, read nothing else
+    if (p === "/api/maps-expand") {
+      if (!uid) deny("Log in first.");
+      if (limited("mx:" + uid, 30, 6e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Try again in a few minutes." } });
+      const OKH = /^(maps\.app\.goo\.gl|goo\.gl|(www\.|maps\.)?google\.(com|co\.in)|consent\.google\.com)$/;
+      let u; try { u = new URL(String(body.url || "")); } catch { bad("That isn’t a link."); }
+      if (u.protocol !== "https:" || !/^(maps\.app\.goo\.gl|goo\.gl)$/.test(u.hostname) || (u.hostname === "goo.gl" && !u.pathname.startsWith("/maps"))) bad("Paste a Google Maps link.");
+      for (let i = 0; i < 6; i++) {
+        let r; try { r = await fetch(u, { redirect: "manual", signal: AbortSignal.timeout(6000), headers: { "User-Agent": "Mozilla/5.0 TopicTalk" } }); } catch { return json(res, 502, { error: { code: "unavailable", message: "Couldn’t open that short link. Open it in your browser and paste the long link from the address bar." } }); }
+        try { r.body?.cancel(); } catch { }
+        const loc = r.status >= 300 && r.status < 400 && r.headers.get("location");
+        if (!loc) break;
+        let n; try { n = new URL(loc, u); } catch { break; }
+        if (n.protocol !== "https:" || !OKH.test(n.hostname)) break;
+        if (n.hostname === "consent.google.com" && n.searchParams.get("continue")) { try { n = new URL(n.searchParams.get("continue")); } catch { break; } if (!OKH.test(n.hostname)) break; }
+        u = n; if (!/^(maps\.app\.goo\.gl|goo\.gl)$/.test(u.hostname)) break;
+      }
+      return json(res, 200, { url: u.href });
     }
     if (p === "/api/push/subscribe" || p === "/api/push/unsubscribe") {
       if (!uid) deny("Log in first.");

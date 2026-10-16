@@ -147,6 +147,25 @@ a.chip:hover,button.chip:hover{color:var(--ink)}
 .origin q{font-style:italic}
 .desc{margin:14px 0 0;max-width:68ch}
 .tbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+/* place pins (OpenStreetMap) */
+.gp{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--bg) 55%,var(--surface))}
+.gp[hidden]{display:none}
+.gp-h{display:grid;gap:2px}.gp-h b{font-size:15px}.gp-h span{font-size:13px;color:var(--muted)}
+.gp-steps{margin:8px 0 10px;padding-left:20px;font-size:14px;line-height:1.6;color:var(--ink)}.gp-steps a{color:var(--brand-deep);font-weight:700}
+.gp-in{display:flex;gap:8px}.gp-in .f{flex:1;min-width:0;margin:0}.gp-in .btn{flex:none}
+.gp-msg{font-size:13.5px;margin-top:6px;min-height:0}.gp-msg:empty{display:none}.gp-ok{color:var(--brand-deep);font-weight:700}.gp-bad{color:var(--danger)}
+.gp-map,.tmap{height:220px;border-radius:12px;overflow:hidden;margin-top:10px;border:1px solid var(--line);background:var(--chip);z-index:0}
+.gp-map[hidden]{display:none}
+.gp-tools{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.gp-near{display:grid;gap:4px;margin-top:8px;padding:8px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:13.5px}
+.gp-near b{font-size:12.5px;color:var(--muted)}.gp-near a{display:flex;justify-content:space-between;gap:8px;color:var(--ink);text-decoration:none;font-weight:600}.gp-near small{color:var(--muted);flex:none}
+.gp-man{margin-top:8px;font-size:13.5px}.gp.has .gp-man{display:none}
+.gp-dup{display:grid;gap:4px;padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--brand) 40%,var(--line));background:var(--brand-soft);color:var(--ink);font-size:14px}.gp-dup span{color:var(--muted);font-size:13px}
+.tmapw{margin-top:14px;max-width:560px}.tmap{height:180px;margin-top:0}.tmap.off{display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);padding:12px;text-align:center}
+.tmap-f{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:13.5px}.tmap-f a{color:var(--brand-deep);font-weight:700}.tmap-f span{color:var(--muted)}
+.ttpin span{position:absolute;left:3px;top:0;width:24px;height:24px;border-radius:50% 50% 50% 0;background:var(--brand,#1F9D63);transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid #fff}
+.ttpin span::after{content:"";position:absolute;left:7px;top:7px;width:6px;height:6px;border-radius:50%;background:#fff}
+.leaflet-container{font:inherit;font-size:12px}.leaflet-container a{color:var(--brand-deep)}
 /* topic actions: four main buttons + "More" menu holding everything else */
 .tbar2{position:relative;align-items:center}
 .tbar2 .btn.sm{min-height:40px}
@@ -2551,6 +2570,7 @@ function vTopic(id){
     ${isHelp(t)&&!t.deletedAt?hfBox(t):""}
     ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>`:""}${t.deletedAt?"":videoCards((t.title||"")+" "+(t.desc||""))}
     ${t.deletedAt?"":phStrip([...(t.media||[]),...(IX.rByTopic.get(id)||[]).flatMap(r=>r.media||[])].slice(0,12))}
+    ${t.kind==="place"&&geoOk(t.geo)&&!t.deletedAt?`<div class="tmapw"><div class="tmap" data-k="tm-${esc(id)}-${t.geo.lat},${t.geo.lng}" data-lat="${t.geo.lat}" data-lng="${t.geo.lng}" data-t="${esc(t.title)}" role="img" aria-label="Map showing where ${esc(t.title)} is"></div><div class="tmap-f"><a href="${geoLink(t.geo)}" target="_blank" rel="noopener">Open in Google Maps ↗</a>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div>`:""}
     ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
     ${t.kind==="prediction"?`<div style="margin-top:16px">${predCard(t)}</div>`:""}
@@ -2564,6 +2584,7 @@ function vTopic(id){
         t.kind==="battle"&&battles[0]&&(own||S.isOwner)?`<button type="button" role="menuitem" class="tmi" data-act="editBattle" data-id="${battles[0].id}"><span class="tmi-i">✏️</span><span>Edit battle</span></button>`:"",
         own&&(t.media||[]).length<PH_MAX?mi("addPhotos","📷","Add photos"):"",
         own?mi("bannerEdit","🖼️",t.banner?"Change banner":"Add banner"):"",
+        t.kind==="place"&&(own||S.isOwner)?mi("pinEdit","📍",geoOk(t.geo)?"Change map pin":"Add map pin"):"",
         canManageT(t)?mi("privacy","🔒","Privacy"+(reqN?` <b class="tmi-n">${reqN} request${reqN>1?"s":""}</b>`:"")):""].join("");
       const g3=[S.me?mi("muteT",MUTED.has(id)?"🔕":"🔔",MUTED.has(id)?"Alerts muted · turn on":"Mute alerts"):"",
         S.me&&!own&&S.tmembers.has(fKey(id,S.me))?mi("leaveT","🚪","Leave topic"):"",
@@ -3114,7 +3135,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ if(e.target.tagName==="TEXTAREA"&&/\n/.test(e.target.value)) e.target.value=e.target.value.replace(/\s*\n+\s*/g," "); locSuggest(); if(UI.help&&!UI.catTouched){ const g=catGuess(e.target.value), cs=document.querySelector("#n-cat"); if(cs) cs.value=g||"Other"; } clearTimeout(UI.simT); UI.simT=setTimeout(simRender,180); } if(e.target.id==="rp-name"){ rpHits(); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
+document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ if(e.target.tagName==="TEXTAREA"&&/\n/.test(e.target.value)) e.target.value=e.target.value.replace(/\s*\n+\s*/g," "); locSuggest(); if(UI.help&&!UI.catTouched){ const g=catGuess(e.target.value), cs=document.querySelector("#n-cat"); if(cs) cs.value=g||"Other"; } clearTimeout(UI.simT); UI.simT=setTimeout(simRender,180); } if(e.target.id==="rp-name"){ rpHits(); const f=$("#gp-find"); if(f) f.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent([e.target.value.trim(),$("#rp-loc")?.value||""].filter(Boolean).join(" ")||"Arakkonam"); } if(e.target.id==="gp-link"){ clearTimeout(UI.gpT); const v=e.target.value; UI.gpT=setTimeout(()=>gpRead(v),250); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   { const jp=UI.justPosted; if(jp&&ta.id===jp.id&&Date.now()-jp.t<3000&&jp.text&&ta.value.trim()===jp.text){ ta.value=""; try{ localStorage.removeItem(draftKey(ta)); }catch{} syncRich(ta); return; } }
@@ -3192,7 +3213,7 @@ function render(){
     view.innerHTML=(r==="home"||own?"":`<button type="button" class="backbtn${tab?" bk-tab":""}" data-act="goBack" aria-label="Go back">← Back</button>`)+html; }
   for(const id in keep){ const jp=UI.justPosted; if(jp&&id===jp.id&&Date.now()-jp.t<3000&&String(keep[id]).trim()===jp.text) continue; const el=document.getElementById(id); if(el) el.value=keep[id]; }
   if(UI.whyPrefill) applyWhy();
-  enhance(view);
+  enhance(view); mapsMount(view);
   markSeen(); maybeAskHome();
   if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
   if(changed){ if(UI.lastRoute) UI.navN=(UI.navN||0)+1; UI.lastRoute=r;
@@ -3725,8 +3746,93 @@ function createMenu(){
    </div></div>`);
   $("#modal .scrim")?.classList.add("sheetm");
 }
+/* ---- place pins: the user pastes a Google Maps link (their own reference), we keep only lat/lng and show it on OpenStreetMap ---- */
+const GEO_HOME={lat:13.0847,lng:79.6700};   // Arakkonam centre, used when nothing better is known
+const geoOk=g=>!!g&&Number.isFinite(g.lat)&&Number.isFinite(g.lng)&&Math.abs(g.lat)<=90&&Math.abs(g.lng)<=180&&!(g.lat===0&&g.lng===0);
+const geoRound=g=>({lat:+g.lat.toFixed(6),lng:+g.lng.toFixed(6)});
+function geoDist(a,b){ const R=6371000, r=x=>x*Math.PI/180, dLa=r(b.lat-a.lat), dLo=r(b.lng-a.lng); const h=Math.sin(dLa/2)**2+Math.cos(r(a.lat))*Math.cos(r(b.lat))*Math.sin(dLo/2)**2; return 2*R*Math.asin(Math.sqrt(h)); }
+const distLbl=m=>m<1000?Math.round(m)+" m":(m/1000).toFixed(1)+" km";
+// read a lat/lng (and a place name, if the link has one) out of whatever the user pasted
+function geoParse(raw){
+  let txt=String(raw||"").trim(); if(!txt) return null;
+  let dec=txt; try{ dec=decodeURIComponent(txt.replace(/\+/g," ")); }catch{}
+  const num="(-?\\d{1,3}\\.\\d+)", out=g=>geoOk(g)?g:null;
+  let m, g=null;
+  const all=[...dec.matchAll(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/g)];           // the place itself, in /maps/place/ links
+  if(all.length){ m=all[all.length-1]; g=out({lat:+m[1],lng:+m[2]}); }
+  if(!g&&(m=dec.match(new RegExp("[?&](?:q|query|ll|center|destination|daddr|sll)=\\s*(?:loc:)?"+num+"\\s*,\\s*"+num)))) g=out({lat:+m[1],lng:+m[2]});
+  if(!g&&(m=dec.match(new RegExp("/maps/(?:search|place|dir)/(?:[^/]*/)?"+num+"\\s*,\\s*"+num)))) g=out({lat:+m[1],lng:+m[2]});
+  if(!g&&(m=dec.match(new RegExp("@"+num+","+num)))) g=out({lat:+m[1],lng:+m[2]});  // where the map was looking
+  if(!g&&!/https?:\/\//.test(dec)&&(m=dec.match(new RegExp("^\\s*"+num+"\\s*[, ]\\s*"+num+"\\s*$")))) g=out({lat:+m[1],lng:+m[2]});  // "13.0847, 79.6700"
+  let name="";
+  if((m=dec.match(/\/maps\/place\/([^/@?]+)/))&&!/^-?\d/.test(m[1])) name=m[1];
+  else if((m=txt.match(/[?&](?:q|query)=([^&#]+)/))){ let v=m[1]; try{ v=decodeURIComponent(v.replace(/\+/g," ")); }catch{} if(!/^\s*-?\d{1,3}\.\d+\s*,/.test(v)) name=v.split(",")[0]; }
+  else { const line=txt.split(/\n/)[0].trim(); if(line&&!/https?:\/\//.test(line)&&line.length<=80&&txt.includes("\n")) name=line; }
+  name=name.replace(/\s+/g," ").trim().slice(0,80);
+  return {geo:g,name};
+}
+const geoLink=g=>`https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lng}`;
+// the map library (Leaflet, served from our own server) loads only when a map is first needed
+let LFP=null;
+function leaflet(){ return LFP||(LFP=new Promise((ok,no)=>{ const c=document.createElement("link"); c.rel="stylesheet"; c.href="/leaflet.css"; document.head.append(c);
+  const sc=document.createElement("script"); sc.src="/leaflet.js"; sc.onload=()=>{ const LF=window.leaflet||window.L; if(LF&&LF.map) ok(LF); else { LFP=null; no(new Error("map")); } }; sc.onerror=()=>{ LFP=null; no(new Error("map")); }; document.head.append(sc); })); }
+async function pinMap(el,geo,o={}){
+  const LF=await leaflet(); if(!el.isConnected) return null;
+  if(el._map){ el._map.setView([geo.lat,geo.lng],o.zoom||el._map.getZoom()); el._mk.setLatLng([geo.lat,geo.lng]); return el._map; }
+  const still=!!o.still;
+  const m=LF.map(el,{scrollWheelZoom:false,zoomControl:!still,dragging:!still,touchZoom:!still,doubleClickZoom:!still,boxZoom:!still,keyboard:!still,tap:!still}).setView([geo.lat,geo.lng],o.zoom||17);
+  m.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+  LF.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,referrerPolicy:"strict-origin-when-cross-origin",attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(m);
+  const mk=LF.marker([geo.lat,geo.lng],{icon:LF.divIcon({className:"ttpin",html:"<span></span>",iconSize:[30,42],iconAnchor:[15,40]}),draggable:!!o.drag,keyboard:false,title:o.title||""}).addTo(m);
+  if(o.drag){ const mv=p=>{ mk.setLatLng(p); o.onMove&&o.onMove({lat:p.lat,lng:p.lng}); }; mk.on("dragend",()=>mv(mk.getLatLng())); m.on("click",e=>mv(e.latlng)); }
+  el._map=m; el._mk=mk; setTimeout(()=>m.invalidateSize(),60); return m;
+}
+// place pages: the small map survives page re-renders instead of being rebuilt each time
+const MAPC=new Map();
+function mapsMount(root){ root.querySelectorAll(".tmap[data-k]").forEach(ph=>{ const k=ph.dataset.k, keep=MAPC.get(k);
+  if(keep&&keep!==ph){ ph.replaceWith(keep); return; }
+  if(keep) return; MAPC.set(k,ph); if(MAPC.size>12) MAPC.delete(MAPC.keys().next().value);
+  pinMap(ph,{lat:+ph.dataset.lat,lng:+ph.dataset.lng},{still:true,zoom:16,title:ph.dataset.t}).catch(()=>{ ph.classList.add("off"); ph.textContent="Map didn’t load. Use “Open in Google Maps”."; }); }); }
+// the "where is it?" box, shared by Add a place and Set map pin
+function gpBox(name,area){ const q=[name,area].filter(Boolean).join(" ");
+  return `<div class="gp" id="gp">
+    <div class="gp-h"><b>📍 Where is it?</b><span>Optional, but it helps people find it.</span></div>
+    <ol class="gp-steps"><li><a id="gp-find" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q||"Arakkonam")}" target="_blank" rel="noopener">Find it on Google Maps ↗</a></li><li>Tap the place, then <b>Share → Copy link</b></li><li>Paste the link here</li></ol>
+    <div class="gp-in"><input class="f" id="gp-link" inputmode="url" autocomplete="off" placeholder="Paste the Google Maps link"><button type="button" class="btn sm" data-act="gpPaste">Paste</button></div>
+    <div class="gp-msg" id="gp-msg" aria-live="polite"></div>
+    <div class="gp-map" id="gp-map" hidden></div>
+    <div class="gp-foot" id="gp-foot"></div>
+    <button type="button" class="linkb gp-man" data-act="gpManual">No link? Drop the pin yourself</button>
+  </div>`; }
+function gpNear(geo,exceptId){ return LIVE().filter(t=>t.kind==="place"&&t.id!==exceptId&&geoOk(t.geo)).map(t=>[t,geoDist(geo,t.geo)]).filter(x=>x[1]<=150).sort((a,b)=>a[1]-b[1]).slice(0,4); }
+function gpSet(geo,how){ UI.gpGeo=geoRound(geo); const box=$("#gp-map"); if(!box) return;
+  box.hidden=false; pinMap(box,UI.gpGeo,{drag:true,zoom:how==="manual"?15:17,onMove:g=>{ UI.gpGeo=geoRound(g); gpFoot(); }}).catch(()=>{ box.hidden=true; const m=$("#gp-msg"); if(m) m.innerHTML=`<span class="gp-bad">The map didn’t load. The location from your link is still saved.</span>`; });
+  $("#gp")?.classList.add("has"); gpFoot(); }
+function gpFoot(){ const f=$("#gp-foot"); if(!f) return; const g=UI.gpGeo; if(!g){ f.innerHTML=""; return; }
+  const near=gpNear(g,UI.gpExcept);
+  f.innerHTML=`<div class="gp-tools"><span>Drag the pin or tap the map to move it.</span><button type="button" class="linkb" data-act="gpClear">Remove pin</button></div>
+    ${near.length?`<div class="gp-near"><b>Already on TopicTalk near this pin</b>${near.map(([t,d])=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><span>${esc(t.title)}</span><small>${distLbl(d)}</small></a>`).join("")}</div>`:""}`; }
+async function gpRead(v){
+  const msg=$("#gp-msg"); if(!msg) return; v=String(v||"").trim(); if(!v){ msg.innerHTML=""; return; }
+  const url=(v.match(/https?:\/\/[^\s<>"]+/)||[])[0]||"";
+  let src=v;
+  if(url&&/^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test(url)){
+    msg.innerHTML=`<span class="muted">Opening the short link…</span>`;
+    try{ const r=await fetch("/api/maps-expand",{method:"POST",headers:{"Content-Type":"application/json","X-TT":"1"},credentials:"same-origin",body:JSON.stringify({url})}); const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.url) throw j.error||{}; src=j.url+"\n"+v; }
+    catch(e){ msg.innerHTML=`<span class="gp-bad">${esc(e.message||"Couldn’t open that short link.")} You can also drop the pin yourself.</span>`; return; }
+  } else if(url&&!/google\.[a-z.]+\/maps|maps\.google\.|goo\.gl/i.test(url)){ msg.innerHTML=`<span class="gp-bad">That isn’t a Google Maps link. In Google Maps tap the place, then Share → Copy link.</span>`; return; }
+  const r=geoParse(src);
+  if(!r||!r.geo){ msg.innerHTML=`<span class="gp-bad">This link doesn’t include the exact spot. In Google Maps tap the place itself (the red pin), then Share. Or drop the pin yourself.</span>`; if(r?.name) gpNameHint(r.name); return; }
+  msg.innerHTML=`<span class="gp-ok">✓ Pin placed from your link.</span>`; gpSet(r.geo,"link"); if(r.name) gpNameHint(r.name);
+}
+function gpNameHint(nm){ const inp=$("#rp-name"), msg=$("#gp-msg"); if(!inp||!msg||!nm) return; const cur=inp.value.trim();
+  if(cur&&normTok(cur).join(" ")===normTok(nm).join(" ")) return;
+  msg.insertAdjacentHTML("beforeend",` <button type="button" class="linkb" data-act="gpUseName" data-v="${esc(nm)}">Use the name “${esc(nm)}”</button>`); }
+// names count as "similar" when one contains the other, or most words match
+function nameSim(a,b){ const x=normTok(a).join(" "), y=normTok(b).join(" "); if(!x||!y) return String(a).trim().toLowerCase()===String(b).trim().toLowerCase()?1:0; if(x===y||x.includes(y)||y.includes(x)) return 1; return simScore(a,b); }
 function reviewPicker(){
-  UI.rpKind="place"; UI.rpDupOk=false; const hp=homePlace(), ha=homeArea();
+  UI.rpKind="place"; UI.rpDupOk=false; UI.gpGeo=null; UI.gpExcept=null; const hp=homePlace(), ha=homeArea();
   openModal(`<h2>What do you want to review?</h2><p class="muted" style="margin:0">A place, a phone, a film, an app, anything. Search first. If it isn’t here yet, add it and be the first to rate it.</p>
    <label class="l">Name<input class="f" id="rp-name" maxlength="80" autocomplete="off" placeholder="e.g. Hotel Saravana, Arakkonam Turf, iPhone 17"></label>
    <div class="list" id="rp-hits"></div>
@@ -3735,6 +3841,7 @@ function reviewPicker(){
     <div class="row2" style="margin-top:10px"><label class="l">Category${catSelect("rp-cat","Food")}</label>
      <label class="l" id="rp-locl">Area<input class="f" id="rp-loc" maxlength="60" list="pl-list" autocomplete="off" placeholder="e.g. ${esc(hp?.name||"Arakkonam")}" value="${esc((ha||hp)?.label||"")}"></label></div>
     <datalist id="pl-list">${PLACES.list.map(x=>`<option value="${esc(x.label)}">`).join("")}</datalist>
+    <div id="rp-geo">${gpBox("",(ha||hp)?.label||"")}</div>
     <div class="hint" id="rp-err"></div>
     <button class="btn pri" data-act="rpSave" style="width:100%;margin-top:8px">Add and write the first review</button>
    </div>
@@ -3822,7 +3929,7 @@ document.addEventListener("click", async e=>{
     case "newPred": if(!(await gate())) break; predModal({groupId:el.dataset.group}); break;
     case "reviewPick": closeModal(false); reviewPicker(); break;
     case "rvCatH": UI.rvc=el.dataset.v; UI.fyN=10; schedule(); break;
-    case "rpKind": { UI.rpKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const l=$("#rp-locl"); if(l) l.hidden=UI.rpKind!=="place"; break; }
+    case "rpKind": { UI.rpKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const l=$("#rp-locl"); if(l) l.hidden=UI.rpKind!=="place"; const gb=$("#rp-geo"); if(gb) gb.hidden=UI.rpKind!=="place"; break; }
     case "rpForce": UI.rpDupOk=true; $("#rp-err").textContent=""; $("[data-act=rpSave]")?.click(); break;
     case "mergeOpen": { if(!S.isOwner) break; const t=S.topics.get(id); if(!t) break; UI.mgFrom=id;
       openModal(`<h2 style="font-size:18px">Merge or remove</h2><p class="muted" style="margin:0">Move the reviews and comments of <b>${esc(t.title)}</b> into the correct page, or remove it if it’s junk.</p>
@@ -3845,12 +3952,18 @@ document.addEventListener("click", async e=>{
       const name=($("#rp-name").value||"").trim(), err=$("#rp-err"); let loc="";
       if(name.length<3){ err.textContent="Type the name (at least 3 letters)."; break; }
       if(UI.rpKind==="place"){ const pl=placeOf($("#rp-loc").value); if(!pl){ err.textContent="Choose the area from the list so people nearby can find it."; break; } loc=pl.label; }
-      const near=!UI.rpDupOk&&LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&t.kind!=="question"&&t.title.toLowerCase()!==name.toLowerCase()&&simScore(name,t.title)>=.67&&(UI.rpKind!=="place"||!t.location||t.location===loc)).slice(0,3);
+      const pin=UI.rpKind==="place"&&geoOk(UI.gpGeo)?geoRound(UI.gpGeo):null;
+      if(pin&&!UI.rpDupOk){ const same=LIVE().filter(t=>t.kind==="place"&&geoOk(t.geo)&&geoDist(pin,t.geo)<=50&&nameSim(name,t.title)>=.5).sort((a,b)=>geoDist(pin,a.geo)-geoDist(pin,b.geo)).slice(0,3);
+        if(same.length){ err.innerHTML=`<div class="gp-dup"><b>Did you mean ${esc(same[0].title)}? It already exists.</b><span>Same name, ${distLbl(geoDist(pin,same[0].geo))} from your pin. Rate the existing page so reviews stay in one place.</span>
+          <div class="list" style="margin:8px 0">${same.map(t=>{ const st=stat(t.id); return `<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${t.location?`<span>📍 ${esc(t.location)}</span>`:""}<span>${distLbl(geoDist(pin,t.geo))} away</span><span>${st.reviews?"★ "+st.avg.toFixed(1):"No reviews yet"}</span></div></div></a>`; }).join("")}</div>
+          <button class="btn pri sm" data-act="pickReview" data-id="${same[0].id}">Use ${esc(same[0].title.slice(0,40))}</button> <button class="btn sm" data-act="rpForce">No, it’s a different place. Add it</button></div>`; break; } }
+      const far=t=>!!pin&&geoOk(t.geo)&&geoDist(pin,t.geo)>150;   // both pinned, clearly different spots: a branch, not a duplicate
+      const near=!UI.rpDupOk&&LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&t.kind!=="question"&&t.title.toLowerCase()!==name.toLowerCase()&&simScore(name,t.title)>=.67&&(UI.rpKind!=="place"||!t.location||t.location===loc)&&!far(t)).slice(0,3);
       if(near.length){ err.innerHTML=`<b>Is it one of these?</b> Rating the existing page keeps reviews in one place.<div class="list" style="margin:6px 0">${near.map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div></a>`).join("")}</div><button class="btn sm" data-act="rpForce">No, it’s a different place. Add it</button>`; break; }
-      const dupe=LIVE().find(t=>t.title.toLowerCase()===name.toLowerCase()&&(t.location||"")===loc);
+      const dupe=!UI.rpDupOk&&LIVE().find(t=>t.title.toLowerCase()===name.toLowerCase()&&(t.location||"")===loc&&!far(t));
       if(dupe){ closeModal(false); if(location.hash==="#t-"+dupe.id){ UI.tab="reviews"; UI.rvOpen=true; schedule(); } else { UI.pendingReview=dupe.id; location.hash="t-"+dupe.id; } toast("It’s already here. Add your review."); break; }
       if(!(await gate())) break;
-      const t={title:name.slice(0,120),desc:"",category:$("#rp-cat").value,kind:UI.rpKind==="place"?"place":"topic",tags:["review"],location:loc,authorId:S.me,tagged:[],taggedGroups:[],parentId:null,originCommentId:null,createdAt:Date.now(),groupId:null};
+      const t={title:name.slice(0,120),desc:"",category:$("#rp-cat").value,kind:UI.rpKind==="place"?"place":"topic",tags:["review"],location:loc,authorId:S.me,tagged:[],taggedGroups:[],parentId:null,originCommentId:null,createdAt:Date.now(),groupId:null,...(pin?{geo:pin}:{})};
       const tid=rid("t"); el.disabled=true;
       if(await W(()=>db.doc("topics/"+tid).set(t))){ closeModal(true); ensureFollow(tid); UI.pendingReview=tid; location.hash="t-"+tid; }
       else el.disabled=false;
@@ -4124,6 +4237,19 @@ document.addEventListener("click", async e=>{
     case "gTab": UI.gtab=el.dataset.v; UI.gtabG=id; UI.fyN=10; UI.gSel=null; schedule(); break;
     case "gInfo": gInfoModal(id); break;
     case "tMore": UI.tMore=UI.tMore===id?null:id; schedule(); break;
+    case "gpPaste": { try{ const v=await navigator.clipboard.readText(); const i=$("#gp-link"); if(i){ i.value=v; gpRead(v); } }catch{ $("#gp-link")?.focus(); toast("Long-press the box and choose Paste."); } break; }
+    case "gpManual": { const area=placeOf($("#rp-loc")?.value||"")||homeArea()||homePlace(); const pts=LIVE().filter(t=>t.kind==="place"&&geoOk(t.geo)&&(!area||inPlace(t,area))).map(t=>t.geo);
+      const c=UI.gpGeo||(pts.length?{lat:pts.reduce((a,g)=>a+g.lat,0)/pts.length,lng:pts.reduce((a,g)=>a+g.lng,0)/pts.length}:GEO_HOME);
+      const m=$("#gp-msg"); if(m) m.innerHTML=`<span class="muted">Move the map and tap the exact spot, or drag the pin.</span>`; gpSet(c,"manual"); break; }
+    case "gpClear": { UI.gpGeo=null; const b=$("#gp-map"); if(b){ b._map?.remove(); b._map=null; b.hidden=true; } $("#gp")?.classList.remove("has"); const m=$("#gp-msg"); if(m) m.innerHTML=""; const i=$("#gp-link"); if(i) i.value=""; gpFoot(); break; }
+    case "gpUseName": { const i=$("#rp-name"); if(i){ i.value=el.dataset.v; rpHits(); } el.remove(); break; }
+    case "pinEdit": { const t=S.topics.get(id); if(!t) break; UI.gpGeo=geoOk(t.geo)?t.geo:null; UI.gpExcept=id;
+      openModal(`<h2>${t.geo?"Change the map pin":"Add a map pin"}</h2><p class="muted" style="margin:-4px 0 10px">for <b>${esc(t.title)}</b></p>${gpBox(t.title,t.location)}
+        <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="pinSave" data-id="${esc(id)}">Save pin</button></div>`);
+      if(UI.gpGeo) gpSet(UI.gpGeo,"link"); break; }
+    case "pinSave": { const t=S.topics.get(id); if(!t||el.disabled) break; el.disabled=true;
+      const g=geoOk(UI.gpGeo)?geoRound(UI.gpGeo):null;
+      if(await W(()=>db.doc("topics/"+id).update({geo:g}))){ MAPC.delete("tm-"+id); closeModal(true); toast(g?"Map pin saved":"Map pin removed"); schedule(); } else el.disabled=false; break; }
     case "gRate": { const t=S.topics.get(id), v=+el.dataset.v; if(!t||t.deletedAt||!okRating(v)) break; if(!(await gate())) break;
       const key=`${id}__${S.me}`, prev=S.reviews.get(key); if(prev&&prev.rating===v){ toast(`You already rated it ${v} ★`); break; }
       const ok=await W(()=>prev?db.doc("reviews/"+key).update({rating:v,updatedAt:Date.now()}):db.doc("reviews/"+key).set({topicId:id,authorId:S.me,rating:v,title:"",text:"",createdAt:Date.now()}));
