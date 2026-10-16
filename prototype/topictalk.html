@@ -2197,9 +2197,8 @@ function gStickyInit(){
     const top=($(".top")?.getBoundingClientRect().bottom||56)+6; let cur=null;
     for(const e of document.querySelectorAll("#gchat .gm, #gchat .gitem")){ const r=e.getBoundingClientRect(); if(r.bottom>top+4){ cur=e; break; } }
     if(!cur){ chip.hidden=true; return; }
-    chip.style.top=top+"px";
     chip.innerHTML=`<span>${cur.dataset.day||""}</span><i></i><b>${cur.dataset.who||""}</b>`;
-    chip.hidden=false; chip.classList.add("on");
+    chip.hidden=false; chip.style.top=top/zk(chip)+"px"; chip.classList.add("on");
     clearTimeout(gStickyT); gStickyT=setTimeout(()=>chip.classList.remove("on"),1300);
   },{passive:true});
 }
@@ -2886,8 +2885,8 @@ function epOpen(ta, anchor){
     <div class="ep-foot muted">Tip: type <b>:fire</b> in any comment</div>`;
   epRender(); epEl.hidden=false;
   const r=anchor.getBoundingClientRect(), w=Math.min(332, window.innerWidth-24);
-  epEl.style.width=w+"px"; epEl.style.left=Math.max(12,Math.min(r.left-8, window.innerWidth-w-12))+"px";
-  const h=epEl.offsetHeight; epEl.style.top=(r.bottom+8+h>window.innerHeight-8 ? Math.max(8,r.top-h-8) : r.bottom+8)+"px";
+  const k=zk(epEl); epEl.style.width=w/k+"px"; epEl.style.left=Math.max(12,Math.min(r.left-8, window.innerWidth-w-12))/k+"px";
+  const h=epEl.offsetHeight*k; epEl.style.top=(r.bottom+8+h>window.innerHeight-8 ? Math.max(8,r.top-h-8) : r.bottom+8)/k+"px";
   if(window.matchMedia("(pointer:fine)").matches) epEl.querySelector("#ep-q").focus();
 }
 function epClose(refocus){ if(epEl.hidden) return; epEl.hidden=true; document.querySelectorAll(".composer.keep").forEach(x=>x.classList.remove("keep")); if(refocus&&EP.ta){ EP.ta.focus(); try{ EP.ta.setSelectionRange(EP.start,EP.end); }catch{} } }
@@ -3028,11 +3027,12 @@ function acUpdate(ta){
   TY.ac={ta,kind,start:pos-m[3].length-1,items,i:0};
   acEl.innerHTML=items.map((x,i)=>`<button type="button" class="aci${i===0?" on":""}" data-i="${i}" role="option">${kind===":"?`<span class="ace">${x.v}</span><span><b>:${esc(x.n.split(" ")[0])}:</b> <span class="muted">${esc(x.n.split(" ").slice(1).filter(w=>w.startsWith(qq)).concat(x.n.split(" ").slice(1)).filter((w,i,a)=>a.indexOf(w)===i).slice(0,2).join(" "))}</span></span>`:kind==="@"?avatar(x.id,"xs")+`<span><b>@${esc(x.v)}</b>${nameOf(x.id)!==x.v?` <span class="muted">${esc(nameOf(x.id))}</span>`:""}${isSeed(x.id)?' <span class="sample">sample</span>':""}</span>`:`<span class="acht">#</span><span><b>${esc(x.v)}</b>${x.isNew?' <span class="muted">new tag</span>':""}</span>`}</button>`).join("");
   const r=caretRect(ta), w=Math.min(280, window.innerWidth-24);
-  acEl.style.width=w+"px"; acEl.style.left=Math.max(12,Math.min(r.left-8, window.innerWidth-w-12))+"px";
-  acEl.hidden=false;
-  const below=r.bottom+6, h=acEl.offsetHeight;
-  acEl.style.top=(below+h>window.innerHeight-8 ? Math.max(8,r.top-h-6) : below)+"px";
+  acEl.hidden=false; const k=zk(acEl);
+  acEl.style.width=w/k+"px"; acEl.style.left=Math.max(12,Math.min(r.left-8, window.innerWidth-w-12))/k+"px";
+  const below=r.bottom+6, h=acEl.offsetHeight*k;
+  acEl.style.top=(below+h>window.innerHeight-8 ? Math.max(8,r.top-h-6) : below)/k+"px";
 }
+function zk(el){ const b=el.getBoundingClientRect(); return b.width&&el.offsetWidth?b.width/el.offsetWidth:1; }
 function acClose(){ if(!acEl.hidden){ acEl.hidden=true; } TY.ac=null; }
 function acPick(i){
   const a=TY.ac; if(!a) return; const x=a.items[i]; if(!x) return;
