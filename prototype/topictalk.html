@@ -147,6 +147,22 @@ a.chip:hover,button.chip:hover{color:var(--ink)}
 .origin q{font-style:italic}
 .desc{margin:14px 0 0;max-width:68ch}
 .tbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+/* topic actions: four main buttons + "More" menu holding everything else */
+.tbar2{position:relative;align-items:center}
+.tbar2 .btn.sm{min-height:40px}
+.tmore{position:relative;gap:4px}.tmore.on{background:var(--chip);border-color:color-mix(in srgb,var(--brand) 40%,var(--line))}
+.tmore-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 2px var(--surface)}
+.tmenu{flex-basis:100%;margin-top:2px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px;box-shadow:0 12px 32px rgba(10,20,16,.14);animation:pop .12s ease-out}
+.tmenu[hidden]{display:none}
+.tmg+.tmg{border-top:1px solid var(--line);margin-top:4px;padding-top:4px}
+.tmi{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 12px;border:0;background:none;border-radius:10px;color:var(--ink);font:inherit;font-size:15px;font-weight:600;text-align:left;cursor:pointer}
+.tmi:hover,.tmi:focus-visible{background:var(--chip);outline:none}
+.tmi-i{width:22px;text-align:center;flex:none}
+.tmi.danger{color:var(--danger)}
+.tmi-n{color:var(--brand-deep);font-weight:700;margin-left:2px}
+@media(min-width:641px){.tmenu{position:absolute;left:0;top:calc(100% + 8px);width:300px;margin:0;z-index:20}}
+@media(max-width:480px){.tbar2{gap:6px}.tbar2 .btn.sm{padding:0 12px}.tbar2 .lkw,.tbar2 .tshl,.tmore-l{display:none}.tbar2 .tsh,.tbar2 .tmore,.tbar2 .tlk:has(.lkw){min-width:42px;padding:0;justify-content:center}}
+@media(max-width:374px){.tbar2 .rvx{display:none}.tbar2 .btn.sm{font-size:14px;padding:0 10px}.tbar2 .tsh,.tbar2 .tmore,.tbar2 .tlk:has(.lkw){padding:0}}
 .verdict{display:flex;gap:18px;align-items:center}
 .big{font-family:var(--f-display);font-size:42px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .bars{display:grid;gap:4px;font-size:12px;color:var(--muted);margin-top:12px;font-variant-numeric:tabular-nums}
@@ -989,6 +1005,25 @@ body:not(.ingchat) .gsticky{display:none}
 .gshared{margin:0 0 4px}.gshared .gcw{margin:0}.gshared .gsys{padding:2px 0 4px;font-size:12px}.gx{opacity:.7}
 .gtopic{display:grid;gap:3px;max-width:520px;width:100%;margin:0 auto;padding:11px 14px;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;background:var(--surface);color:var(--ink);text-decoration:none}.gtopic:hover{border-color:var(--brand)}
 .gtopic b{font-size:15px;line-height:1.3}.gt-d{font-size:13px;color:var(--muted);line-height:1.4}.gt-m{font-size:12.5px;font-weight:700;color:var(--brand-deep)}.gt-k{font-size:11px;font-weight:800;color:var(--muted)}
+.gpc{display:grid;gap:8px;max-width:520px;width:100%;margin:0 auto;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:14px;background:var(--surface);color:var(--ink)}
+.gpc,.gpc-sub{--gpcg:#F2A900}@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .gpc{--gpcg:#FFC93C}}:root[data-theme=dark] .gpc{--gpcg:#FFC93C}
+.gpc.gpc-sub{border:0;padding:8px 2px 0;background:none;max-width:none}
+.gpc-h{display:grid;gap:3px;color:inherit;text-decoration:none}
+.gpc-h b{font-size:15.5px;line-height:1.3}
+.gpc-k{font-size:12px;font-weight:700;color:var(--muted)}
+.gpc-rate{display:grid;gap:4px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--bg) 65%,var(--surface))}
+.gpc-avg{display:flex;align-items:baseline;gap:8px;font-size:13.5px;color:var(--muted)}
+.gpc-avg b{font-size:17px;color:var(--ink)}.gpc-avg b.hi{color:var(--gpcg)}
+.gpc-stars{display:flex;gap:2px}
+.gpc-st{width:40px;height:40px;border:0;background:none;padding:0;font-size:28px;line-height:1;color:color-mix(in srgb,var(--muted) 45%,transparent);cursor:pointer;border-radius:10px;transition:transform .1s}
+.gpc-st.on{color:var(--gpcg)}.gpc-st:hover{transform:scale(1.12)}.gpc-st:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.gpc-stars:hover .gpc-st{color:var(--gpcg)}.gpc-stars .gpc-st:hover~.gpc-st{color:color-mix(in srgb,var(--muted) 45%,transparent)}
+.gpc-hint{font-size:12.5px;color:var(--muted)}.gpc-hint .linkb{font-size:12.5px}
+.gpc-last{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gpc-last b{color:var(--ink);font-weight:700}
+.gpc-foot{display:flex;gap:8px}
+.gpc-b{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer}
+.gpc-b:hover{border-color:var(--brand)}.gpc-open{color:var(--brand-deep);background:var(--brand-soft);border-color:transparent}
+.gcm-on{margin:-4px 0 10px}.gcm-prev{display:grid;gap:6px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:var(--chip);font-size:13.5px;color:var(--muted)}.gcm-prev b{color:var(--ink)}
 .gtopic.gt-in{margin:6px 0 2px;padding:8px 10px;max-width:none;background:color-mix(in srgb,var(--bg) 70%,var(--surface))}
 .gm.flash .gb{animation:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 45%,transparent)}
 .gcomp{position:fixed;left:0;right:0;bottom:0;z-index:35;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}
@@ -1569,7 +1604,7 @@ function battleState(b){
 const cdFmt=ms=>{ ms=Math.max(0,ms); let x=Math.floor(ms/1000); const d=Math.floor(x/86400); x-=d*86400; const h=Math.floor(x/3600); x-=h*3600; const m=Math.floor(x/60), sec=x-m*60, z=n=>(n<10?"0":"")+n; return (d?d+"d ":"")+z(h)+":"+z(m)+":"+z(sec); };
 setInterval(()=>{ if(document.hidden) return; let fin=false; document.querySelectorAll(".bc-cd[data-end]").forEach(e=>{ const ms=+e.dataset.end-Date.now(); e.textContent=ms>0?cdFmt(ms):"Ended"; if(ms<=0&&e.dataset.live){ delete e.dataset.live; fin=true; } }); if(fin) schedule(); },1000);
 const HEART=on=>'<svg width="16" height="16" viewBox="0 0 24 24" fill="'+(on?"currentColor":"none")+'" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.6-9.1C.9 8.2 2.8 4.5 6.5 4.5c2.2 0 3.7 1.2 5.5 3.3 1.8-2.1 3.3-3.3 5.5-3.3 3.7 0 5.6 3.7 4.1 6.9-2.1 4.5-9.6 9.1-9.6 9.1z"/></svg>';
-const likeBtn=(id,kind,cls="")=>{ const on=IX.myLikes.has(id), n=IX.likeN.get(id)||0; return `<button type="button" class="lkb ${cls} ${on?"on":""}" data-act="like" data-id="${esc(id)}" data-kind="${kind}" aria-pressed="${on}" aria-label="${on?"Unlike":"Like"}" title="Appreciate this">${HEART(on)}<span>${n||"Like"}</span></button>`; };
+const likeBtn=(id,kind,cls="")=>{ const on=IX.myLikes.has(id), n=IX.likeN.get(id)||0; return `<button type="button" class="lkb ${cls} ${on?"on":""}" data-act="like" data-id="${esc(id)}" data-kind="${kind}" aria-pressed="${on}" aria-label="${on?"Unlike":"Like"}" title="Appreciate this">${HEART(on)}<span${n?"":' class="lkw"'}>${n||"Like"}</span></button>`; };
 function battleCard(b, o={}){
   const s=battleState(b), show=s.my||s.ended, t=S.topics.get(b.topicId);
   const ck='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -2038,12 +2073,28 @@ function gLinkCards(text){
     return `<a class="gtopic gt-in" href="#t-${t.id}"><span class="gt-k">${typeLabel(t)}</span><b>${esc(t.title)}</b><span class="gt-m">${s.reviews?`★ ${s.avg.toFixed(1)} · ${s.reviews} review${s.reviews===1?"":"s"} · `:""}${s.comments} comment${s.comments===1?"":"s"}</span></a>`; }).join("");
 }
 const gShareOK=t=>!!t&&!!S.me&&(!t.access||t.access==="open")&&canSee(t)&&(!t.groupId||t.madePublic||S.groups.get(t.groupId)?.visibility==="public")&&S.myGroups.size>0;
+// a post shared into the group chat: the card itself, plus rate (reviews) and comment right from the chat
+function gCardFoot(t){
+  const cs=(IX.cByTopic.get(t.id)||[]).filter(cLive).sort((a,b)=>b.createdAt-a.createdAt), last=cs[0];
+  return `${last?`<div class="gpc-last"><b>${esc(nameOf(last.authorId))}</b> ${esc((last.text||"📷 Photo").replace(/\s+/g," ").slice(0,90))}</div>`:""}
+    <div class="gpc-foot"><button type="button" class="gpc-b" data-act="gCmt" data-id="${esc(t.id)}">💬 ${cs.length?`Comment · ${cs.length}`:"Comment"}</button><a class="gpc-b gpc-open" href="#t-${esc(t.id)}">Open →</a></div>`;
+}
+function gRateRow(t){
+  const s=stat(t.id), mine=S.me&&S.reviews.get(`${t.id}__${S.me}`), my=mine?.rating||0;
+  return `<div class="gpc-rate">
+    <div class="gpc-avg">${s.reviews?`<b class="${s.avg>=4?"hi":""}">★ ${s.avg.toFixed(1)}</b><span>${s.reviews} review${s.reviews===1?"":"s"}</span>`:`<span>No ratings yet. Be the first.</span>`}</div>
+    <div class="gpc-stars" role="group" aria-label="${my?`You rated it ${my} out of 5. Tap to change`:"Rate it"}">${[1,2,3,4,5].map(v=>`<button type="button" class="gpc-st${v<=my?" on":""}" data-act="gRate" data-id="${esc(t.id)}" data-v="${v}" aria-label="${v} star${v>1?"s":""}" aria-pressed="${v<=my}">★</button>`).join("")}</div>
+    <div class="gpc-hint">${my?`You rated ${my} · tap to change${mine.text||mine.title?"":` · <button type="button" class="linkb" data-act="rateIt" data-id="${esc(t.id)}">add a few words</button>`}`:"Tap a star to rate"}</div></div>`;
+}
 function gShareEmbed(tid){
   const t=S.topics.get(tid); if(!t||t.stub) return `<div class="gtopic gx"><b>Shared post</b><span class="gt-d">This post isn’t available any more.</span></div>`;
-  if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[]).sort((x,y)=>y.createdAt-x.createdAt)[0]; if(b) return `<div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}<a class="gopen" href="#t-${t.id}">Open battle →</a></div>`; }
-  if(t.kind==="prediction") return `<div class="gcw">${predCard(t)}</div>`;
-  const s=stat(t.id);
-  return `<a class="gtopic" href="#t-${t.id}"><b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}<span class="gt-m">${s.comments?`💬 ${s.comments} repl${s.comments===1?"y":"ies"}`:"No replies yet"} · Open →</span></a>`;
+  if(t.deletedAt) return `<div class="gtopic gx"><b>${esc(t.title)}</b><span class="gt-d">This post was deleted.</span></div>`;
+  if(t.kind==="battle"){ const b=(IX.bByTopic.get(t.id)||[]).sort((x,y)=>y.createdAt-x.createdAt)[0]; if(b) return `<div class="gcw btlive">${b.endsAt>Date.now()?battleCard(b,{topicLink:true}):battleDone(b)}<div class="gpc gpc-sub">${gCardFoot(t)}</div></div>`; }
+  if(t.kind==="prediction") return `<div class="gcw">${predCard(t)}<div class="gpc gpc-sub">${gCardFoot(t)}</div></div>`;
+  const s=stat(t.id), rateable=t.kind==="place"||s.reviews>0;
+  const meta=[t.kind==="place"?"📍 Place":t.kind==="question"?"❓ Question":"",t.category?esc(t.category):"",t.location?"📍 "+esc(t.location):""].filter(Boolean).filter((x,i,a)=>!(x==="📍 Place"&&a.some(y=>y.startsWith("📍 ")&&y!==x))).join(" · ");
+  return `<div class="gpc"><a class="gpc-h" href="#t-${esc(t.id)}">${meta?`<span class="gpc-k">${meta}</span>`:""}<b>${esc(t.title)}</b>${t.desc?`<span class="gt-d">${esc(t.desc.replace(/\s+/g," ").slice(0,140))}</span>`:""}</a>
+    ${rateable?gRateRow(t):""}${gCardFoot(t)}</div>`;
 }
 function gMsgHTML(m,prev,gid,nested){
   const stkM=!m.deletedAt&&!m.text&&!m.ref&&(m.media||[]).length===1?gMedia(m.media[0]):null, isStk=!!stkM&&Math.max(stkM.w||999,stkM.h||999)<=512, mine=m.authorId===S.me, isNew=!mine&&!m.deletedAt&&UI.gBaseG===gid&&m.createdAt>UI.gBase, cont=prev&&prev.m&&prev.m.authorId===m.authorId&&m.createdAt-prev.m.createdAt<5*6e4&&dayLbl(prev.at)===dayLbl(m.createdAt);
@@ -2505,21 +2556,29 @@ function vTopic(id){
     ${t.kind==="prediction"?`<div style="margin-top:16px">${predCard(t)}</div>`:""}
     ${battles.map(b=>`<div style="margin-top:16px">${battleCard(b)}</div>`).join("")}
     ${t.kind==="question"&&!isHelp(t)&&!t.deletedAt&&!battles.some(b=>b.endsAt>Date.now())?`<div class="q2b"><div><b>${splitSides(t.title)[0]?"Two clear options here?":"Is this a choice between two options?"}</b><span>Turn it into a battle so everyone can vote. The answers stay here.</span></div><button type="button" class="btn sm" data-act="q2battle" data-id="${t.id}">⚔️ Turn into a battle</button></div>`:""}
-    ${t.deletedAt?"":`<div class="tbar">
+    ${t.deletedAt?"":(()=>{ const own=S.me&&S.me===t.authorId, reqN=canManageT(t)?[...S.joinreqs.values()].filter(r=>r.topicId===id&&r.status==="pending").length:0;
+      const mi=(act,ic,label,extra="")=>`<button type="button" role="menuitem" class="tmi${extra}" data-act="${act}" data-id="${id}"><span class="tmi-i">${ic}</span><span>${label}</span></button>`;
+      const g1=[(t.kind==="place"||s.reviews)?mi("askAbout","❓","Ask about it")+mi("compareIt","⚔️","Compare with another"):"",
+        S.me&&(accOf(t)==="open"||canManageT(t)||(t.membersCanAdd&&tRoleOf(t,S.me)))?mi("inviteF","👋","Invite friends"):""].join("");
+      const g2=[own&&t.kind!=="battle"?mi("editTopic","✏️","Edit topic"):"",
+        t.kind==="battle"&&battles[0]&&(own||S.isOwner)?`<button type="button" role="menuitem" class="tmi" data-act="editBattle" data-id="${battles[0].id}"><span class="tmi-i">✏️</span><span>Edit battle</span></button>`:"",
+        own&&(t.media||[]).length<PH_MAX?mi("addPhotos","📷","Add photos"):"",
+        own?mi("bannerEdit","🖼️",t.banner?"Change banner":"Add banner"):"",
+        canManageT(t)?mi("privacy","🔒","Privacy"+(reqN?` <b class="tmi-n">${reqN} request${reqN>1?"s":""}</b>`:"")):""].join("");
+      const g3=[S.me?mi("muteT",MUTED.has(id)?"🔕":"🔔",MUTED.has(id)?"Alerts muted · turn on":"Mute alerts"):"",
+        S.me&&!own&&S.tmembers.has(fKey(id,S.me))?mi("leaveT","🚪","Leave topic"):"",
+        S.isOwner&&(t.kind==="place"||s.reviews)?mi("mergeOpen","🧩","Merge / remove"):"",
+        S.me&&!own?mi("rpT","🚩","Report"):"",
+        own?mi("delTopic","🗑️","Delete topic"," danger"):""].join("");
+      const more=[g1,g2,g3].filter(Boolean).map(x=>`<div class="tmg">${x}</div>`).join("");
+      const open=UI.tMore===id;
+      return `<div class="tbar tbar2">
       <button class="btn sm ${following?"":"pri"}" data-act="follow" data-id="${id}">${following?L("Following"):L("Follow")} · ${s.followers}</button>${isHelp(t)||t.kind==="battle"?"":likeBtn(id,"topic","btn sm tlk")}
-      ${t.kind==="battle"&&battles[0]&&(t.authorId===S.me||S.isOwner)?`<button class="btn sm" data-act="editBattle" data-id="${battles[0].id}">Edit battle</button>`:""}
-      ${t.kind==="battle"?"":`<button class="btn sm" data-act="openReview">${mine?"Edit review":L("Review")}</button>`}
-      ${!t.deletedAt&&(t.kind==="place"||s.reviews)?`<button class="btn sm" data-act="askAbout" data-id="${id}">❓ Ask about it</button><button class="btn sm" data-act="compareIt" data-id="${id}">⚔️ Compare</button>`:""}
-      <button class="btn sm" data-act="shareTopic" data-id="${id}">${ICON.share}${L("Share card")}</button>
-      ${S.me&&(accOf(t)==="open"||canManageT(t)||(t.membersCanAdd&&tRoleOf(t,S.me)))?`<button class="btn sm" data-act="inviteF" data-id="${id}">Invite friends</button>`:""}
-      ${S.isOwner&&!t.deletedAt&&(t.kind==="place"||s.reviews)?`<button class="btn sm" data-act="mergeOpen" data-id="${id}">Merge / remove</button>`:""}${canManageT(t)?`<button class="btn sm" data-act="privacy" data-id="${id}">Privacy${(()=>{ const n=[...S.joinreqs.values()].filter(r=>r.topicId===id&&r.status==="pending").length; return n?` · ${n} request${n>1?"s":""}`:""; })()}</button>`:""}
-      ${S.me&&S.me===t.authorId&&(t.media||[]).length<PH_MAX?`<button class="btn sm" data-act="addPhotos" data-id="${id}">📷 Add photos</button>`:""}
-      ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="bannerEdit" data-id="${id}">${t.banner?"Change banner":"Add banner"}</button>`:""}
-      ${S.me&&S.me!==t.authorId&&S.tmembers.has(fKey(id,S.me))?`<button class="btn sm" data-act="leaveT" data-id="${id}">Leave topic</button>`:""}
-      ${S.me&&S.me===t.authorId&&t.kind!=="battle"&&!t.deletedAt?`<button class="btn sm" data-act="editTopic" data-id="${id}">✏️ Edit</button>`:""}
-      ${S.me&&S.me===t.authorId?`<button class="btn sm" data-act="delTopic" data-id="${id}">Delete topic</button>`:""}
-      ${S.me?`<button class="btn sm" data-act="muteT" data-id="${id}">${MUTED.has(id)?"🔕 Muted":"Mute alerts"}</button>`:""}${S.me&&S.me!==t.authorId?`<button class="btn sm" data-act="rpT" data-id="${id}">Report</button>`:""}
-    </div>`}
+      ${t.kind==="battle"?"":`<button class="btn sm" data-act="openReview">${mine?'★ Edit<span class="rvx">review</span>':"★ "+L("Review")}</button>`}
+      <button class="btn sm tsh" data-act="shareTopic" data-id="${id}" aria-label="Share">${ICON.share}<span class="tshl">${L("Share")}</span></button>
+      ${more?`<button type="button" class="btn sm tmore${open?" on":""}" data-act="tMore" data-id="${id}" aria-haspopup="menu" aria-expanded="${open}" aria-controls="tmenu" aria-label="More options">⋯<span class="tmore-l">More</span>${reqN?`<i class="tmore-dot" aria-label="${reqN} join request${reqN>1?"s":""}"></i>`:""}</button>`:""}
+      ${more?`<div class="tmenu" id="tmenu" role="menu"${open?"":" hidden"}>${more}</div>`:""}
+    </div>`; })()}
     ${(()=>{ const ds=(IX.dByTopic.get(id)||[]).filter(d=>["voting","active","pending"].includes(duelState(d).phase)); return ds.length?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">${ds.map(d=>`<a class="bout" href="#d-${esc(d.id)}">${ICON.duel.replace("<svg",'<svg width="14" height="14"')}Debate: ${esc(nameOf(d.challengerId))} vs ${esc(nameOf(d.opponentId))} · ${duelState(d).phase==="voting"?"vote now":duelState(d).phase==="active"?"in progress":"waiting to start"}</a>`).join("")}</div>`:""; })()}
     ${cbattles.length?`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">${cbattles.map(b=>`<a class="bout" href="#t-${id}~${b.commentId}">${ICON.vs.replace("<svg",'<svg width="14" height="14"')}Live battle: ${esc(b.a)} vs ${esc(b.b)} · ends in ${left(b.endsAt-Date.now())}</a>`).join("")}</div>`:""}
     <div class="tabs">
@@ -3075,6 +3134,8 @@ function toolAct(b){ const ta=b.closest(".composer")?.querySelector("textarea");
 document.addEventListener("mousedown",e=>{ const b=e.target.closest(".tbtn"); if(!b) return; e.preventDefault(); toolAct(b); });
 document.addEventListener("click",e=>{ const v=e.target.closest("[data-go]"); if(v){ e.preventDefault(); location.hash=v.dataset.go; return; } const a=e.target.closest("a[data-nids]"); if(a&&a.dataset.gm) UI.gcFocus=a.dataset.gm; if(a&&!e.target.closest("[data-act]")&&typeof db!=="undefined"&&db) for(const id of a.dataset.nids.split(",")){ const n=S.notifs.find(x=>x.id===id); if(n&&!n.read) db.doc("notifs/"+id).update({read:true}).catch(()=>{}); } });
 document.addEventListener("click",()=>{ UI.vClick=Date.now(); },true);
+document.addEventListener("click",e=>{ if(!UI.tMore||e.target.closest(".tmore")) return; if(e.target.closest(".tmenu")&&!e.target.closest(".tmi")) return; UI.tMore=null; const m=$("#tmenu"); if(m) m.hidden=true; const b=$(".tmore"); if(b){ b.classList.remove("on"); b.setAttribute("aria-expanded","false"); } },true);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&UI.tMore){ UI.tMore=null; const m=$("#tmenu"); if(m) m.hidden=true; $(".tmore")?.focus(); } });
 document.addEventListener("click",e=>{ const b=e.target.closest(".tbtn"); if(b&&e.detail===0) toolAct(b); });
 document.addEventListener("keydown",e=>{
   if(TY.ac && e.target===TY.ac.ta && !e.isComposing){
@@ -3106,7 +3167,7 @@ function render(){
   const keep={}; let fid=null, sel=null;
   if(!changed){ view.querySelectorAll("input[id],textarea[id],select[id]").forEach(el=>keep[el.id]=el.value);
     const ae=document.activeElement; if(ae&&ae.id&&view.contains(ae)){ fid=ae.id; try{ sel=[ae.selectionStart,ae.selectionEnd]; }catch{} } }
-  else { UI.replyOpen.clear(); UI.rvOpen=false; UI.rvRating=0; UI.csort="top"; }
+  else { UI.replyOpen.clear(); UI.rvOpen=false; UI.rvRating=0; UI.csort="top"; UI.tMore=null; }
   let html="", focusC=null;
   if(r==="home") html=vHome();
   else if(r==="explore") html=vExplore();
@@ -4062,6 +4123,21 @@ document.addEventListener("click", async e=>{
     case "predFromBattle": { const q0=($("#bt-q")?.value||"").trim(); closeModal(false); if(!(await gate())) break; predModal({title:q0&&q0!=="Who’s right?"?q0:"",groupId:el.dataset.group||undefined}); break; }
     case "gTab": UI.gtab=el.dataset.v; UI.gtabG=id; UI.fyN=10; UI.gSel=null; schedule(); break;
     case "gInfo": gInfoModal(id); break;
+    case "tMore": UI.tMore=UI.tMore===id?null:id; schedule(); break;
+    case "gRate": { const t=S.topics.get(id), v=+el.dataset.v; if(!t||t.deletedAt||!okRating(v)) break; if(!(await gate())) break;
+      const key=`${id}__${S.me}`, prev=S.reviews.get(key); if(prev&&prev.rating===v){ toast(`You already rated it ${v} ★`); break; }
+      const ok=await W(()=>prev?db.doc("reviews/"+key).update({rating:v,updatedAt:Date.now()}):db.doc("reviews/"+key).set({topicId:id,authorId:S.me,rating:v,title:"",text:"",createdAt:Date.now()}));
+      if(ok){ toast(prev?`Rating changed to ${v} ★`:`You rated ${t.title.slice(0,40)} ${v} ★`); if(!prev){ ensureFollow(id); notify(followersOf(id).map(u=>[u,"review"]),{topicId:id,text:`${v} out of 5`}); } schedule(); }
+      break; }
+    case "gCmt": { const t=S.topics.get(id); if(!t) break; if(!(await gate())) break;
+      const cs=(IX.cByTopic.get(id)||[]).filter(cLive).sort((a,b)=>b.createdAt-a.createdAt).slice(0,3).reverse();
+      openModal(`<h2>Comment</h2><p class="muted gcm-on">on <b>${esc(t.title.slice(0,90))}</b>. It’s added to the topic’s discussion.</p>
+        ${cs.length?`<div class="gcm-prev">${cs.map(c=>`<div><b>${esc(nameOf(c.authorId))}</b> ${esc((c.text||"📷 Photo").replace(/\s+/g," ").slice(0,140))}</div>`).join("")}</div>`:""}
+        <textarea id="gcc-ta" class="f" rows="3" maxlength="3000" placeholder="Write your comment…"></textarea>
+        <div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="gCmtSend" data-id="${esc(id)}">Post comment</button></div>`);
+      setTimeout(()=>$("#gcc-ta")?.focus(),60); break; }
+    case "gCmtSend": { const ta=$("#gcc-ta"), t=S.topics.get(id); if(!ta||!t||el.disabled) break; el.disabled=true;
+      if(await postComment(id,null,ta.value)){ closeModal(true); toast("Comment added to "+t.title.slice(0,40)); schedule(); } else el.disabled=false; break; }
     case "gTap": { if(e.target.closest("a,button:not(.gb)")&&e.target.closest("a,button")!==el) break; UI.gSel=UI.gSel===id?null:id; schedule(); break; }
     case "gReply": { const m=gMsgs(UI.gcView||"").find(x=>x.id===id); if(!m) break; UI.gcReply=id; UI.gSel=null; gcBar(); schedule(); $("#gc-ta")?.focus(); break; }
     case "gNewGo": { const list=[...document.querySelectorAll(".gm.gnew")].filter(e=>!UI.gSeen.has(e.id)); const dn=list.find(e=>e.getBoundingClientRect().top>=innerHeight/2)||list[0]; if(dn){ dn.scrollIntoView({block:"center",behavior:"smooth"}); dn.classList.add("flash"); setTimeout(()=>{ dn.classList.remove("flash"); gNewUpdate(); },1600); } break; }
