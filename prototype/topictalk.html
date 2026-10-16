@@ -719,7 +719,24 @@ footer{border-top:1px solid var(--line);padding-block:20px;color:var(--muted);fo
 .hstrip{margin:2px 0}.hmini{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}.hmini::-webkit-scrollbar{display:none}
 .hrv{flex:0 0 auto;min-width:170px;max-width:240px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-decoration:none;color:var(--ink)}.hrv b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hrv span{color:#B7791F;font-weight:800;font-size:13px}.hrv small{color:var(--muted)}
 .hmore{display:block;width:100%;margin:14px 0}.hdisc .tagrow{gap:6px}.hbgrid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
-.sp-mode .cardimg{max-height:min(42vh,340px);width:auto;max-width:100%;margin:0 auto;display:block}.sp-mode .seg,.sp-mode #sh,.sp-mode .seg+p{display:none}.sp-sub{margin:-6px 0 2px;font-size:14px}.spst{border-color:#25D366!important;color:#128C4A!important}.spig{border-color:#E1306C!important;color:#C13584!important}.spwa{background:#25D366!important;border-color:#25D366!important;color:#fff!important}
+.sp-mode{position:relative}.sp-mode h2{margin:0;padding-right:44px;font-size:22px}.sp-sub{margin:2px 0 12px;font-size:14.5px}
+.shx{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:var(--chip);color:var(--ink);font-size:16px;cursor:pointer;display:grid;place-items:center}.shx:hover{background:color-mix(in srgb,var(--ink) 12%,var(--surface))}
+.sp-mode .cardimg{max-height:min(46vh,400px);width:auto;max-width:100%;margin:0 auto;display:block;border:0;box-shadow:0 10px 30px rgba(0,0,0,.22)}
+.shhint{margin:8px 0 0;font-size:12.5px;text-align:center}
+.shacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:10px;margin-top:16px}
+.shbtn{height:46px;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:700;border-radius:12px;padding:0 14px;white-space:nowrap}
+.shbtn:not(.pri){background:var(--chip);border-color:transparent;color:var(--ink)}.shbtn:not(.pri):hover{background:color-mix(in srgb,var(--ink) 12%,var(--surface))}
+.shbtn svg{width:18px;height:18px}.shcar{font-size:12px;opacity:.85;margin-left:-2px}
+.shmenu{margin-top:8px;border-radius:14px;background:var(--surface);border:1px solid var(--line);padding:4px;display:grid;box-shadow:0 12px 28px rgba(0,0,0,.18)}.shmenu[hidden]{display:none}
+.shmenu>a,.shmenu>button{display:flex;align-items:center;gap:12px;width:100%;min-height:46px;padding:0 12px;border:0;border-radius:10px;background:none;color:var(--ink);font:inherit;font-size:15px;font-weight:600;text-decoration:none;text-align:left;cursor:pointer}
+.shmenu>a:hover,.shmenu>button:hover,.shmenu>a:focus-visible,.shmenu>button:focus-visible{background:var(--chip);outline:none}.shi{width:22px;text-align:center;font-size:17px}
+.shlater{display:block;margin:12px auto 2px;border:0;background:none;color:var(--muted);font:inherit;font-size:14.5px;font-weight:600;padding:8px 16px;border-radius:10px;cursor:pointer}.shlater:hover{color:var(--ink)}
+@media(max-width:480px){.shacts{grid-template-columns:1fr 1fr}.shacts .pri{grid-column:1/-1}}
+.shwrap{position:relative}
+@media(min-width:481px){.shmenu{position:absolute;left:0;top:calc(100% + 8px);width:min(300px,100%);margin:0;z-index:5}.modal.sp-mode{overflow:visible}.shmenu.up{top:auto;bottom:calc(100% + 8px)}}
+.scrim.sheetm .modal.sp-mode{width:min(560px,100%)}
+@media(max-width:480px){.sp-mode .cardimg{max-height:min(40vh,360px)}}
+body:has(.sp-mode) .toast{bottom:auto;top:calc(16px + env(safe-area-inset-top,0px))}
 /* COMPOSER v2 (WhatsApp-style) */
 .composer{align-items:flex-end}.composer .box{gap:4px;align-items:stretch}
 .wa{display:flex;align-items:flex-end;gap:8px;width:100%}
@@ -1334,7 +1351,7 @@ async function saveHome(cityId,areaId){
 }
 function placeSheet(mode){
   UI.plMode=mode; const first=mode==="first";
-  openModal(`<h2>${first?"📍 Where are you based?":mode==="home"?"Change my area":"Explore another area"}</h2>
+  openModal(`<h2>${first?"📍 Where are you based?":mode==="home"?"Change my area":mode==="reviews"?"Reviews in another area":"Explore another area"}</h2>
     <p class="muted" style="margin:-4px 0 10px;font-size:14px">${first?"Choose your city to personalize your TopicTalk feed. You can explore any other area anytime.":mode==="home"?"This personalizes your local feed. It never shows exactly where you are.":"Browse what’s happening anywhere. Your own area stays the same."}</p>
     <input class="f" id="pl-q" autocomplete="off" placeholder="Search city, town or locality" aria-label="Search places">
     <div id="pl-res" class="plres"></div>
@@ -1358,6 +1375,8 @@ function maybeAskHome(){
 }
 
 const stars = n => "★★★★★".slice(0,Math.round(n)) + "☆☆☆☆☆".slice(0,5-Math.round(n));
+// a review's rating must be a whole number from 1 to 5 (the server enforces this too); anything else stored earlier is ignored
+const okRating = v => Number.isInteger(v) && v>=1 && v<=5;
 const TS_Z={s:.94,m:1.07,l:1.2,x:1.33}; let curTS="";
 function applyTheme(v){ const r=document.documentElement; if(v==="dark"||v==="light") r.dataset.theme=v; else delete r.dataset.theme; }
 const getTheme=()=>{ try{ return localStorage.getItem("tt_theme")||"auto"; }catch{ return "auto"; } };
@@ -1398,7 +1417,7 @@ function buildIndex(){
   S.myGroups=new Set([...S.gmembers.values()].filter(m=>m.userId===S.me&&S.me).map(m=>m.groupId));
   S.topics=new Map([...R.topics].filter(([k,t])=>canSee(t)));
   S.comments=new Map([...R.comments].filter(([k,c])=>S.topics.has(c.topicId)));
-  S.reviews=new Map([...R.reviews].filter(([k,r])=>S.topics.has(r.topicId)));
+  S.reviews=new Map([...R.reviews].filter(([k,r])=>S.topics.has(r.topicId)&&okRating(r.rating)));
   S.battles=new Map([...R.battles].filter(([k,b])=>S.topics.has(b.topicId)));
   S.duels=new Map([...R.duels].filter(([k,d])=>S.topics.has(d.topicId)));
   const ix = { cByTopic:new Map(), cKids:new Map(), rByTopic:new Map(), likeN:new Map(), myLikes:new Set(), fByTopic:new Map(), myFollows:new Set(),
@@ -2226,6 +2245,8 @@ function vCity(slug){
    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"><button class="btn pri sm" data-act="newTopic" data-loc="${esc(name)}">Start a topic here</button><button class="btn sm" data-act="newBattle" data-loc="${esc(name)}">Start a battle</button><button class="btn sm" data-act="plOpen" data-m="explore">Explore another area</button>${pl&&!isHome?`<button class="btn sm" data-act="makeHome" data-id="${esc(pl.type==="area"?pl.city:pl.id)}" data-area="${pl.type==="area"?esc(pl.id):""}">Make this my area</button>`:""}</div>
    ${areas.length?`<div class="cityrow" style="margin-bottom:18px">${areas.map(a=>`<a class="citychip" href="#city-${enc(a.id)}"><b>${esc(a.name)}</b></a>`).join("")}</div>`:""}
    ${bs.length?`<section class="sec"><div class="sech"><h2>🔥 ${L("Live battles")}</h2></div><div class="grid b">${bs.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:""}
+   ${(()=>{ const rt=ts.filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&stat(t.id).reviews>0).sort((a,b)=>rvScore(b)-rvScore(a)), nr=rt.reduce((n,t)=>n+stat(t.id).reviews,0);
+     return rt.length?`<section class="sec">${SH("⭐ Top rated here",`${nr} review${nr===1?"":"s"} of places and things in ${esc(pl?.name||name)}.`,`<a href="#reviews">${L("See all")} →</a>`)}<div class="list rvlist">${rt.slice(0,5).map(rvRow).join("")}</div></section>`:""; })()}
    ${pl?watchStrip({items:watchItems().filter(it=>inPlace(it.t,pl)),n:6,title:"📣 Local buzz",sub:`Videos and photos shared about ${esc(pl.name)}.`,link:""}):""}
    ${top.length?`<section class="sec"><div class="sech"><h2>📈 Trending here</h2></div><div class="grid">${top.map(t=>topicCard(t)).join("")}</div></section>`:""}
    ${more.length?`<section class="sec"><div class="sech"><h2>🆕 New topics</h2></div><div class="grid">${more.map(t=>topicCard(t)).join("")}</div></section>`:""}
@@ -3082,7 +3103,7 @@ function render(){
   else if(r.startsWith("u-")) html=vProfile(r.slice(2));
   else if(r.startsWith("ppl-")){ const m=r.slice(4).match(/^(friends|followers|following)-(.+)$/); html=m?vPeople(m[1],m[2]):vHome(); }
   else if(r.startsWith("tag-")) html=vTag(r.slice(4).toLowerCase());
-  else if(r.startsWith("city-")) html=vCity(r.slice(5));
+  else if(r.startsWith("city-")){ const cp=PLACES.byId.get(r.slice(5))||PLACES.byId.get(slugCity(r.slice(5))); if(changed&&cp&&cp.id!==UI.exPlace){ UI.exPlace=cp.id; UI.rvNear=true; } html=vCity(r.slice(5)); }
   else if(r==="groups") html=vGroups();
   else if(r==="reviews") html=vReviews();
   else if(r==="settings") html=vSettings();
@@ -3381,15 +3402,32 @@ async function openCard(kind,id,fmt,prompt){
   const t=kind==="battle"?S.topics.get(S.battles.get(id).topicId):S.topics.get(id);
   const s=t&&stat(t.id);
   const txt=kind==="battle"?`${S.battles.get(id).question} ${S.battles.get(id).a} or ${S.battles.get(id).b}? Pick a side on TopicTalk.`:s.reviews?`⭐ ${s.avg.toFixed(1)}/5 · ${t.title}${t.location?", "+t.location:""} (${s.reviews} ${s.reviews===1?"review":"reviews"}). Been here? Add your rating on TopicTalk 👇`:`${t.title} · ${s.comments} comments. Join the discussion on TopicTalk 👇`;
-  openModal(`<h2>${L("Share card")}</h2><img class="cardimg" src="${url}" alt="Share card for ${esc(t?.title||"")}">
-    <div class="seg" style="margin:0 0 6px"><button class="${fmt==="feed"?"on":""}" data-act="cardFmt" data-f="feed">Post · WhatsApp</button><button class="${fmt==="story"?"on":""}" data-act="cardFmt" data-f="story">Story · Status</button></div>
-    <p class="muted" style="margin:0;font-size:13px">${fmt==="story"?"Full-screen 9:16 for Instagram Stories and WhatsApp Status. Add the link as a sticker.":"4:5 for Instagram posts and WhatsApp chats."} ${downloads?"":"On a phone, press and hold the image to save it."}</p>
-    <textarea id="sh" rows="2" readonly>${esc(txt)}</textarea>
-    <div class="acts">${navigator.share?`<button class="btn pri" data-act="shareNative">Share image</button>`:""}<button class="btn" data-act="copyShare">Copy text &amp; link</button>${gShareOK(t)?`<button class="btn" data-act="shareGroup" data-id="${t.id}">👥 Share to a group</button>`:""}${downloads?`<button class="btn${navigator.share?"":" pri"}" data-act="saveCard">Save image</button>`:""}<button class="btn" data-act="closeModal">Done</button></div>`);
-  if(prompt){ const m=$("#modal"), h=m&&m.querySelector("h2");
-    if(h){ h.textContent=prompt.title; h.insertAdjacentHTML("afterend",`<p class="muted sp-sub">${esc(prompt.sub)}</p>`); m.querySelector(".modal")?.classList.add("sp-mode"); }
-    const wa="https://wa.me/?text="+encodeURIComponent($("#sh")?.value||"");
-    const acts=m&&m.querySelector(".acts"); if(acts){ acts.querySelector('[data-act="shareNative"]')?.remove(); acts.insertAdjacentHTML("afterbegin",`<a class="btn pri spwa" href="${esc(wa)}" target="_blank" rel="noopener noreferrer">WhatsApp chat</a><button class="btn spst" data-act="spStatus">🟢 WhatsApp Status</button><button class="btn spig" data-act="spStory">📸 Instagram Story</button><button class="btn spig" data-act="spPost">🖼️ Instagram post</button>`); acts.querySelectorAll(".btn.pri:not(.spwa)").forEach(b=>b.classList.remove("pri")); const done=acts.querySelector('[data-act="closeModal"]'); if(done) done.textContent="Not now"; const cp=acts.querySelector('[data-act="copyShare"]'); if(cp) cp.textContent="Copy link"; }
+  openModal(`<h2>${L("Share card")}</h2><button type="button" class="shx" data-act="closeModal" aria-label="Close">✕</button>
+    <p class="muted sp-sub">Share it with friends.</p>
+    <img class="cardimg" src="${url}" alt="Share card for ${esc(t?.title||"")}">
+    ${downloads?"":`<p class="muted shhint">On a phone, press and hold the image to save it.</p>`}
+    <textarea id="sh" rows="2" readonly hidden>${esc(txt)}</textarea>
+    <div class="shwrap"><div class="shacts">
+      <button type="button" class="btn pri shbtn" data-act="shMenu" aria-haspopup="menu" aria-expanded="false" aria-controls="shmenu">${ICON.share}<span>Share</span><span class="shcar" aria-hidden="true">▾</span></button>
+      <button type="button" class="btn shbtn" data-act="copyShare">Copy link</button>
+      ${downloads?`<button type="button" class="btn shbtn" data-act="saveCard">Save image</button>`:""}
+    </div>
+    <div class="shmenu" id="shmenu" role="menu" hidden>
+      ${navigator.share?`<button type="button" role="menuitem" data-act="shareNative"><span class="shi">📲</span>Share with an app…</button>`:""}
+      <a role="menuitem" class="shwa" href="#" target="_blank" rel="noopener noreferrer"><span class="shi">💬</span>WhatsApp chat</a>
+      <button type="button" role="menuitem" data-act="spStatus"><span class="shi">🟢</span>WhatsApp Status</button>
+      <button type="button" role="menuitem" data-act="spStory"><span class="shi">📸</span>Instagram Story</button>
+      <button type="button" role="menuitem" data-act="spPost"><span class="shi">🖼️</span>Instagram post</button>
+      ${gShareOK(t)?`<button type="button" role="menuitem" data-act="shareGroup" data-id="${t.id}"><span class="shi">👥</span>Share to a group</button>`:""}
+    </div></div>
+    <button type="button" class="shlater" data-act="closeModal">Not now</button>`);
+  { const m=$("#modal"), md=m&&m.querySelector(".modal");
+    if(md){ md.classList.add("sp-mode");
+      if(prompt){ const h=md.querySelector("h2"); if(h) h.textContent=prompt.title; const sb=md.querySelector(".sp-sub"); if(sb) sb.textContent=prompt.sub; }
+      const wa=md.querySelector(".shwa"); if(wa) wa.href="https://wa.me/?text="+encodeURIComponent($("#sh")?.value||"");
+      // the share menu closes when anything else in the sheet is tapped, or after picking an option
+      md.addEventListener("click",e=>{ const mn=md.querySelector("#shmenu"), b=md.querySelector('[data-act="shMenu"]'); if(!mn||!b) return;
+        if(e.target.closest('[data-act="shMenu"]')) return; if(!mn.hidden){ mn.hidden=true; b.setAttribute("aria-expanded","false"); } }); }
     $("#modal .scrim")?.classList.add("sheetm");
     openCard.storyFile=null; openCard.storyCanvas=null; makeCard(kind,id,"story").then(sc=>{ openCard.storyCanvas=sc; sc.toBlob(b=>{ if(b) openCard.storyFile=new File([b],"topictalk-story.png",{type:"image/png"}); },"image/png"); }).catch(()=>{}); }
   if(fmt==="feed"&&t&&S.me&&(!t.access||t.access==="open")&&!t.groupId){ try{ fetch("/api/card",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({topicId:t.id,png:url})}).catch(()=>{}); }catch{} }
@@ -3661,7 +3699,7 @@ function rvRow(t){ const s=stat(t.id), nb=(IX.bByTopic.get(t.id)||[]).length, tr
   return `<a href="#t-${t.id}"><div class="tile rvt" style="--h:${catHue(t.category)}">${esc((()=>{ const w=String(t.title).trim().split(/\s+/).filter(Boolean); return (w.length>1?w[0][0]+w[1][0]:(w[0]||"").slice(0,2)).toUpperCase(); })())}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${s.comments?`<span title="Comments">💬 ${s.comments}</span>`:""}${nb?`<span title="Battles">⚔️ ${nb}</span>`:""}</div></div><div class="rv-sc"><b class="${s.avg>=4?"hi":""}">★ ${s.avg.toFixed(1)}<small> out of 5</small></b><span>${s.reviews} review${s.reviews===1?"":"s"}</span>${tr?`<em class="rvtr" title="Based on only ${s.reviews} review${s.reviews===1?"":"s"}">${tr}</em>`:""}</div></a>`; }
 const lastRv=t=>Math.max(0,...(IX.rByTopic.get(t.id)||[]).map(r=>r.updatedAt||r.createdAt));
 function vReviews(){
-  const hp=homePlace(), near=UI.rvNear??!!hp, kind=UI.rvKind||"all";
+  const home=homePlace(), xp=UI.exPlace?PLACES.byId.get(UI.exPlace):null, hp=xp||home, away=!!(xp&&(!home||xp.id!==home.id)), near=UI.rvNear??!!hp, kind=UI.rvKind||"all";
   let items=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&(t.kind==="place"||stat(t.id).reviews>0));
   if(kind==="place") items=items.filter(t=>t.kind==="place"); if(kind==="thing") items=items.filter(t=>t.kind!=="place");
   if(near&&hp) items=items.filter(t=>inPlace(t,hp));
@@ -3670,7 +3708,7 @@ function vReviews(){
   const rated=items.filter(t=>stat(t.id).reviews).sort((a,b)=>rvScore(b)-rvScore(a)), unrated=items.filter(t=>!stat(t.id).reviews).sort((a,b)=>b.createdAt-a.createdAt);
   const row=t=>rvRow(t);
   return `<div class="sech" style="margin-bottom:6px"><h1 style="font-size:32px;font-weight:800;margin:0">Reviews</h1><button class="btn pri sm" data-act="reviewPick">⭐ Write a review</button></div>
-  <p class="muted" style="margin:0 0 12px">What people think about places, products, films, apps, anything${near&&hp?" near "+esc(hp.name):""}. One review per person.</p>
+  <p class="muted" style="margin:0 0 12px">What people think about places, products, films, apps, anything${near&&hp?" near "+esc(hp.name):""}. One review per person. <button type="button" class="linkb" data-act="plOpen" data-m="reviews">${hp?"Change area":"Choose an area"}</button>${away&&home?` · <button type="button" class="linkb" data-act="rvHome">Back to ${esc(home.name)}</button>`:""}</p>
   <div class="tabs" role="tablist">${[["all","All"],["place","Places"],["thing","Products"]].map(([k,l])=>`<button class="${kind===k?"on":""}" data-act="rvKind" data-v="${k}">${l}</button>`).join("")}${hp?`<button class="${near?"on":""}" data-act="rvNear">${near?"📍 Near "+esc(hp.name):"Everywhere"}</button>`:""}</div>
   <div class="tagrow catrow" style="margin-bottom:16px">${cats.map(c=>`<button class="chip ${cat===c?"on":""}" data-act="rvCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>
   ${rated.length?`<div class="list rvlist">${rated.map(row).join("")}</div>`:emptyBox("Nothing rated here yet","Be the first. Pick a place you know and rate it from 1 to 5.",`<button class="btn pri" data-act="reviewPick">Review something</button>`)}
@@ -3726,7 +3764,8 @@ document.addEventListener("click", async e=>{
     case "mergeRemove": { if(!S.isOwner) break; await W(()=>db.doc("topics/"+id).update({deletedAt:Date.now(),deletedBy:S.me})); closeModal(true); toast("Removed"); location.hash="reviews"; break; }
     case "goBack": { if((UI.navN||0)>0) history.back(); else location.hash=(/^(reviews|groups|search)$/.test(parseRoute())?"explore":"home"); break; }
     case "rvKind": UI.rvKind=el.dataset.v; schedule(); break;
-    case "rvNear": UI.rvNear=!(UI.rvNear??!!homePlace()); schedule(); break;
+    case "rvNear": UI.rvNear=!(UI.rvNear??!!(UI.exPlace||homePlace())); schedule(); break;
+    case "rvHome": UI.exPlace=null; UI.rvNear=true; schedule(); break;
     case "rvCat": UI.rvCat=el.dataset.v; schedule(); break;
     case "rpSave": {
       const name=($("#rp-name").value||"").trim(), err=$("#rp-err"); let loc="";
@@ -3777,10 +3816,11 @@ document.addEventListener("click", async e=>{
     case "plOpen": placeSheet(el.dataset.m||"explore"); break;
     case "plLater": try{ localStorage.setItem("tt-loc-skip",String(Date.now())); }catch{} closeModal(); break;
     case "plPick": { const pl=PLACES.byId.get(el.dataset.id); if(!pl) break; const m=UI.plMode; closeModal();
-      if(m==="explore"){ location.hash="#city-"+pl.id; break; }
+      if(m==="explore"){ UI.exPlace=pl.id; UI.rvNear=true; location.hash="#city-"+pl.id; break; }
+      if(m==="reviews"){ UI.exPlace=pl.id; UI.rvNear=true; schedule(); break; }
       if(m==="content"){ const i=$("#n-loc")||$("#bt-loc"); if(i) i.value=pl.label; break; }
-      await saveHome(pl.type==="area"?pl.city:pl.id,pl.type==="area"?pl.id:""); toast("Your area is "+pl.label); schedule(); break; }
-    case "makeHome": await saveHome(el.dataset.id,el.dataset.area); toast("Your area updated"); schedule(); break;
+      UI.exPlace=null; await saveHome(pl.type==="area"?pl.city:pl.id,pl.type==="area"?pl.id:""); toast("Your area is "+pl.label); schedule(); break; }
+    case "makeHome": UI.exPlace=null; await saveHome(el.dataset.id,el.dataset.area); toast("Your area updated"); schedule(); break;
     case "useHomeLoc": { const hp=homePlace(), ha=homeArea(); if(hp&&$("#n-locbox")){ UI.locMode="place"; UI.locVal=(ha||hp).label; locRender(); } else if(hp&&$("#bt-loc")) $("#bt-loc").value=(ha||hp).label; break; }
     case "unfAsk": UI.unf=el.dataset.id; schedule(); break;
     case "unfNo": UI.unf=null; schedule(); break;
@@ -4080,6 +4120,7 @@ document.addEventListener("click", async e=>{
       break; }
     case "shareTopic": { const tt=S.topics.get(id), bb=tt&&(IX.bByTopic.get(id)||[])[0]; if(tt&&tt.kind==="battle"&&bb) openCard("battle",bb.id); else openCard("topic",id); break; }
     case "cardFmt": closeModal(); openCard(openCard.kind,openCard.id,el.dataset.f); break;
+    case "shMenu": { const mn=$("#shmenu"); if(mn){ mn.hidden=!mn.hidden; el.setAttribute("aria-expanded",String(!mn.hidden)); if(!mn.hidden){ mn.querySelector("[role=menuitem]")?.focus({preventScroll:true}); mn.classList.remove("up"); if(matchMedia("(max-width:480px)").matches) mn.scrollIntoView({block:"nearest"}); else if(mn.getBoundingClientRect().bottom>innerHeight-8) mn.classList.add("up"); } } break; }
     case "shareBattle": openCard("battle",id); break;
     case "sharePred": openCard("pred",id); break;
     case "pushOn": { el.disabled=true;
@@ -4122,14 +4163,14 @@ document.addEventListener("click", async e=>{
     case "closeReview": UI.rvOpen=false; schedule(); break;
     case "star": UI.rvRating=+el.dataset.v; render(); break;
     case "saveReview": {
-      const tid=el.dataset.topic; if(!UI.rvRating){ toast("Pick a star rating first."); break; }
+      const tid=el.dataset.topic; if(!okRating(UI.rvRating)){ toast("Pick a star rating first."); break; }
       if(!(await gate())) break;
       const key=`${tid}__${S.me}`, prev=S.reviews.get(key);
       const body={topicId:tid,authorId:S.me,rating:UI.rvRating,title:$("#rv-title").value.trim().slice(0,100),text:$("#rv-text").value.trim().slice(0,4000),pros:$("#rv-pros").value.trim().slice(0,300),cons:$("#rv-cons").value.trim().slice(0,300),createdAt:prev?.createdAt||Date.now()};
       if(prev) body.updatedAt=Date.now();
       el.disabled=true;
       { const ids=await phSave("rv",{topicId:tid,reviewId:key}); if(ids===null){ el.disabled=false; break; } body.media=ids; for(const m of (prev?.media||[])) if(!ids.includes(m)){ try{ await db.doc("media/"+m).delete(); }catch{} } }
-      if(await W(()=>db.doc("reviews/"+key).set(body))){ PH.rv=[]; if(!prev) setTimeout(()=>openCard("topic",tid,"feed",{title:"⭐ Review posted!",sub:"Share it so friends who know this place add their rating."}),650); clearField($("#rv-text")); UI.rvOpen=false; UI.rvRating=0; toast(prev?"Review updated":"Review posted"); ensureFollow(tid);
+      if(await W(()=>db.doc("reviews/"+key).set(body))){ PH.rv=[]; if(!prev) setTimeout(()=>openCard("topic",tid,"feed",{title:"⭐ Review posted!",sub:"Share your experience with friends."}),650); clearField($("#rv-text")); UI.rvOpen=false; UI.rvRating=0; toast(prev?"Review updated":"Review posted"); ensureFollow(tid);
         if(!prev) notify(followersOf(tid).map(u=>[u,"review"]),{topicId:tid,text:(body.title||body.text).slice(0,120)}); schedule(); }
       el.disabled=false; break; }
     case "tagPick": { if(UI.tagged.length>=10){ toast("You can tag up to 10 friends."); break; } if(!UI.tagged.includes(el.dataset.id)) UI.tagged.push(el.dataset.id); const i=$("#n-tagin"); i.value=""; tagRender(); tagSuggest(); i.focus(); break; }

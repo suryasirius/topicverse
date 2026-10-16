@@ -200,6 +200,8 @@ const EVENTS = ["watch_open", "watch_discuss", "watch_battle_tap", "watch_topic_
 const deny = m => { throw new Deny("permission_denied", m || "You can’t change that."); };
 const bad = m => { throw new Deny("bad_request", m || "That request isn’t valid."); };
 const onlyKeys = (patch, keys) => Object.keys(patch).every(k => keys.includes(k));
+// a review's star rating: a whole number from 1 to 5, nothing else
+const validRating = v => Number.isInteger(v) && v >= 1 && v <= 5;
 const suffixUid = (id, uid) => id.endsWith("__" + uid);
 function mergeDeep(a, b) {
   const out = { ...a };
@@ -248,7 +250,9 @@ function check(op, col, id, prev, next, patch, uid) {
     case "reviews":
       if ((next || prev).authorId !== uid && !admin) deny();
       if (!prev && !topicVisible(DOCS.topics.get(next.topicId), uid)) deny("You can’t see that topic.");
-      if (!prev && id !== `${next.topicId}__${admin ? next.authorId : uid}`) bad(); if (!prev && DOCS.topics.get(next.topicId)?.deletedAt) deny("This topic was deleted."); if (!same("authorId")) deny(); return;
+      if (!prev && id !== `${next.topicId}__${admin ? next.authorId : uid}`) bad(); if (!prev && DOCS.topics.get(next.topicId)?.deletedAt) deny("This topic was deleted."); if (!same("authorId")) deny();
+      if (next && !validRating(next.rating)) bad("Pick a rating from 1 to 5 stars.");
+      return;
     case "likes": case "follows":
       if (!suffixUid(id, uid) || (next && next.userId !== uid)) deny();
       if (col === "follows" && !prev && !topicVisible(DOCS.topics.get(next.topicId), uid)) deny("You can’t see that topic."); return;
