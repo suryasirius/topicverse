@@ -402,9 +402,12 @@ function addMember(tid, mu, by) {
   apply("tmembers", k, { topicId: tid, userId: mu, role: "member", addedBy: by || t.authorId, createdAt: Date.now() });
 }
 const PUSH_LABEL = { reply: "replied to you", mention: "mentioned you", gmention: "mentioned you in a group chat", tagged: "tagged you in a topic", comment: "commented on a topic you follow", branch: "branched your comment into a new topic", newbranch: "started a branch from a topic you follow", review: "reviewed a topic you follow", like: "liked your post", battle: "started a battle about your comment", newbattle: "started a battle in a topic you follow", resolved: "resolved a prediction you voted on", grouppost: "posted in your group", joined: "joined your group", duel_challenge: "challenged you to a debate duel", duel_accept: "accepted your debate challenge", duel_decline: "declined your debate challenge", duel_turn: "replied in your debate. Your turn", duel_vote: "finished a debate. Voting is open", friend_req: "sent you a friend request", friend_ok: "accepted your friend request", follow: "started following you", invited: "invited you to a discussion", helpreq: "needs help finding something near you", helped: "marked your recommendation as the one that helped" };
+// Settings categories (same grouping as the app). A person can switch each one off; all are on by default.
+const NCAT = { reply: "reply", comment: "reply", helped: "reply", branch: "reply", newbranch: "reply", mention: "mention", gmention: "mention", tagged: "mention", battle: "battle", newbattle: "battle", duel_vote: "battle", duel_turn: "battle", duel_challenge: "battle", duel_accept: "battle", duel_decline: "battle", like: "like", review: "like", grouppost: "group", joined: "group", invited: "group", friend_req: "friends", friend_ok: "friends", follow: "friends", helpreq: "local", resolved: "pred" };
+const NCATS = new Set(Object.values(NCAT));
 function pushLatest(uid) {
-  let n = 0, last = null;
-  for (const [id, d] of DOCS.notifs) if (d.to === uid && !d.read) { n++; if (!last || d.createdAt > last.d.createdAt) last = { id, d }; }
+  let n = 0, last = null; const off = push.off(uid);
+  for (const [id, d] of DOCS.notifs) if (d.to === uid && !d.read && !off.has(NCAT[d.type])) { n++; if (!last || d.createdAt > last.d.createdAt) last = { id, d }; }
   if (!last) return { title: "TopicTalk", body: "You have new activity.", url: "/#alerts", tag: "tt-none" };
   const d = last.d, who = (DOCS.handles.get(d.from) || {}).handle || "Someone";
   const what = PUSH_LABEL[d.type] || "has new activity for you";
@@ -412,7 +415,7 @@ function pushLatest(uid) {
   return { title: n > 1 ? `TopicTalk · ${n} new` : "TopicTalk", body: `${who} ${what}${text}`, url: d.topicId ? `/#t-${d.topicId}` : d.groupId ? `/#g-${d.groupId}` : "/#alerts", tag: "tt-" + last.id };
 }
 function afterWrite(col, id, prev, next) {
-  if (col === "notifs" && next && !prev && next.to) push.notify(next.to);
+  if (col === "notifs" && next && !prev && next.to) push.notify(next.to, NCAT[next.type]);
   if (col === "topics" && next) {
     if (prev && OPEN(prev.access) && !OPEN(next.access)) {
       for (const c of DOCS.comments.values()) if (c.topicId === id) addMember(id, c.authorId);
@@ -720,6 +723,12 @@ const server = http.createServer(async (req, res) => {
       if (p.endsWith("/subscribe")) push.subscribe(uid, ep); else push.unsubscribe(uid, ep);
       return json(res, 200, { ok: true });
     }
+    if (p === "/api/push/prefs") {
+      if (!uid) deny("Log in first.");
+      if (!Array.isArray(body.off) || body.off.length > 20) bad("Bad settings.");
+      push.setOff(uid, body.off.filter(k => NCATS.has(k)));
+      return json(res, 200, { ok: true });
+    }
     if (p === "/api/write") {
       if (limited("w:" + uid, 150, 6e4)) return json(res, 429, { error: { code: "resource_exhausted", message: "Slow down a little, then try again." } });
       write(uid, body);
@@ -753,7 +762,7 @@ const server = http.createServer(async (req, res) => {
         broadcast("gmembers", mid, DOCS.gmembers.get(mid), null);
         for (const [, m] of DOCS.gmembers) if (m.groupId === gid && m.role === "admin" && m.userId !== uid) {
           const nid = newId("n", 9), n = { to: m.userId, from: uid, type: "joined", groupId: gid, topicId: "", text: g.name, createdAt: Date.now(), read: false };
-          apply("notifs", nid, n); broadcast("notifs", nid, n, null); push.notify(m.userId);
+          apply("notifs", nid, n); broadcast("notifs", nid, n, null); push.notify(m.userId, "group");
         }
         reloadFor(c => c.uid === uid);
       }

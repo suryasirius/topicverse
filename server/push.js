@@ -8,7 +8,7 @@ const path = require("node:path");
 const b64u = b => Buffer.from(b).toString("base64url");
 
 module.exports = function createPush({ sql, dir, subject }) {
-  sql.exec("CREATE TABLE IF NOT EXISTS push (endpoint TEXT PRIMARY KEY, uid TEXT NOT NULL, created INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS push_uid ON push (uid);");
+  sql.exec("CREATE TABLE IF NOT EXISTS push (endpoint TEXT PRIMARY KEY, uid TEXT NOT NULL, created INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS push_uid ON push (uid); CREATE TABLE IF NOT EXISTS pushoff (uid TEXT PRIMARY KEY, off TEXT NOT NULL);");
   const file = path.join(dir, "vapid.json");
   let priv, pubRaw;
   try {
@@ -28,7 +28,13 @@ module.exports = function createPush({ sql, dir, subject }) {
     delMine: sql.prepare("DELETE FROM push WHERE endpoint = ? AND uid = ?"),
     byUid: sql.prepare("SELECT endpoint FROM push WHERE uid = ?"),
     count: sql.prepare("SELECT COUNT(*) AS n FROM push WHERE uid = ?"),
+    offGet: sql.prepare("SELECT off FROM pushoff WHERE uid = ?"),
+    offSet: sql.prepare("INSERT INTO pushoff (uid, off) VALUES (?, ?) ON CONFLICT (uid) DO UPDATE SET off = excluded.off"),
+    offDel: sql.prepare("DELETE FROM pushoff WHERE uid = ?"),
   };
+  // Categories a person has switched off. Empty by default: everything is on.
+  const offCache = new Map();
+  const getOff = uid => { if (!offCache.has(uid)) { const r = q.offGet.get(uid); offCache.set(uid, new Set(r ? r.off.split(",").filter(Boolean) : [])); } return offCache.get(uid); };
   const okEndpoint = e => typeof e === "string" && e.length < 1000 && /^https:\/\/[^\s]+$/.test(e);
   function jwt(aud) {
     const h = b64u(JSON.stringify({ typ: "JWT", alg: "ES256" })), p = b64u(JSON.stringify({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: subject }));
@@ -48,6 +54,8 @@ module.exports = function createPush({ sql, dir, subject }) {
     subscribe: (uid, endpoint) => { q.add.run(endpoint, uid, Date.now()); },
     unsubscribe: (uid, endpoint) => { q.delMine.run(endpoint, uid); },
     has: uid => q.count.get(uid).n > 0,
-    notify: uid => { for (const { endpoint } of q.byUid.all(uid)) ping(endpoint); },
+    off: getOff,
+    setOff: (uid, arr) => { const a = [...new Set(arr)]; if (a.length) q.offSet.run(uid, a.join(",")); else q.offDel.run(uid); offCache.set(uid, new Set(a)); },
+    notify: (uid, cat) => { if (cat && getOff(uid).has(cat)) return; for (const { endpoint } of q.byUid.all(uid)) ping(endpoint); },
   };
 };

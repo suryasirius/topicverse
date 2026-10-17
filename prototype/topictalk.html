@@ -961,6 +961,7 @@ body:not(.ingchat) .gsticky{display:none}
 .stpage{max-width:640px;margin:0 auto}.st-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin-bottom:12px}.st-card h3{margin:0 0 4px;font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
 .st-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.st-card h3+.st-row,.st-card h3+.st-note+.st-row{border-top:0}.st-row b{font-weight:700}.st-row small{display:block;color:var(--muted);font-size:12.5px;margin-top:1px}.st-row .seg{flex:none;flex-wrap:nowrap}.st-row .seg button{padding:5px 10px;font-size:12.5px}
 .st-note{margin:2px 0 4px;color:var(--muted);font-size:13px}.st-row.dis{opacity:.62}.st-soon{font-size:11px;font-weight:800;color:var(--muted);background:var(--chip);border-radius:999px;padding:3px 9px;flex:none}
+.st-sub{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0 2px;padding-top:12px;border-top:1px solid var(--line);font-size:12.5px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--muted)}.st-all{text-transform:none;letter-spacing:0;font-weight:600}.st-all .linkb{font-size:13px}
 .sw{flex:none;width:46px;height:27px;border-radius:999px;border:0;background:var(--line);position:relative;cursor:pointer}.sw:after{content:"";position:absolute;left:3px;top:3px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:left .15s}.sw.on{background:var(--brand)}.sw.on:after{left:22px}
 .pf-fol{margin:10px 0}.pf-fol h3{margin:0 0 8px;font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}.pf-actl{margin:16px 0 0;font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
 .extabs button,.excats .chip.tag:not(.on){background:transparent!important;color:var(--ink)!important;border:1px solid color-mix(in srgb,var(--ink) 22%,var(--line))!important;box-shadow:none!important;font-weight:600!important}
@@ -1437,7 +1438,7 @@ const TS_Z={s:.94,m:1.07,l:1.2,x:1.33}; let curTS="";
 function applyTheme(v){ const r=document.documentElement; if(v==="dark"||v==="light") r.dataset.theme=v; else delete r.dataset.theme; }
 const getTheme=()=>{ try{ return localStorage.getItem("tt_theme")||"auto"; }catch{ return "auto"; } };
 applyTheme(getTheme());
-const NG={reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like"};
+const NG={reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like",grouppost:"group",joined:"group",invited:"group",friend_req:"friends",friend_ok:"friends",follow:"friends",helpreq:"local",resolved:"pred"};
 let NPOFF=new Set(); try{ NPOFF=new Set(JSON.parse(localStorage.getItem("tt-npoff")||"[]")); }catch{}
 function applyTS(v){ if(!TS_Z[v]) v="m"; curTS=v; document.documentElement.style.setProperty("--tz",TS_Z[v]); }
 try{ applyTS(localStorage.getItem("tt_ts")||"m"); }catch{ applyTS("m"); }
@@ -2671,8 +2672,35 @@ async function pushRefresh(){
   if(!PUSH.sup||!S.me) return; PUSH.checked=true;
   try{ const reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(), on=!!sub&&Notification.permission==="granted", was=PUSH.sub;
     if(on) await pushPost("/api/push/subscribe",sub.endpoint);
-    PUSH.sub=on; if(was!==on) schedule(); }catch{}
+    PUSH.sub=on; if(was!==on) schedule(); }catch{} pushAuto();
 }
+const NCATS=[["reply","Replies","When someone replies to you or your comment"],["mention","Mentions","When someone mentions or tags you, in topics or group chats"],["battle","Battles and debates","New battles and debate duels you’re part of"],["like","Likes and reviews","Likes on your posts, reviews on topics you follow"],["group","Groups","Group posts, new members and invites"],["friends","Friends and followers","Friend requests, accepted requests, new followers"],["local","Help near you","When someone nearby asks for a recommendation"],["pred","Predictions","When a prediction you voted on is resolved"]];
+const pushPrefs=()=>{ if(S.me) fetch("/api/push/prefs",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({off:[...NPOFF]})}).catch(()=>{}); };
+async function pushEnable(manual){
+  try{ const perm=Notification.permission==="granted"?"granted":await Notification.requestPermission(); if(perm!=="granted"){ if(manual) toast("Alerts stay off. You can allow them in your browser settings."); return false; }
+    const reg=await navigator.serviceWorker.ready, key=(await (await fetch("/api/push/key")).json()).key; let sub=await reg.pushManager.getSubscription();
+    if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToU8(key)});
+    const r=await pushPost("/api/push/subscribe",sub.endpoint); if(!r.ok) throw new Error("save");
+    try{ localStorage.removeItem("tt-pushoff"); }catch{} PUSH.sub=true; pushPrefs(); if(manual) toast("Phone alerts are on"); return true; }
+  catch{ if(manual) toast("Couldn’t turn on alerts on this device."); return false; } }
+async function pushDisable(){
+  try{ const reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){ await pushPost("/api/push/unsubscribe",sub.endpoint); await sub.unsubscribe(); } PUSH.sub=false; try{ localStorage.setItem("tt-pushoff","1"); }catch{} toast("Phone alerts are off"); }catch{ toast("Couldn’t turn off alerts."); } }
+// Phone alerts row for Settings: a switch when this device can do it, otherwise a plain reason.
+function pushRow(){
+  const row=(t,sub,right)=>`<div class="st-row"><div><b>${t}</b>${sub?`<small>${sub}</small>`:""}</div>${right||""}</div>`;
+  if(IS_IOS&&!IS_STANDALONE) return row("🔔 Phone alerts","On iPhone: tap Share, then “Add to Home Screen”, open TopicTalk from that icon, and alerts turn on.","");
+  if(!PUSH.sup) return row("🔔 Phone alerts","This browser can’t show alerts when TopicTalk is closed.","");
+  if(Notification.permission==="denied") return row("🔔 Phone alerts","Blocked for this site. Allow notifications in your browser settings, then come back.","");
+  return row("🔔 Phone alerts","Get alerts even when TopicTalk is closed",`<button type="button" class="sw ${PUSH.sub?"on":""}" role="switch" aria-checked="${!!PUSH.sub}" data-act="${PUSH.sub?"pushOff":"pushOn"}"></button>`); }
+// On by default after sign-in: if this device already allows alerts, subscribe quietly; otherwise ask once, on the first tap
+// (browsers only allow the permission prompt after a tap). Never again if the person turned alerts off.
+function pushAuto(){
+  if(!PUSH.sup||!S.me||IS_IOS&&!IS_STANDALONE||Notification.permission==="denied") return;
+  let off=false,asked=false; try{ off=localStorage.getItem("tt-pushoff")==="1"; asked=localStorage.getItem("tt-pushasked")==="1"; }catch{} if(off) return;
+  if(Notification.permission==="granted"){ if(!PUSH.sub) pushEnable(false).then(()=>schedule()); return; }
+  if(asked||PUSH.armed) return; PUSH.armed=true;
+  const go=()=>{ document.removeEventListener("click",go,true); try{ localStorage.setItem("tt-pushasked","1"); }catch{} pushEnable(false).then(()=>schedule()); };
+  document.addEventListener("click",go,true); }
 function pushCard(slim){
   if(!S.me) return "";
   if(PUSH.sub) return slim?"":`<div class="pushcard ok"><span>🔔 Phone alerts are on</span><button type="button" class="linkb" data-act="pushOff">Turn off</button></div>`;
@@ -2800,14 +2828,16 @@ function vSettings(){
   const row=(t,sub,right)=>`<div class="st-row"><div><b>${t}</b>${sub?`<small>${sub}</small>`:""}</div>${right||""}</div>`;
   const soon=(t,sub)=>`<div class="st-row dis"><div><b>${t}</b><small>${sub}</small></div><span class="st-soon">Soon</span></div>`;
   const seg=(arr,cur,act)=>`<div class="seg">${arr.map(([k,l])=>`<button type="button" class="${cur===k?"on":""}" data-act="${act}" data-v="${k}">${l}</button>`).join("")}</div>`;
-  const np=[["reply","Replies","When someone replies to you or your comment"],["mention","Mentions","When someone mentions or tags you"],["battle","Battles","New battles and debates you’re part of"],["like","Likes and reviews","Likes on your posts, reviews on topics you follow"]];
+  const np=NCATS;
   return `<div class="stpage"><h1 style="font-size:28px;font-weight:800;margin:0 0 12px">Settings</h1>
   <section class="st-card"><h3>Appearance</h3>
     ${row("Dark mode","Easier on the eyes at night",seg([["auto","Auto"],["light","Light"],["dark","Dark"]],th,"setTheme"))}
     ${row("Text size","Make text easier to read",seg([["s","Small"],["m","Medium"],["l","Large"],["x","XL"]],curTS||"m","textSize"))}</section>
   <section class="st-card"><h3>Language</h3>${row("App language","Some screens are still English only",seg([["en","English"],["ta","தமிழ்"]],ln,"setLang"))}</section>
   <section class="st-card"><h3>Location</h3>${row(homePlace()?esc((homeArea()?homeArea().name+", ":"")+homePlace().name):"Not set","Used for Local topics and battles near you",`<button type="button" class="btn sm" data-act="plOpen" data-m="home">Change</button>`)}</section>
-  <section class="st-card"><h3>Notifications</h3><p class="st-note">Choose what shows in your notifications list on this device.</p>
+  <section class="st-card" id="st-notif"><h3>Notifications</h3><p class="st-note">Everything is on by default. Switch off what you don’t want.</p>
+    ${pushRow()}
+    <div class="st-sub"><span>What to notify me about</span><span class="st-all"><button type="button" class="linkb" data-act="nAll" data-v="on">All on</button> · <button type="button" class="linkb" data-act="nAll" data-v="off">All off</button></span></div>
     ${np.map(([k,t,sub])=>row(t,sub,sw(!NPOFF.has(k),"nPref",k))).join("")}</section>
   <section class="st-card"><h3>Blocked people</h3>${bl.length?bl.map(u=>`<div class="st-row"><div style="display:flex;gap:10px;align-items:center">${avatar(u,"xs")}<b>${esc(nameOf(u))}</b></div><button type="button" class="btn sm" data-act="unblock" data-id="${esc(u)}">Unblock</button></div>`).join(""):`<p class="st-note" style="margin:0">You haven’t blocked anyone.</p>`}</section>
   <section class="st-card"><h3>Account</h3>${row("Password","Change it any time",`<button type="button" class="btn sm" data-act="pwOpen">Change</button>`)}
@@ -4338,15 +4368,8 @@ document.addEventListener("click", async e=>{
     case "shMenu": { const mn=$("#shmenu"); if(mn){ mn.hidden=!mn.hidden; el.setAttribute("aria-expanded",String(!mn.hidden)); if(!mn.hidden){ mn.querySelector("[role=menuitem]")?.focus({preventScroll:true}); mn.classList.remove("up"); if(matchMedia("(max-width:480px)").matches) mn.scrollIntoView({block:"nearest"}); else if(mn.getBoundingClientRect().bottom>innerHeight-8) mn.classList.add("up"); } } break; }
     case "shareBattle": openCard("battle",id); break;
     case "sharePred": openCard("pred",id); break;
-    case "pushOn": { el.disabled=true;
-      try{ const perm=await Notification.requestPermission(); if(perm!=="granted"){ toast("Alerts stay off. You can allow them in your browser settings."); break; }
-        const reg=await navigator.serviceWorker.ready, key=(await (await fetch("/api/push/key")).json()).key; let sub=await reg.pushManager.getSubscription();
-        if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uToU8(key)});
-        const r=await pushPost("/api/push/subscribe",sub.endpoint); if(!r.ok) throw new Error("save");
-        PUSH.sub=true; toast("Phone alerts are on"); }
-      catch(ex){ toast("Couldn’t turn on alerts on this device."); }
-      el.disabled=false; schedule(); break; }
-    case "pushOff": { try{ const reg=await navigator.serviceWorker.ready, sub=await reg.pushManager.getSubscription(); if(sub){ await pushPost("/api/push/unsubscribe",sub.endpoint); await sub.unsubscribe(); } PUSH.sub=false; toast("Phone alerts are off"); }catch{ toast("Couldn’t turn off alerts."); } schedule(); break; }
+    case "pushOn": { el.disabled=true; await pushEnable(true); el.disabled=false; schedule(); break; }
+    case "pushOff": { await pushDisable(); schedule(); break; }
     case "pushLater": try{ localStorage.setItem("tt_pushlater","1"); }catch{} schedule(); break;
     case "shareGroup": { const t=S.topics.get(id); if(!gShareOK(t)) break;
       const gs=[...S.myGroups].map(x=>S.groups.get(x)).filter(Boolean);
@@ -4490,7 +4513,8 @@ document.addEventListener("click", async e=>{
       if(await W(()=>db.doc("topics/"+id).update({deletedAt:Date.now(),deletedBy:S.me}))){ closeModal(true); toast("Topic deleted"); location.hash="#home"; schedule(); } else el.disabled=false; break; }
     case "setTheme": try{ localStorage.setItem("tt_theme",el.dataset.v); }catch{} applyTheme(el.dataset.v); schedule(); break;
     case "setLang": UI.lang=el.dataset.v==="ta"?"ta":"en"; try{ localStorage.setItem("tt-lang",UI.lang); }catch{} render(); break;
-    case "nPref": { const k=el.dataset.k; if(NPOFF.has(k)) NPOFF.delete(k); else NPOFF.add(k); try{ localStorage.setItem("tt-npoff",JSON.stringify([...NPOFF])); }catch{} schedule(); break; }
+    case "nPref": { const k=el.dataset.k; if(NPOFF.has(k)) NPOFF.delete(k); else NPOFF.add(k); try{ localStorage.setItem("tt-npoff",JSON.stringify([...NPOFF])); }catch{} pushPrefs(); schedule(); break; }
+    case "nAll": { const on=el.dataset.v==="on"; NPOFF=on?new Set():new Set(NCATS.map(c=>c[0])); try{ localStorage.setItem("tt-npoff",JSON.stringify([...NPOFF])); }catch{} pushPrefs(); schedule(); break; }
     case "pwOpen": pwModal(); break;
     case "pwSave": { const cur=$("#pw-cur").value, n1=$("#pw-new").value, n2=$("#pw-new2").value, err=$("#pw-err");
       if(!cur){ err.textContent="Enter your current password."; break; } if(n1.length<8){ err.textContent="Use a new password of at least 8 characters."; break; } if(n1!==n2){ err.textContent="The two new passwords don’t match."; break; }
