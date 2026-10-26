@@ -2,8 +2,20 @@
 (() => {
   "use strict";
   const H = { "Content-Type": "application/json", "X-TT": "1" };
-  const api = (path, body) => fetch(path, { method: body ? "POST" : "GET", headers: H, credentials: "same-origin", body: body ? JSON.stringify(body) : undefined })
-    .then(async r => { const j = await r.json().catch(() => ({})); if (!r.ok || j.error) throw (j.error || { code: "unavailable", message: "The server didn’t answer (" + r.status + ")." }); return j; });
+  // A phone that just woke up or switched between wifi and data often fails the first request ("Failed to fetch" / "Load failed").
+  // Writes are safe to repeat (same id), so they are retried a few times before giving up with a plain message.
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const NET_MSG = "No connection right now. Nothing was lost. Tap send to try again.";
+  async function api(path, body, retries = 0) {
+    for (let i = 0; ; i++) {
+      let r;
+      try { r = await fetch(path, { method: body ? "POST" : "GET", headers: H, credentials: "same-origin", body: body ? JSON.stringify(body) : undefined }); }
+      catch (e) { if (i < retries) { await wait([700, 1800, 3500][i] || 3500); continue; } throw { code: "unavailable", message: NET_MSG }; }
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.error) throw (j.error || { code: "unavailable", message: "The server didn’t answer (" + r.status + ")." });
+      return j;
+    }
+  }
 
   let ME = null;
   const cache = {};                 // collection -> Map(id -> data)
@@ -45,7 +57,7 @@
     const next = op === "delete" ? undefined : op === "update" ? merge(prev, data) : data;
     if (next === undefined) m.delete(id); else m.set(id, next);
     emit(c);
-    try { await api("/api/write", { op, col: c, id, data }); }
+    try { await api("/api/write", { op, col: c, id, data }, 3); }
     catch (e) {
       if (prev === undefined) m.delete(id); else m.set(id, prev);
       emit(c);
