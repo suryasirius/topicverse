@@ -1181,7 +1181,7 @@ body:not(.ingchat) .gsticky{display:none}
 .rvlist .txt{flex:1;min-width:0}.rvlist .txt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rv-sc{flex:none;text-align:right;line-height:1.25}.rv-sc b{display:block;color:var(--brand-deep);font-size:15px}.rv-sc span{font-size:12px;color:var(--muted)}
 #rp-hits{margin:8px 0}#rp-hits:empty{display:none}
-.lsub{margin:0 0 12px}.lsub button{flex:1}
+.lsub{margin:0 0 12px}.lsub button{flex:1}.lsub .le{font-style:normal}.lsub .lsm{display:none}@media(max-width:480px){.lsub .le,.lsub .lsx{display:none}.lsub .lsm{display:inline}.lsub button{padding-inline:6px;min-width:0}}
 /* ---- COMPACT-MOBILE v1: denser, app-like phone layout. Delete this block (or `git checkout before-compact -- prototype/topictalk.html`) to go back. */
 @media(max-width:720px){
 html{zoom:calc(var(--tz,1.07)*.94);--ez:calc(var(--tz,1.07)*.94)}
@@ -1822,6 +1822,15 @@ function localNews(hp,ha){
   if(!list.length) return head+emptyBox("No news yet",S.isOwner?"Post the first update for "+esc(hp.name)+". Anyone can read and comment.":"Local updates for "+esc(hp.name)+" will show here. You can comment on them.",btn);
   return head+`<div class="hfeed">${list.slice(0,UI.fyN||10).map(fCard).join("")}</div>${list.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}`;
 }
+function localHelp(hp){
+  const all=LIVE().filter(t=>isHelp(t)&&inPlace(t,hp)), open=all.filter(t=>!t.solved).sort((a,b)=>b.createdAt-a.createdAt), done=all.filter(t=>t.solved).sort((a,b)=>(b.solved.at||0)-(a.solved.at||0));
+  const ask=`<button type="button" class="btn pri sm" data-act="newQuestion" data-help="1">🙋 Ask for help</button>`;
+  const head=`<div class="harea"><span>🙋 People in <b>${esc(hp.name)}</b> looking for something${open.length?` · ${open.length} open`:""}</span>${ask}</div>`;
+  const row=t=>{ const n=hfRecs(t).length; return `<div class="hf-row"><a href="#t-${t.id}"><b>${esc(t.title)}</b><small>${[t.solved?"✅ Solved":"",t.budget?"Budget "+esc(t.budget):"",n+" recommendation"+(n===1?"":"s"),ago(t.createdAt)].filter(Boolean).join(" · ")}</small></a>${t.solved?`<a class="btn sm" href="#t-${t.id}">See answer</a>`:`<a class="btn sm" href="#t-${t.id}">Recommend</a>`}</div>`; };
+  if(!all.length) return head+emptyBox("No help requests yet","Looking for a good electrician, tailor, tuition or anything else nearby? Ask, and people from "+esc(hp.name)+" will recommend.",ask);
+  return head+(open.length?`<section class="hsec hf-loc">${SH("Open requests","Know someone good? Recommend them.","")}${open.map(row).join("")}</section>`:`<p class="muted" style="margin:0 0 12px">No open requests right now.</p>`)
+    +(done.length?`<section class="hsec hf-loc">${SH("Solved","What helped other people","")}${done.slice(0,10).map(row).join("")}</section>`:"");
+}
 function newsModal(){
   const hp=homePlace(), ha=homeArea();
   openModal(`<h2>Post local news</h2><label class="l">Headline<input class="f" id="nw-title" maxlength="120" placeholder="e.g. Water supply off in Jothi Nagar on Sunday"></label>
@@ -1862,20 +1871,19 @@ function vHome(){
       +(tags.length?`<section class="hsec hdisc">${SH(hp?"Popular in "+esc(hp.name)+" this week":"Popular this week","")}<div class="tagrow">${tags.map(([g])=>`<a class="chip" href="#tag-${enc(g)}">#${esc(g)}</a>`).join("")}</div></section>`:"");
   } else if(tab==="nb"){
     const sub=UI.lsub||"shops";
-    const seg=`<div class="tabs lsub" role="tablist">${[["shops","🏪 Shops"],["news","📰 News"],["feed","💬 Local feed"]].map(([k,l])=>`<button type="button" role="tab" aria-selected="${sub===k}" class="${sub===k?"on":""}" data-act="lSub" data-v="${k}">${l}</button>`).join("")}</div>`;
+    const seg=`<div class="tabs lsub" role="tablist">${[["shops",'<i class="le">🏪 </i>Shops'],["news",'<i class="le">📰 </i>News'],["help",'<i class="le">🙋 </i>Help'],["feed",'<i class="le">💬 </i><span class="lsx">Local feed</span><span class="lsm">Feed</span>']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${sub===k}" class="${sub===k?"on":""}" data-act="lSub" data-v="${k}">${l}</button>`).join("")}</div>`;
     if(!hp) body=seg+emptyBox("Choose your city","See shops, news and talk from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`);
     else if(sub==="shops") body=seg+localShops(hp,ha);
     else if(sub==="news") body=seg+localNews(hp,ha);
-    else { const list=LIVE().filter(t=>inPlace(t,hp)&&t.kind!=="news").map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+    else if(sub==="help") body=seg+localHelp(hp);
+    else { const list=LIVE().filter(t=>inPlace(t,hp)&&t.kind!=="news"&&!isHelp(t)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
       const lw=watchItems().filter(it=>inPlace(it.t,hp)), lb=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)&&inPlace(S.topics.get(b.topicId),hp)).sort((a,b)=>b.createdAt-a.createdAt);
       const buzz=(lw.length?watchStrip({items:lw,n:6,cls:"hsec",title:"📣 Local buzz",sub:`Videos and photos people shared about ${esc(hp.name)}. They play from YouTube or Instagram.`,link:`<button type="button" class="linkb" data-act="buzzAll">See all →</button>`})
           :`<div class="bzempty"><b>📣 Local buzz</b><span>Seen a good reel or video about ${esc(hp.name)}? Share the link. Nothing is copied: it plays from YouTube or Instagram, and people can discuss it here.</span><button type="button" class="btn sm" data-act="wShare" data-loc="${esc(hp.label||hp.name)}">▶ Share a local video</button></div>`)
         +(lb.length?`<section class="hsec">${SH("🔥 Battles in "+esc(hp.name),"",lb.length>2?`<button type="button" class="linkb" data-act="hTab" data-v="bt">See all →</button>`:"")}<div class="grid b hbgrid btlive">${lb.slice(0,2).map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:"");
-      const hfl=list.filter(t=>isHelp(t)&&!t.solved).slice(0,3);
-      const hfs=hfl.length?`<section class="hsec hf-loc">${SH("🔎 Help someone find it","Open requests in "+esc(hp.name),"")}${hfl.map(t=>`<div class="hf-row"><a href="#t-${t.id}"><b>${esc(t.title)}</b><small>${[t.budget?"Budget "+esc(t.budget):"",hfRecs(t).length+" recommendation"+(hfRecs(t).length===1?"":"s")].filter(Boolean).join(" · ")}</small></a><a class="btn sm" href="#t-${t.id}">Recommend</a></div>`).join("")}</section>`:"";
       const lbIds=new Set(lb.slice(0,2).map(b=>b.topicId));
       list.splice(0,list.length,...list.filter(t=>!lbIds.has(t.id)));
-      body=seg+hfs+buzz+`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
+      body=seg+buzz+`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
         +(list.length?`<div class="hfeed">${list.slice(0,UI.fyN||10).map(fCard).join("")}</div>${list.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}<a class="morep" href="#city-${enc(hp.id)}">Open the ${esc(hp.name)} page →</a>`
           :emptyBox("No local discussions yet","Be the first to start one.",`<button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button>`)); }
   } else if(tab==="fo"){
