@@ -1181,6 +1181,7 @@ body:not(.ingchat) .gsticky{display:none}
 .rvlist .txt{flex:1;min-width:0}.rvlist .txt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rv-sc{flex:none;text-align:right;line-height:1.25}.rv-sc b{display:block;color:var(--brand-deep);font-size:15px}.rv-sc span{font-size:12px;color:var(--muted)}
 #rp-hits{margin:8px 0}#rp-hits:empty{display:none}
+.lsub{margin:0 0 12px}.lsub button{flex:1}
 /* ---- COMPACT-MOBILE v1: denser, app-like phone layout. Delete this block (or `git checkout before-compact -- prototype/topictalk.html`) to go back. */
 @media(max-width:720px){
 html{zoom:calc(var(--tz,1.07)*.94);--ez:calc(var(--tz,1.07)*.94)}
@@ -1587,7 +1588,7 @@ function hfChip(t){ const st=hfStatus(t); return st==="solved"?'<span class="hf-
 const CAT_TONE={Food:"food",Travel:"place",Local:"place",Services:"svc",Cars:"svc",Bikes:"svc",Shopping:"deal",Entertainment:"ev",Movies:"ev",Gaming:"ev",Finance:"fin",Tech:"fin",Apps:"fin",Education:"fin",Sports:"sport",Health:"sport"};
 const catChip=c=>c?`<span class="tag c-${CAT_TONE[c]||"gen"}">${esc(c)}</span>`:"";
 const locChip=l=>l?`<span class="tag c-loc">📍 ${esc(l)}</span>`:"";
-function typeLabel(t){ if(isHelp(t)) return "🔎 Help me find";  return t.kind==="question"?"❓ Question":t.kind==="place"?"📍 Place":t.kind==="battle"?"⚔️ Battle":t.kind==="prediction"?"🔮 Prediction":stat(t.id).reviews?"⭐ Reviews":"💬 Discussion"; }
+function typeLabel(t){ if(isHelp(t)) return "🔎 Help me find";  return t.kind==="news"?"📰 News":t.kind==="question"?"❓ Question":t.kind==="place"?"📍 Place":t.kind==="battle"?"⚔️ Battle":t.kind==="prediction"?"🔮 Prediction":stat(t.id).reviews?"⭐ Reviews":"💬 Discussion"; }
 function topicCard(t, rank, o={}){
   const s = stat(t.id), tags=(t.tags||[]).slice(0,3);
   const extra = t.kind==="prediction" ? (()=>{ const p=IX.pv.get(t.id), n=p.yes+p.no; return `<span>${n?Math.round(100*p.yes/n):0}% say yes</span><span>${t.outcome?"Resolved":"Resolves "+fmtDate(t.resolveBy)}</span>`; })()
@@ -1802,11 +1803,37 @@ function topRatedList(n,mode){ const hp=homePlace(); const all=LIVE().filter(t=>
   const srt=a=>a.sort((x,y)=>rvScore(y)-rvScore(x)).slice(0,n);
   if(mode==="split") return {near:srt(loc),other:srt(other)};
   return loc.length?{near:true,list:srt(loc)}:{near:false,list:srt(other)}; }
+// Local tab: Shops (every place in your area), News (posted by the admin only), Local feed (everything else local)
+function localShops(hp,ha){
+  const all=LIVE().filter(t=>t.kind==="place"&&inPlace(t,hp));
+  const cats=["All",...[...new Set(all.map(t=>t.category))].sort()], cat=cats.includes(UI.lsCat)?UI.lsCat:"All";
+  const items=cat==="All"?all:all.filter(t=>t.category===cat);
+  const rated=items.filter(t=>stat(t.id).reviews).sort((a,b)=>rvScore(b)-rvScore(a)), unrated=items.filter(t=>!stat(t.id).reviews).sort((a,b)=>a.title.localeCompare(b.title));
+  const head=`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${all.length} place${all.length===1?"":"s"}</span><button type="button" class="btn pri sm" data-act="reviewPick">+ Add a shop</button></div>`;
+  if(!all.length) return head+emptyBox("No shops here yet","Add a shop or place you know. Paste its Google Maps link to put it on the map, then rate it.",`<button class="btn pri sm" data-act="reviewPick">+ Add a shop</button>`);
+  return head+(cats.length>2?`<div class="tagrow catrow" style="margin-bottom:12px">${cats.map(c=>`<button class="chip ${cat===c?"on":""}" data-act="lsCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`:"")
+    +(rated.length?`<div class="list rvlist">${rated.map(rvRow).join("")}</div>`:"")
+    +(unrated.length?`<section class="sec"><div class="sech"><h2>Waiting for a first review</h2></div><div class="list">${unrated.map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${catChip(t.category)}<span>No reviews yet</span></div></div><span class="btn sm">★ Rate it</span></a>`).join("")}</div></section>`:"");
+}
+function localNews(hp,ha){
+  const list=LIVE().filter(t=>t.kind==="news"&&inPlace(t,hp)).sort((a,b)=>b.createdAt-a.createdAt);
+  const btn=S.isOwner?`<button type="button" class="btn pri sm" data-act="newsNew">📰 Post news</button>`:"";
+  const head=`<div class="harea"><span>📰 News in <b>${esc(hp.name)}</b>${S.isOwner?"":" · posted by the TopicTalk team"}</span>${btn}</div>`;
+  if(!list.length) return head+emptyBox("No news yet",S.isOwner?"Post the first update for "+esc(hp.name)+". Anyone can read and comment.":"Local updates for "+esc(hp.name)+" will show here. You can comment on them.",btn);
+  return head+`<div class="hfeed">${list.slice(0,UI.fyN||10).map(fCard).join("")}</div>${list.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}`;
+}
+function newsModal(){
+  const hp=homePlace(), ha=homeArea();
+  openModal(`<h2>Post local news</h2><label class="l">Headline<input class="f" id="nw-title" maxlength="120" placeholder="e.g. Water supply off in Jothi Nagar on Sunday"></label>
+    <label class="l">Details <small class="muted">optional</small><textarea class="f" id="nw-desc" rows="4" maxlength="2000" placeholder="What happened, when, where. Say where you heard it."></textarea></label>
+    <label class="l">Area<input class="f" id="nw-loc" maxlength="60" list="pl-list" autocomplete="off" value="${esc((ha||hp)?.label||"")}"></label>
+    <div class="hint" id="nw-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="newsSave">Post news</button></div>`);
+}
 function vHome(){
   if (!S.topics.size) return heroHTML() + emptyBox("No topics yet","Start the first one. Anything can become a topic: a phone, a dish, a film, a local issue.",`<button class="btn pri" data-act="newTopic">${L("Start a topic")}</button>`);
   const tab=UI.htab||"fy", hp=homePlace(), ha=homeArea(), now=Date.now();
   const foN=(()=>{ if(!S.me) return 0; const sn=foSeen(); return followFeed().filter(e=>e.last>sn).length; })();
-  const tabs=[["fy",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg></i>For you`],["fo",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14a6 6 0 0 1 3.5 6"/></svg></i>Following${foN&&tab!=="fo"?` <small class="gun">${foN>9?"9+":foN}</small>`:""}`],["nb",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></i><span class="lcn">${hp?esc(hp.name):"Nearby"}</span><span class="lcl">Local</span>`],["wt",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg></i>Watch`],["bt",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg></i>Battles`],["rv",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/></svg></i>Reviews`]];
+  const tabs=[["fy",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg></i>For you`],["fo",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14a6 6 0 0 1 3.5 6"/></svg></i>Following${foN&&tab!=="fo"?` <small class="gun">${foN>9?"9+":foN}</small>`:""}`],["nb",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></i>Local`],["wt",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5 3.5-5 3.5z"/></svg></i>Watch`],["bt",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg></i>Battles`],["rv",`<i class="ti"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/></svg></i>Reviews`]];
   const head=`<div class="hacts" role="group" aria-label="Start here">
       <button type="button" class="ha ha-rv" data-act="reviewPick"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/></svg></i><span class="ha-tx"><b>Write a review</b><span>Rate places and things</span></span></button>
       <button type="button" class="ha ha-ask" data-act="newQuestion"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6"/></svg></i><span class="ha-tx"><b>Ask the community</b><span>Ask people who know</span></span></button>
@@ -1834,8 +1861,12 @@ function vHome(){
       +`<div class="hfeed">${feed}</div>`+(all.length>n?`<button type="button" class="btn hmore" data-act="fyMore">Load more posts</button>`:"")
       +(tags.length?`<section class="hsec hdisc">${SH(hp?"Popular in "+esc(hp.name)+" this week":"Popular this week","")}<div class="tagrow">${tags.map(([g])=>`<a class="chip" href="#tag-${enc(g)}">#${esc(g)}</a>`).join("")}</div></section>`:"");
   } else if(tab==="nb"){
-    if(!hp) body=emptyBox("Choose your city","See topics, battles and places from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`);
-    else { const list=LIVE().filter(t=>inPlace(t,hp)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+    const sub=UI.lsub||"shops";
+    const seg=`<div class="tabs lsub" role="tablist">${[["shops","🏪 Shops"],["news","📰 News"],["feed","💬 Local feed"]].map(([k,l])=>`<button type="button" role="tab" aria-selected="${sub===k}" class="${sub===k?"on":""}" data-act="lSub" data-v="${k}">${l}</button>`).join("")}</div>`;
+    if(!hp) body=seg+emptyBox("Choose your city","See shops, news and talk from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`);
+    else if(sub==="shops") body=seg+localShops(hp,ha);
+    else if(sub==="news") body=seg+localNews(hp,ha);
+    else { const list=LIVE().filter(t=>inPlace(t,hp)&&t.kind!=="news").map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
       const lw=watchItems().filter(it=>inPlace(it.t,hp)), lb=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)&&inPlace(S.topics.get(b.topicId),hp)).sort((a,b)=>b.createdAt-a.createdAt);
       const buzz=(lw.length?watchStrip({items:lw,n:6,cls:"hsec",title:"📣 Local buzz",sub:`Videos and photos people shared about ${esc(hp.name)}. They play from YouTube or Instagram.`,link:`<button type="button" class="linkb" data-act="buzzAll">See all →</button>`})
           :`<div class="bzempty"><b>📣 Local buzz</b><span>Seen a good reel or video about ${esc(hp.name)}? Share the link. Nothing is copied: it plays from YouTube or Instagram, and people can discuss it here.</span><button type="button" class="btn sm" data-act="wShare" data-loc="${esc(hp.label||hp.name)}">▶ Share a local video</button></div>`)
@@ -1844,7 +1875,7 @@ function vHome(){
       const hfs=hfl.length?`<section class="hsec hf-loc">${SH("🔎 Help someone find it","Open requests in "+esc(hp.name),"")}${hfl.map(t=>`<div class="hf-row"><a href="#t-${t.id}"><b>${esc(t.title)}</b><small>${[t.budget?"Budget "+esc(t.budget):"",hfRecs(t).length+" recommendation"+(hfRecs(t).length===1?"":"s")].filter(Boolean).join(" · ")}</small></a><a class="btn sm" href="#t-${t.id}">Recommend</a></div>`).join("")}</section>`:"";
       const lbIds=new Set(lb.slice(0,2).map(b=>b.topicId));
       list.splice(0,list.length,...list.filter(t=>!lbIds.has(t.id)));
-      body=hfs+buzz+`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
+      body=seg+hfs+buzz+`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${list.length} topic${list.length===1?"":"s"}</span><span><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button> · <button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></span></div>`
         +(list.length?`<div class="hfeed">${list.slice(0,UI.fyN||10).map(fCard).join("")}</div>${list.length>(UI.fyN||10)?`<button type="button" class="btn hmore" data-act="fyMore">Load more</button>`:""}<a class="morep" href="#city-${enc(hp.id)}">Open the ${esc(hp.name)} page →</a>`
           :emptyBox("No local discussions yet","Be the first to start one.",`<button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start a topic</button>`)); }
   } else if(tab==="fo"){
@@ -3979,6 +4010,14 @@ document.addEventListener("click", async e=>{
     case "rvNear": UI.rvNear=!(UI.rvNear??!!(UI.exPlace||homePlace())); schedule(); break;
     case "rvHome": UI.exPlace=null; UI.rvNear=true; schedule(); break;
     case "rvCat": UI.rvCat=el.dataset.v; schedule(); break;
+    case "lSub": UI.lsub=el.dataset.v; UI.fyN=10; schedule(); break;
+    case "lsCat": UI.lsCat=el.dataset.v; schedule(); break;
+    case "newsNew": if(!(await gate())) break; if(!S.isOwner){ toast("Only the TopicTalk team can post news."); break; } newsModal(); break;
+    case "newsSave": { if(!S.isOwner) break; const title=($("#nw-title").value||"").trim(), desc=($("#nw-desc").value||"").trim(), err=$("#nw-err"), pl=placeOf($("#nw-loc").value);
+      if(title.length<5){ err.textContent="Write a headline (at least 5 letters)."; break; } if(!pl){ err.textContent="Choose the area from the list."; break; }
+      const t={title:title.slice(0,120),desc:desc.slice(0,2000),category:"Local",kind:"news",tags:["news"],location:pl.label,authorId:S.me,tagged:[],taggedGroups:[],parentId:null,originCommentId:null,createdAt:Date.now(),groupId:null};
+      const tid=rid("t"); el.disabled=true;
+      if(await W(()=>db.doc("topics/"+tid).set(t))){ closeModal(true); ensureFollow(tid); toast("News posted"); location.hash="t-"+tid; } else el.disabled=false; break; }
     case "rpSave": {
       const name=($("#rp-name").value||"").trim(), err=$("#rp-err"); let loc="";
       if(name.length<3){ err.textContent="Type the name (at least 3 letters)."; break; }

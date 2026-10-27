@@ -238,6 +238,7 @@ function check(op, col, id, prev, next, patch, uid) {
       // a place's map pin: just two numbers
       if (next && next.geo != null) { const g = next.geo; if (typeof g !== "object" || Object.keys(g).some(k => k !== "lat" && k !== "lng") || !Number.isFinite(g.lat) || !Number.isFinite(g.lng) || Math.abs(g.lat) > 90 || Math.abs(g.lng) > 180) bad("That map pin isn’t valid."); }
       if (next && !OPEN(next.access) && next.groupId) bad("A topic can be in a group or private, not both.");
+      if (next && next.kind === "news" && !admin && (!prev || prev.kind !== "news")) deny("Only the TopicTalk team can post news.");
       if (!prev && next.parentId) { const par = DOCS.topics.get(next.parentId); if (par && !topicVisible(par, uid)) deny("You can’t branch from a topic you can’t see."); }
       if (!prev && next.kind === "place" && !admin) { let n = 0; const since = Date.now() - 864e5; for (const t of DOCS.topics.values()) if (t.authorId === uid && t.kind === "place" && t.createdAt > since) n++; if (n >= 5) deny("You can add up to 5 places a day. Try again tomorrow."); }
       if (!prev) { if (next.authorId !== uid) deny(); if (next.groupId && !role(next.groupId, uid) && !admin) deny("Join the group first."); return; }
