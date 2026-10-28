@@ -1376,6 +1376,31 @@ body{font-size:15.5px;letter-spacing:-.003em}
   .top .search input{height:40px}
   .top .lang,.top #meLink>*{height:36px;min-width:36px}
 }
+
+/* ---- MOBILE v3 + light palette ---- */
+:root{--bg:#F3F7F5;--surface:#FFFFFF;--ink:#17231D;--muted:#687870;--line:#DFE8E3;--chip:#EBF1EE;--brand:#178A4B;--brand-deep:#0F6E3B;--brand-soft:#E2F2E8}
+@media(max-width:720px){
+  /* six tabs fit on a normal phone: text only, tighter padding, spread across the row */
+  .htabs .ti{display:none!important}
+  .htabs{-webkit-mask-image:none!important;mask-image:none!important;padding:0!important;gap:0!important;justify-content:space-between}
+  .htabs button{padding:10px 7px 9px!important;font-size:13.5px!important}
+  .htabs.ov{-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)!important;mask-image:linear-gradient(90deg,#000 88%,transparent)!important;justify-content:flex-start}
+  /* type a touch smaller on phones */
+  .sech h2,.hsec .sech h2,.hstrip .sech h2{font-size:16.5px!important}
+  .ftitle,.home2 .ftitle{font-size:16px!important}
+  .fo-ti,.excard h3{font-size:15.5px!important}
+  .bc2 .bc-q,.home2 .bc2 .bc-q{font-size:15.5px!important}
+  h1{font-size:min(26px,7vw)}
+  /* sections flow into each other */
+  .hsec,.hstrip,.home2 .hsec,.home2 .hstrip{margin:4px 0 16px!important}
+  .hf-all{margin-top:4px;padding:6px 2px}
+  /* header: flexible widths so it fits small phones */
+  .top .wrap{gap:8px!important}.top .search{flex:1 1 auto;min-width:0}.top .lang{padding:0 10px;flex:none}.top .navr{gap:6px}
+  /* bottom bar: just enough room for the iPhone home line */
+  .bnav{padding:4px 8px max(4px,calc(env(safe-area-inset-bottom,0px) - 10px))!important}
+}
+@media(max-width:400px){.htabs button{padding:10px 5px 9px!important}}
+@media(max-width:370px){.htabs button{padding:10px 4px 9px!important;font-size:13px!important}.top .lang{padding:0 8px}}
 </style>
 
 <header class="top">
@@ -3451,6 +3476,7 @@ function render(){
   for(const id in keep){ const jp=UI.justPosted; if(jp&&id===jp.id&&Date.now()-jp.t<3000&&String(keep[id]).trim()===jp.text) continue; const el=document.getElementById(id); if(el) el.value=keep[id]; }
   if(UI.whyPrefill) applyWhy();
   enhance(view); mapsMount(view);
+  view.querySelectorAll(".htabs").forEach(tb=>{ const f=()=>tb.classList.toggle("ov",tb.scrollWidth>tb.clientWidth+2&&tb.scrollLeft+tb.clientWidth<tb.scrollWidth-4); f(); if(!tb._ov){ tb._ov=1; tb.addEventListener("scroll",f,{passive:true}); } });
   markSeen(); maybeAskHome();
   if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
   if(changed){ if(UI.lastRoute) UI.navN=(UI.navN||0)+1; UI.lastRoute=r;
