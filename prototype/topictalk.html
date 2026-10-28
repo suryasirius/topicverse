@@ -1,7 +1,7 @@
 <title>TopicTalk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Tamil:wght@400;600;700&display=swap">
 <style>
 /* Layout: sticky top bar, centred 1120px column; topic page = discussion column + graph rail; phone = bottom tab bar */
 :root{
@@ -9,8 +9,8 @@
   --brand:#1F9D63; --brand-deep:#0E7045; --brand-soft:#E3F3EA; --on-brand:#FFFFFF;
   --chip:#EEF2F0; --star:#B87A0B; --danger:#B4412F; --shadow:0 1px 2px rgba(18,32,27,.06),0 4px 14px rgba(18,32,27,.05);
   --tile-l:90%; --tile-ink:26%; --bar-off:#E1E8E4; --bar-off2:#CBD6D0;
-  --f-display:"Schibsted Grotesk","Noto Sans Tamil","Helvetica Neue","Segoe UI",system-ui,sans-serif;
-  --f-body:"Schibsted Grotesk","Noto Sans Tamil","Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --f-display:"Inter","Noto Sans Tamil","Helvetica Neue","Segoe UI",system-ui,sans-serif;
+  --f-body:"Inter","Noto Sans Tamil","Helvetica Neue","Segoe UI",system-ui,sans-serif;
   --accent:#5B6CE0; --accent-deep:#3F4DB8; --accent-soft:#E8EBFB;
   --r:14px;
 }
@@ -1282,6 +1282,33 @@ main h1[style]{font-size:24px!important}
 @media(max-width:720px){.thead h1{font-size:19px!important}.thead h1.lt{font-size:17px!important}.thead h1.lt2{font-size:16px!important}}
 .ftitle,.home2 .ftitle,.excard h3,.fo-ti,h2,h3{letter-spacing:0!important;word-spacing:.03em}
 .caps{text-transform:lowercase}.caps::first-letter{text-transform:uppercase}
+
+/* ---- LAYOUT v1: big-site desktop layout. Left menu + wide page on large screens; phone keeps its bottom bar. ---- */
+:root{--brand:#178A4B;--brand-deep:#0F6E3B;--on-brand:#FFFFFF}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0B100E;--surface:#111B16;--ink:#F1F5F2;--muted:#9AAEA3;--line:#1F2C25;--chip:#17231D;--brand:#178A4B;--brand-deep:#7FD3A8;--brand-soft:#123222;--on-brand:#FFFFFF}}
+:root[data-theme="dark"]{--bg:#0B100E;--surface:#111B16;--ink:#F1F5F2;--muted:#9AAEA3;--line:#1F2C25;--chip:#17231D;--brand:#178A4B;--brand-deep:#7FD3A8;--brand-soft:#123222;--on-brand:#FFFFFF}
+body{font-size:15.5px;letter-spacing:-.003em}
+.lnav{display:none}
+@media(min-width:1280px){
+  .top .wrap{max-width:1400px}
+  .shell{max-width:1400px;margin:0 auto;padding-inline:16px;display:grid;grid-template-columns:232px minmax(0,1fr);gap:28px}
+  .shmain{min-width:0}.shmain>.wrap{max-width:none;padding-inline:0}
+  footer.wrap{max-width:1400px;padding-left:276px}
+  .top .navlink{display:none}
+  .lnav{display:flex;flex-direction:column;gap:2px;position:sticky;top:84px;align-self:start;padding:6px 0 20px}
+  .lnav a{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:12px;font-weight:600;font-size:15.5px;color:color-mix(in srgb,var(--ink) 78%,var(--muted));position:relative}
+  .lnav a:hover{background:var(--chip);color:var(--ink)}
+  .lnav a.on{background:var(--brand-soft);color:var(--brand-deep)}
+  .lnav a svg{flex:none}
+  .ln-dot{position:absolute;left:30px;top:6px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:#E5484D;color:#fff;font:700 10px/16px var(--f-body);font-style:normal;text-align:center}
+  .ln-new{margin-top:14px;height:46px!important;justify-content:center;font-size:15px}
+  /* the three start buttons: one slim row, so the feed leads */
+  .hacts{gap:12px}.ha{padding:10px 14px!important;min-height:0!important;border-radius:14px!important}.ha-ic{width:36px!important;height:36px!important;border-radius:11px!important}
+  .ha-tx b{font-size:14.5px}.ha-tx span{font-size:12.5px}
+  .extabs,.excats{flex-wrap:wrap!important;overflow:visible!important}
+}
+/* phone: the start buttons become one short row */
+@media(max-width:560px){.ha{min-height:0!important;padding:12px 6px!important;grid-template-columns:1fr!important;justify-items:center;text-align:center!important;gap:6px!important}.ha-tx span{display:none!important}.ha-tx b{font-size:13.5px!important;line-height:1.25}.ha-ic{width:38px!important;height:38px!important}}
 </style>
 
 <header class="top">
@@ -1306,8 +1333,21 @@ main h1[style]{font-size:24px!important}
     </div>
   </div>
 </header>
+<div class="shell"><aside class="lnav" id="lnav" aria-label="Menu">
+  <a href="#home" data-n="fy"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg><span>Home</span></a>
+  <a href="#home" data-n="nb" data-act="goTab" data-v="nb"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Local</span></a>
+  <a href="#explore" data-n="explore"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg><span>Explore</span></a>
+  <a href="#groups" data-n="groups"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.7c2 .7 3.2 2.5 3.5 5.3"/></svg><span>Groups</span></a>
+  <a href="#home" data-n="bt" data-act="goTab" data-v="bt"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.5 17.5 6-6V5h-6.5l-6 6"/><path d="m9.5 17.5-6-6V5H10l6 6"/></svg><span>Battles</span></a>
+  <a href="#reviews" data-n="reviews"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><span>Reviews</span></a>
+  <a href="#alerts" data-n="alerts"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span>Notifications</span><i class="ln-dot" id="bell3" hidden></i></a>
+  <a href="#me" data-n="me"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 4-6 8-6s7.2 2 8 6"/></svg><span>Profile</span></a>
+  <a href="#settings" data-n="settings"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></a>
+  <button type="button" class="btn pri ln-new" data-act="create">+ Start something</button>
+</aside><div class="shmain">
 <div class="wrap" id="banner"></div>
 <main class="wrap" id="view"></main>
+</div></div>
 <footer class="wrap">TopicTalk prototype · Topics, reviews, discussion and branching. Battles, predictions, branching and share cards are live. Polls, competitions and maps come next.</footer>
 
 <nav class="bnav" id="bnav">
@@ -3341,6 +3381,8 @@ function render(){
     const el=focusC&&document.getElementById("c-"+focusC);
     if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); } else window.scrollTo(0,0); }
   gcSync(changed,gAtBottom);
+  { const ht=UI.htab||"fy", cur=r==="home"||r===""?(ht==="nb"||ht==="bt"?ht:"fy"):r.startsWith("g-")?"groups":r.startsWith("ppl-")?"me":r;
+    document.querySelectorAll("#lnav [data-n]").forEach(a=>a.classList.toggle("on",a.dataset.n===cur)); }
   document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="explore"&&(r==="groups"||r==="reviews"||r.startsWith("g-")))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
   document.querySelectorAll("[data-l]").forEach(el=>el.textContent=L(el.dataset.l));
   $("#langBtn").textContent=UI.lang==="ta"?"EN":"தமிழ்";
@@ -3350,7 +3392,7 @@ function render(){
     if(us.length){ UI.keep=new Set([...(UI.keep||[]),...us.map(n=>n.id)]); for(const n of us){ n.read=true; db.doc("notifs/"+n.id).update({read:true}).catch(()=>{}); } }
   } else if(r!=="alerts") UI.keep=null;
   const unread=notifList().filter(n=>!n.read).length;
-  for(const b of [$("#bell"),$("#bell2")]){ b.hidden=!unread; b.textContent=unread>9?"9+":unread; }
+  for(const b of [$("#bell"),$("#bell2"),$("#bell3")]){ if(!b) continue; b.hidden=!unread; b.textContent=unread>9?"9+":unread; }
   { const ts=S.handles.get(S.me)?.textSize; if(ts&&ts!==curTS){ applyTS(ts); try{ localStorage.setItem("tt_ts",ts); }catch{} } }
   $("#meLink").innerHTML=S.me?avatar(S.me):`<span class="av" style="--h:150">?</span>`;
   renderBanner();
@@ -4102,6 +4144,7 @@ document.addEventListener("click", async e=>{
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
+    case "goTab": UI.htab=el.dataset.v; UI.fyN=10; if(location.hash!=="#home"&&location.hash!=="") location.hash="home"; else schedule(); window.scrollTo({top:0}); break;
     case "hTab": UI.htab=el.dataset.v; UI.fyN=10; UI.foSeen0=null; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); }setTimeout(()=>{ const tb=document.querySelector(".htabs"), on=tb&&tb.querySelector(".on"); if(on) tb.scrollLeft=Math.max(0,on.offsetLeft-(tb.clientWidth-on.offsetWidth)/2); },150); break;
     case "bFilter": UI.bf=el.dataset.v; UI.fyN=10; UI.btEndAll=false; schedule(); break;
     case "btEndAll": UI.btEndAll=!UI.btEndAll; schedule(); break;
