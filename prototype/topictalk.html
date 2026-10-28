@@ -1309,6 +1309,39 @@ body{font-size:15.5px;letter-spacing:-.003em}
 }
 /* phone: the start buttons become one short row */
 @media(max-width:560px){.ha{min-height:0!important;padding:12px 6px!important;grid-template-columns:1fr!important;justify-items:center;text-align:center!important;gap:6px!important}.ha-tx span{display:none!important}.ha-tx b{font-size:13.5px!important;line-height:1.25}.ha-ic{width:38px!important;height:38px!important}}
+
+/* ---- LAYOUT v2: aligned header, wider feed, quieter links, 3 / 2 / 1 columns ---- */
+.hacts{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.ha-more .ha-ic{background:var(--chip);color:var(--ink)}
+.hmore2{display:none}
+/* tablet: feed + right panel */
+@media(min-width:900px){.home2{max-width:none!important;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}.fyarea{display:none}.hside{display:flex!important;flex-direction:column;gap:14px;position:sticky;top:calc(var(--toph,60px) + 14px)}}
+@media(min-width:1280px){
+  /* header follows the page columns: logo over the menu, search over the feed, account on the right */
+  .top .wrap{display:grid!important;grid-template-columns:232px minmax(0,1fr) auto;gap:28px;padding-inline:16px}
+  .top .search{max-width:640px;margin:0;width:100%}
+  .home2{grid-template-columns:minmax(0,1fr) 340px;gap:28px}
+  .ftitle,.home2 .ftitle{font-size:18.5px!important}
+  .meta,.exm,.exf,.fo-h,.rvlist .meta,.list .meta,.hf-row small,.sech .sub,.harea{font-size:13px!important}
+  /* start row: icon + name only, one slim line */
+  .ha{grid-template-columns:auto minmax(0,1fr)!important;padding:9px 12px!important}.ha-tx span{display:none!important}.ha-ic{width:32px!important;height:32px!important}
+  .ln-h{margin:22px 14px 6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .ln-c{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;text-align:left;padding:8px 14px;border-radius:10px;font:500 14.5px var(--f-body);color:color-mix(in srgb,var(--ink) 75%,var(--muted));cursor:pointer}
+  .ln-c i{width:8px;height:8px;border-radius:50%;background:hsl(var(--h) 55% 50%);flex:none}
+  .ln-c:hover,.ln-c.on{background:var(--chip);color:var(--ink)}
+}
+/* tablet and up: start row is icon + name, one slim line, with room before the tabs */
+@media(min-width:561px){.ha{grid-template-columns:auto minmax(0,1fr)!important;padding:9px 12px!important;min-height:0!important;align-items:center!important;text-align:left!important;justify-items:start!important}.ha-tx span{display:none!important}.ha-ic{width:32px!important;height:32px!important}.ha-tx b{font-size:14px!important;line-height:1.25}}
+.hacts+.htabs,.hacts~.htabs{margin-top:18px!important}
+.pushcard.slim{margin-top:14px}
+/* phone: four short start buttons */
+@media(max-width:560px){.hacts{gap:6px!important}.ha{padding:10px 4px!important}.ha-tx b{font-size:12.5px!important}.ha-ic{width:34px!important;height:34px!important}}
+/* green for main actions and selected things; small links stay quiet */
+.sbh .linkb,.sbh a.linkb,.sech a,.sech .linkb,.harea .linkb,.sbacts a,.sbacts .linkb{color:color-mix(in srgb,var(--ink) 82%,var(--muted))!important;font-weight:600}
+.sbh .linkb:hover,.sech a:hover,.harea .linkb:hover,.sbacts a:hover{color:var(--brand-deep)!important}
+/* small labels: no smaller than 12px */
+.fo-new,.exs small,.rvtr{font-size:12px!important}
+.srank{list-style:none;margin:0;padding:0;display:grid;gap:2px}.srank a{display:flex;align-items:center;gap:10px;padding:6px 0;color:var(--ink);font-weight:600;font-size:14px}.srank i{font-style:normal;width:18px;color:var(--muted);font-weight:700;font-size:13px;text-align:right}
 </style>
 
 <header class="top">
@@ -1344,6 +1377,7 @@ body{font-size:15.5px;letter-spacing:-.003em}
   <a href="#me" data-n="me"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 4-6 8-6s7.2 2 8 6"/></svg><span>Profile</span></a>
   <a href="#settings" data-n="settings"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>Settings</span></a>
   <button type="button" class="btn pri ln-new" data-act="create">+ Start something</button>
+  <div class="ln-cats" id="lncats"></div>
 </aside><div class="shmain">
 <div class="wrap" id="banner"></div>
 <main class="wrap" id="view"></main>
@@ -1936,7 +1970,8 @@ function vHome(){
       <button type="button" class="ha ha-rv" data-act="reviewPick"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/></svg></i><span class="ha-tx"><b>Write a review</b><span>Rate places and things</span></span></button>
       <button type="button" class="ha ha-ask" data-act="newQuestion"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6"/></svg></i><span class="ha-tx"><b>Ask the community</b><span>Ask people who know</span></span></button>
       <button type="button" class="ha ha-bt" data-act="newBattle"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg></i><span class="ha-tx"><b>Start a battle</b><span>Two sides, you vote</span></span></button>
-    </div><div class="hmore2"><button type="button" class="linkb" data-act="create">More: topic, video or photo, group ›</button></div>${pushCard(true)}
+      <button type="button" class="ha ha-more" data-act="create"><i class="ha-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></i><span class="ha-tx"><b>More</b><span>Topic, video, group</span></span></button>
+    </div>${pushCard(true)}
   <nav class="htabs" role="tablist">${tabs.map(([k,l])=>`<button type="button" role="tab" aria-selected="${tab===k}" class="${tab===k?"on":""}" data-act="hTab" data-v="${k}">${l}</button>`).join("")}</nav>${tab==="fy"?`<button type="button" class="hfban" data-act="newQuestion" data-help="1"><i class="hfb-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></i><span class="hfb-tx"><b>Help someone find it</b><span>Ask for recommendations from people in your area.</span></span><svg class="hfb-ch" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>`:""}`;
   let body="";
   if(tab==="fy"){
@@ -2028,7 +2063,14 @@ function homeSide(){
   const trend=tr.length?`<section class="sbox"><div class="sbh"><b>🔥 Trending${src===pool?" in "+esc(hp.name):""}</b></div><ul class="slist">${tr.map(([t])=>{ const n=stat(t.id).comments; return `<li><a href="#t-${t.id}"><span>${esc(cleanTitle(t))}</span><small>${t.kind==="battle"?"Battle · ":""}${n} comment${n===1?"":"s"}</small></a></li>`; }).join("")}</ul></section>`:"";
   const gs=[...S.groups.values()].filter(g=>g.visibility==="public"&&!memberOf(g.id)).map(g=>[g,(IX.gMem.get(g.id)||[]).length]).sort((a,b)=>b[1]-a[1]).slice(0,3);
   const groups=gs.length?`<section class="sbox"><div class="sbh"><b>👥 Groups to join</b><a class="linkb" href="#groups">See all</a></div>${gs.map(([g,n])=>`<div class="sgrp"><a href="#g-${esc(g.id)}"><b>${esc(g.name)}</b><small>${n} member${n===1?"":"s"}</small></a><button class="btn sm" data-act="joinGroup" data-id="${esc(g.id)}">Join</button></div>`).join("")}</section>`:"";
-  return area+trend+groups;
+  const tp=(hp?pool:[]).filter(t=>t.kind==="place"&&stat(t.id).reviews).sort((a,b)=>rvScore(b)-rvScore(a)).slice(0,4);
+  const places=tp.length?`<section class="sbox"><div class="sbh"><b>⭐ Top places near you</b><button type="button" class="linkb" data-act="goTab" data-v="nb">See all</button></div><ul class="slist">${tp.map(t=>{ const s2=stat(t.id); return `<li><a href="#t-${t.id}"><span>${esc(cleanTitle(t))}</span><small>★ ${s2.avg.toFixed(1)} · ${s2.reviews} review${s2.reviews===1?"":"s"} · ${esc(t.category)}</small></a></li>`; }).join("")}</ul></section>`:"";
+  const act=new Map(); const bump=(u,n)=>{ if(u&&!isSeed(u)) act.set(u,(act.get(u)||0)+n); };
+  for(const c of S.comments.values()) if(c.createdAt>wk&&!c.deletedAt) bump(c.authorId,1);
+  for(const r of S.reviews.values()) if((r.updatedAt||r.createdAt)>wk) bump(r.authorId,3);
+  const top=[...act].sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const people=top.length>=2?`<section class="sbox"><div class="sbh"><b>🏆 Most active this week</b></div><ol class="srank">${top.map(([u,n],i)=>`<li><a href="#u-${esc(u)}"><i>${i+1}</i>${avatar(u,"xs")}<span>${esc(nameOf(u))}</span></a></li>`).join("")}</ol><div class="muted sbsm">Counts comments and reviews from the last 7 days.</div></section>`:"";
+  return area+trend+places+people+groups;
 }
 function vHomeClassic(){
   if (!S.topics.size) return heroHTML() + emptyBox("No topics yet","Start the first one. Anything can become a topic: a phone, a dish, a film, a local issue.",`<button class="btn pri" data-act="newTopic">${L("Start a topic")}</button>`);
@@ -3382,7 +3424,10 @@ function render(){
     if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); } else window.scrollTo(0,0); }
   gcSync(changed,gAtBottom);
   { const ht=UI.htab||"fy", cur=r==="home"||r===""?(ht==="nb"||ht==="bt"?ht:"fy"):r.startsWith("g-")?"groups":r.startsWith("ppl-")?"me":r;
-    document.querySelectorAll("#lnav [data-n]").forEach(a=>a.classList.toggle("on",a.dataset.n===cur)); }
+    document.querySelectorAll("#lnav [data-n]").forEach(a=>a.classList.toggle("on",a.dataset.n===cur));
+    const lc=$("#lncats"); if(lc&&getComputedStyle($("#lnav")).display!=="none"){ const cc=new Map(); LIVE().forEach(t=>cc.set(t.category,(cc.get(t.category)||0)+1)); const top=[...cc].filter(x=>x[0]).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      const h=top.length?`<div class="ln-h">Topics</div>${top.map(([c])=>`<button type="button" class="ln-c${r==="explore"&&UI.exCat===c?" on":""}" data-act="lnCat" data-v="${esc(c)}"><i style="--h:${catHue(c)}"></i>${esc(c)}</button>`).join("")}`:"";
+      if(lc.innerHTML!==h) lc.innerHTML=h; } }
   document.querySelectorAll("#bnav [data-r]").forEach(a=>a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="home"&&r.startsWith("t-"))||(a.dataset.r==="explore"&&(r==="groups"||r==="reviews"||r.startsWith("g-")))||(a.dataset.r==="me"&&r.startsWith("ppl-"))));
   document.querySelectorAll("[data-l]").forEach(el=>el.textContent=L(el.dataset.l));
   $("#langBtn").textContent=UI.lang==="ta"?"EN":"தமிழ்";
@@ -4144,6 +4189,7 @@ document.addEventListener("click", async e=>{
     case "kind": { UI.newKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const h=$("#modal h2"); if(h) h.textContent=UI.newKind==="question"?"Ask the community":"Start a topic"; break; }
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
+    case "lnCat": UI.exCat=el.dataset.v; UI.exSort="trending"; if(location.hash==="#explore") schedule(); else location.hash="explore"; window.scrollTo({top:0}); break;
     case "goTab": UI.htab=el.dataset.v; UI.fyN=10; if(location.hash!=="#home"&&location.hash!=="") location.hash="home"; else schedule(); window.scrollTo({top:0}); break;
     case "hTab": UI.htab=el.dataset.v; UI.fyN=10; UI.foSeen0=null; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); }setTimeout(()=>{ const tb=document.querySelector(".htabs"), on=tb&&tb.querySelector(".on"); if(on) tb.scrollLeft=Math.max(0,on.offsetLeft-(tb.clientWidth-on.offsetWidth)/2); },150); break;
     case "bFilter": UI.bf=el.dataset.v; UI.fyN=10; UI.btEndAll=false; schedule(); break;
