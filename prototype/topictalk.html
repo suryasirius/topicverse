@@ -1260,6 +1260,28 @@ main h1[style]{font-size:24px!important}
 @media(max-width:720px){.vd-empty{display:none}}
 .jc-row{display:flex;gap:8px;align-items:center;flex:1;min-width:220px;max-width:300px}.jc-row .f{flex:1;min-width:0;margin:0}.jc-row .btn{flex:none}
 .gcard:has(.gcun){padding-right:46px}
+
+/* ---- TYPE v1: clear hierarchy. Page title > item title > body > secondary (category, area, time, counts). Long titles step down a size. ---- */
+:root{--t-sub:12.5px;--t-cap:11.5px}
+.meta,.exm,.exf,.fo-h,.rvlist .meta,.list .meta,.hf-row small,.sech .sub,.fsg small,.harea{font-size:var(--t-sub)!important;font-weight:500;letter-spacing:.005em}
+.meta b,.harea b{font-weight:600}
+.tag:not(.chip){font-size:var(--t-cap)!important;padding:1px 8px!important}
+.fo-what,.fo-rt{font-size:13px!important}
+.sech .sub{color:var(--muted);margin-top:2px}
+/* item titles: one size, long ones a little smaller so they don't fill the card */
+.ftitle,.home2 .ftitle,.excard h3,.fo-ti,.list b,.hf-row b{letter-spacing:-.005em}
+.ftitle.lt,.home2 .ftitle.lt,.fo-ti.lt,.excard h3.lt{font-size:15.5px!important;line-height:1.4!important}
+.ftitle.lt2,.home2 .ftitle.lt2,.fo-ti.lt2,.excard h3.lt2{font-size:15px!important;line-height:1.4!important}
+/* topic page heading */
+.thead h1.lt{font-size:clamp(22px,3vw,28px)}.thead h1.lt2{font-size:clamp(19px,2.4vw,23px)}
+@media(max-width:720px){.thead h1.lt{font-size:19px!important}.thead h1.lt2{font-size:17px!important;line-height:1.3}}
+
+/* ---- TYPE v2: calmer topic headings, normal letter spacing, ALL-CAPS titles shown in sentence case ---- */
+.thead h1{letter-spacing:0!important;word-spacing:.04em;line-height:1.25!important;font-weight:700!important;font-size:clamp(22px,2.6vw,28px)!important}
+.thead h1.lt{font-size:clamp(20px,2.2vw,24px)!important}.thead h1.lt2{font-size:clamp(18px,1.9vw,21px)!important}
+@media(max-width:720px){.thead h1{font-size:19px!important}.thead h1.lt{font-size:17px!important}.thead h1.lt2{font-size:16px!important}}
+.ftitle,.home2 .ftitle,.excard h3,.fo-ti,h2,h3{letter-spacing:0!important;word-spacing:.03em}
+.caps{text-transform:lowercase}.caps::first-letter{text-transform:uppercase}
 </style>
 
 <header class="top">
@@ -1738,6 +1760,8 @@ function branchOfDay(){
   const sc=t=>stat(t.id).comments+3*stat(t.id).branches+(now-t.createdAt<72*3.6e6?10:0);
   return br.sort((a,b)=>sc(b)-sc(a))[0];
 }
+const isCaps=v=>{ const L=String(v||"").replace(/[^A-Za-z]/g,""); if(L.length<8) return false; return L.replace(/[^A-Z]/g,"").length/L.length>.7; };
+const LT=v=>{ const n=String(v||"").length; return (n>90?" lt2":n>55?" lt":"")+(isCaps(v)?" caps":""); };
 const SH=(title,sub,link)=>`<div class="sech"><div><h2>${title}</h2>${sub?`<div class="sub">${sub}</div>`:""}</div>${link||""}</div>`;
 function hotRows(skip){
   const seen=new Set(skip||[]), out=[];
@@ -1774,7 +1798,7 @@ function fCard(t){
   const brI='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-11 6"/></svg>';
   return `<article class="fitem fcard${isHelp(t)?" fhelp":""}">
     <div class="whead">${avatar(t.authorId,"xs")}<div class="wwho">${who(t.authorId)}<div class="muted">${meta}</div></div>${kind?`<span class="fcat${(t.kind==="question"&&!isHelp(t))||t.kind==="prediction"?" fq":""}">${esc(kind)}${t.kind==="question"&&!isHelp(t)?"":" · "+esc(t.category)}</span>`:catChip(t.category)}</div>
-    ${gen?(cap?`<a class="wtitle ftitle" href="#t-${t.id}">${esc(cap.slice(0,120))}${cap.length>120?"…":""}</a>`:""):`<a class="wtitle ftitle" href="#t-${t.id}">${esc(isHelp(t)?hfT:cleanTitle(t))}</a>`}
+    ${gen?(cap?`<a class="wtitle ftitle${LT(cap)}" href="#t-${t.id}">${esc(cap.slice(0,120))}${cap.length>120?"…":""}</a>`:""):`<a class="wtitle ftitle${LT(isHelp(t)?hfT:cleanTitle(t))}" href="#t-${t.id}">${esc(isHelp(t)?hfT:cleanTitle(t))}</a>`}
     ${isHelp(t)&&hfD?`<p class="fsnip">${esc(hfD)}</p>`:""}
     ${isHelp(t)?`<div class="fhf">${hfChip(t)}${(n=>`<span class="fhn">${n?n+" recommendation"+(n===1?"":"s"):"No recommendations yet"}</span>`)(hfRecs(t).length)}${t.budget?`<span>Budget ${esc(t.budget)}</span>`:""}${t.when?`<span>Needed ${esc(hfWhenLabel(t.when).toLowerCase())}</span>`:""}</div>`:""}
     ${t.kind==="place"?`<div class="fpl">${st.reviews?`<span class="fstar2">★ ${st.avg.toFixed(1)}</span> ${st.reviews} review${st.reviews===1?"":"s"}${st.reviews<3?" · early":""}`:"No reviews yet"}</div>`:""}
@@ -1811,7 +1835,7 @@ function foCard(e,seen){
   const s2=stat(t.id), txt=String(e.ev?.txt||"").replace(/\s+/g," ").trim();
   const when=agoShort(e.last);
   return `<a class="focard" href="#t-${t.id}"><div class="fo-h"><span class="fo-k"><b>${typeLabel(t)}</b>${why?" · "+why:""}</span>${e.last>seen?`<i class="fo-new">New</i>`:""}<span class="fo-t" title="${esc(fullTime(e.last))}">${when}</span></div>
-    <b class="fo-ti">${esc(t.title)}</b>${s2.reviews?`<span class="fo-rt">★ ${s2.avg.toFixed(1)} · ${s2.reviews} review${s2.reviews===1?"":"s"}</span>`:""}
+    <b class="fo-ti${LT(t.title)}">${esc(t.title)}</b>${s2.reviews?`<span class="fo-rt">★ ${s2.avg.toFixed(1)} · ${s2.reviews} review${s2.reviews===1?"":"s"}</span>`:""}
     ${parts?`<div class="fo-what">${parts}</div>`:""}
     ${e.ev&&txt&&e.ev.k!=="t"?`<div class="fo-last">${avatar(e.ev.who,"xs")}<span><b>${esc(nameOf(e.ev.who))}</b> ${esc(txt.slice(0,140))}</span></div>`:""}</a>`;
 }
@@ -2045,7 +2069,7 @@ function exCard(t){
     ${(()=>{ const lk=(IX.likeN.get(t.id)||0)+(IX.bByTopic.get(t.id)||[]).reduce((q,b)=>q+(IX.likeN.get(b.id)||0),0);
       const foot=(s.comments?`<span>${s.comments} ${lbl}${s.comments===1?"":"s"}</span>`:"")+status+(lk?`<span class="exl">♥ ${lk}</span>`:"");
       const w=`<span class="exw" title="${esc(fullTime(t.createdAt))}">${agoShort(t.createdAt)}</span>`;
-      return `<span class="exb"><h3>${esc(title)}</h3>${foot?`<span class="exm">${meta}</span><span class="exf">${foot}${w}</span>`:`<span class="exm">${meta}${meta?" · ":""}${agoShort(t.createdAt)}</span>`}</span>`; })()}</a></article>`;
+      return `<span class="exb"><h3 class="${LT(title)}">${esc(title)}</h3>${foot?`<span class="exm">${meta}</span><span class="exf">${foot}${w}</span>`:`<span class="exm">${meta}${meta?" · ":""}${agoShort(t.createdAt)}</span>`}</span>`; })()}</a></article>`;
 }
 function vExplore(){
   const cats = ["All",...new Set(LIVE().map(t=>t.category))];
@@ -2626,7 +2650,7 @@ function vTopic(id){
     ${chain.length?`<div class="lineage"><span>Branched from</span>${chain.map(p=>`<a href="#t-${p.id}">${esc(p.deletedAt?"Deleted topic":p.title)}</a>`).join("<span>›</span>")}</div>`:""}
     <div class="thead"><div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>
       <div style="min-width:0"><div class="meta">${catChip(t.category)}${accOf(t)!=="open"?`<span class="tag c-gen" title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span class="tag c-gen">${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.branchOf?`<span class="tag c-gen">🌿 From group chat</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" class="tag c-loc">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}${t.editedAt?" · edited":""}</span></div>
-      <h1>${t.deletedAt?`<span class="muted" style="font-style:italic">Topic deleted by creator</span>`:esc(t.title)}</h1></div></div>
+      <h1 class="${LT(t.title)}">${t.deletedAt?`<span class="muted" style="font-style:italic">Topic deleted by creator</span>`:esc(t.title)}</h1></div></div>
     ${t.deletedAt&&t.mergedInto&&S.topics.get(t.mergedInto)?`<div class="gbanner">This page was merged into <a href="#t-${esc(t.mergedInto)}">${esc(S.topics.get(t.mergedInto).title)}</a>.</div>`:t.deletedAt?`<div class="gbanner">The creator deleted this topic. The discussion stays, but new comments, reviews and votes are closed.</div>`:""}
     ${(()=>{ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private";
       if(t.madePublic) return `<div class="gbanner">Started in the group <a href="#g-${esc(g.id)}">${esc(g.name)}</a> and made public${t.publicAt?" on "+fullTime(t.publicAt):""}.</div>`;
