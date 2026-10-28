@@ -1407,6 +1407,29 @@ body{font-size:15.5px;letter-spacing:-.003em}
 .bnav::after{content:"";position:absolute;left:0;right:0;top:100%;height:160px;background:var(--surface);pointer-events:none}
 .gcomp::after{content:"";position:absolute;left:0;right:0;top:100%;height:160px;background:var(--bg);pointer-events:none}
 .top::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:160px;background:var(--bg);pointer-events:none}
+
+/* ---- GROUP CHAT v6 ---- */
+/* header: name first, details smaller underneath, quiet info button */
+.gch-t h1{font-size:18px!important;font-weight:700!important;letter-spacing:0}
+.gch-s{font-size:12.5px!important;color:var(--muted)!important;margin-top:1px}
+.gch .tile{width:42px!important;height:42px!important;border-radius:12px!important}
+.gch-i{border:0!important;background:none!important;color:var(--muted)!important;width:36px!important;height:36px!important}.gch-i:hover{background:var(--chip)!important;color:var(--ink)!important}
+/* tabs: same height, thinner underline */
+.gtabs button{padding:10px 14px!important;border-bottom-width:2px!important;line-height:1.2;font-weight:600!important}
+/* battle card: shorter, one green for both bars, clear winner / tie */
+.mb{padding:10px 12px 8px!important;border-radius:14px!important}
+.mb-k{font-size:12px!important;font-weight:600!important;color:var(--muted)!important;letter-spacing:0!important}
+.mb-q{font-size:15px!important;font-weight:700!important;margin:2px 0 4px!important}
+.mbo{height:32px!important;margin-top:5px!important;font-weight:600!important;font-size:13.5px!important}
+.mbo.a i,.mbo.b i{background:var(--brand)!important;opacity:.16!important}
+.mbo.win{border-color:var(--brand)!important}.mbo.win i{opacity:.32!important}.mbo.win span:first-of-type{font-weight:700}
+.mb.tie .mbo i{background:var(--muted)!important;opacity:.16!important}
+.mb-f{margin-top:7px!important;font-size:12.5px!important}.mb-f>span:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mb-f{gap:8px}.mb-r{flex:none;white-space:nowrap}
+.mb-st{font-weight:600;color:var(--ink)}.mb-tie{font-weight:700;color:var(--ink);background:var(--chip);padding:1px 7px;border-radius:999px}.mb-won{font-weight:700;color:var(--brand-deep)}.mb-live{font-weight:700;color:var(--brand)}
+/* messages: compact paragraphs */
+.gtx{line-height:1.4!important}
+.gpb{display:block;height:6px}
+.gb{padding:6px 11px 5px!important}
 </style>
 
 <header class="top">
@@ -2307,14 +2330,15 @@ const gRead=gid=>{ try{ return +localStorage.getItem("tt_gread_"+gid)||0; }catch
 const gUnread=gid=>{ if(!memberOf(gid)) return 0; const t=gRead(gid); let n=0; for(const m of S.gmsgs.values()) if(m.groupId===gid&&m.authorId!==S.me&&!m.deletedAt&&m.createdAt>t) n++; return n; };
 function gMsgs(gid){ const m=new Map(); for(const x of (UI.gOld||new Map()).values()) if(x.groupId===gid) m.set(x.id,x); for(const x of S.gmsgs.values()) if(x.groupId===gid) m.set(x.id,x); return [...m.values()]; }
 const gMedia=id=>S.media.get(id)||UI.gOldMedia?.get(id);
+const gTxt=t=>rich(String(t||"").replace(/\n{3,}/g,"\n\n")).replace(/\n\n/g,'<span class="gpb"></span>').replace(/\n/g,"<br>");
 const hhmm=t=>new Date(t).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"});
 const dayLbl=t=>{ const d=new Date(t), n=new Date(), y=new Date(Date.now()-864e5); const same=(a,b)=>a.toDateString()===b.toDateString(); return same(d,n)?"Today":same(d,y)?"Yesterday":d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:d.getFullYear()===n.getFullYear()?undefined:"numeric"}); };
 function miniBattle(b){
   const s=battleState(b), show=s.my||s.ended, t=S.topics.get(b.topicId);
   const row=(k,label,pct)=>`<button type="button" class="mbo ${k} ${s.my===k?"mine":""} ${s.ended&&s.winner===k?"win":""}" data-act="bvote" data-id="${esc(b.id)}" data-v="${k}" ${s.ended?"disabled":""}><i style="width:${show?pct:0}%"></i><span>${esc(label)}${s.my===k?" ✓":""}</span><span>${show?pct+"%":""}</span></button>`;
-  const when=s.ended?"Ended":"ends in "+left(b.endsAt-Date.now());
-  const foot=s.ended?(s.winner==="tie"?"Tie":esc(s.winner==="a"?b.a:b.b)+" won"):(show?"":"Tap a side to vote");
-  return `<div class="mb"><div class="mb-k">⚔️ BATTLE · ${esc(nameOf(b.authorId))} · ${when}</div><div class="mb-q">${esc(b.question)}</div>${row("a",b.a,s.pa)}${row("b",b.b,s.pb)}<div class="mb-f"><span>${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}${foot?" · "+foot:""}</span><span class="mb-r">${likeBtn(b.id,"battle","mb-lk")}<a href="#t-${esc(b.topicId)}">Open →</a></span></div></div>`;
+  const nv=`${s.n.toLocaleString("en-IN")} ${s.n===1?"vote":"votes"}`;
+  const foot=s.ended?`<b class="mb-st">Ended</b> · ${nv} · ${s.winner==="tie"?`<b class="mb-tie">Tie</b>`:`<b class="mb-won">${esc(s.winner==="a"?b.a:b.b)} won</b>`}`:`<b class="mb-live">● Live</b> · ${left(b.endsAt-Date.now())} left${show?" · "+nv:""}`;
+  return `<div class="mb${s.ended&&s.winner==="tie"?" tie":""}"><div class="mb-k">⚔️ Battle · ${esc(nameOf(b.authorId))}</div><div class="mb-q">${esc(b.question)}</div>${row("a",b.a,s.pa)}${row("b",b.b,s.pb)}<div class="mb-f"><span>${foot}</span><span class="mb-r">${likeBtn(b.id,"battle","mb-lk")}<a href="#t-${esc(b.topicId)}">Open →</a></span></div></div>`;
 }
 function gTopicCard(t){
   const who=esc(nameOf(t.authorId)), s=stat(t.id);
@@ -2360,7 +2384,7 @@ function gMsgHTML(m,prev,gid,nested){
   const body=m.deletedAt?`<i class="gdel">🚫 This message was deleted</i>`
     :`${rep?`<button type="button" class="gq" data-act="gJump" data-id="${esc(rep.id)}"><b>${esc(rep.authorId===S.me?"You":nameOf(rep.authorId))}</b><span>${esc(rep.deletedAt?"Deleted message":(rep.text||"📷 Photo").slice(0,90))}</span></button>`:""}
       ${(m.media||[]).length?`<div class="gph">${m.media.map(id=>{ const x=gMedia(id); return x?`<button type="button" data-act="viewMedia" data-id="${esc(id)}" aria-label="Open photo"><img src="${x.data}" alt="" loading="lazy" style="aspect-ratio:${x.w||4}/${x.h||3}"></button>`:`<span class="gph-x">📷</span>`; }).join("")}</div>`:""}
-      ${m.ref&&m.text?`<div class="gtx gtx-note">${rich(m.text).replace(/\n/g,"<br>")}</div>`:""}${m.ref?`<div class="gshared"><div class="gshl">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:(m.text?`<div class="gtx">${rich(m.text).replace(/\n/g,"<br>")}</div>`:"")}${gLinkCards(m.text)}`;
+      ${m.ref&&m.text?`<div class="gtx gtx-note">${gTxt(m.text)}</div>`:""}${m.ref?`<div class="gshared"><div class="gshl">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:(m.text?`<div class="gtx">${gTxt(m.text)}</div>`:"")}${gLinkCards(m.text)}`;
   const sel=UI.gSel===m.id&&!m.deletedAt, canDel=mine||isAdmin(gid);
   return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}${isNew?" gnew":""}${isStk?" gstk":""}" id="gm-${esc(m.id)}" data-day="${esc(dayLbl(m.createdAt))}" data-who="${esc(mine?"You":nameOf(m.authorId))}">
     ${!mine&&!cont?`<a class="gm-av" href="#u-${esc(m.authorId)}">${avatar(m.authorId,"xs")}</a>`:""}
