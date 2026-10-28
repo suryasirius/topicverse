@@ -1450,6 +1450,41 @@ body{font-size:15.5px;letter-spacing:-.003em}
 .hf-loc .hfc .hfc-k b{display:inline;font-size:12px}
 .hf-loc .hfc .hfc-t{display:-webkit-box;font-size:15.5px}
 .hfc .hfc-c{text-transform:none!important;letter-spacing:0!important}
+
+/* ---- LOCAL SHOPS v1 ---- */
+.ls-s{position:relative;display:flex;align-items:center;margin:4px 0 10px}.ls-s svg{position:absolute;left:14px;color:var(--muted);pointer-events:none}
+.ls-s input{width:100%;height:46px;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:0 14px 0 42px;font:inherit;font-size:15.5px;color:var(--ink)}.ls-s input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 18%,transparent)}
+.ls-rec{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:-2px 0 10px;font-size:13px;color:var(--muted)}
+.ls-cats small{color:var(--muted);font-weight:500;margin-left:2px}.ls-cats .chip.on small{color:inherit;opacity:.8}
+.ls-fl{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:4px 0 12px}.ls-sp{flex:1}
+.ls-so{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}.ls-so select{height:34px;border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:0 10px;font:inherit;font-size:13.5px;color:var(--ink)}
+.ls-v button{padding:6px 12px}
+.ls-loc{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px dashed var(--line);border-radius:12px;font-size:13.5px;color:var(--muted);margin-bottom:12px}
+.ls-sec{margin:0 0 18px}.ls-sec h3{font-size:15.5px;font-weight:700;margin:0 0 8px}
+.ls-cnt{font-size:13px;color:var(--muted);margin:0 0 8px}
+.ls-map{height:min(62vh,520px);border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--chip);z-index:0}
+.shl{overflow:hidden}
+.shr{display:flex!important;align-items:center;gap:12px;padding:12px 14px!important;color:var(--ink);text-decoration:none;border-top:1px solid var(--line)}.shl>.shr:first-child{border-top:0}
+.shr:hover{background:color-mix(in srgb,var(--chip) 60%,transparent)}
+.shr-ic{font-style:normal;flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:18px;background:hsl(var(--h) 55% var(--tile-l))}
+.shr-b{flex:1;min-width:0}.shr-b>b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shr-m{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--muted);margin-top:2px}
+.shr-o{font-weight:600;color:#B4412F}.shr-o.on{color:var(--brand-deep)}
+.shr-s{font-size:12.5px;color:color-mix(in srgb,var(--ink) 75%,var(--muted));margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shr-r{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end}.shr-r b{font-size:14px;color:var(--star)}.shr-r small{font-size:12px;color:var(--muted)}
+/* shop panel on a place page */
+.sp{margin:14px 0 6px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);display:grid;gap:12px}
+.sp-top{display:grid;gap:6px}.sp-addr{font-size:14.5px}.sp-tag{font-size:13.5px;color:var(--brand-deep);font-weight:600}
+.sp-hours summary{cursor:pointer;display:flex;align-items:center;gap:10px;list-style:none;font-size:14px}.sp-hours summary::-webkit-details-marker{display:none}.sp-hours summary span{color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.sp-st{font-weight:700;color:#B4412F}.sp-st.on{color:var(--brand-deep)}
+.sp-hours table{margin:8px 0 4px;border-collapse:collapse;font-size:14px}.sp-hours td{padding:3px 18px 3px 0}.sp-hours tr.td td{font-weight:700}.sp-hours small{color:var(--muted);font-size:12px}
+.sp-acts{display:flex;flex-wrap:wrap;gap:8px}
+.sp-sec h3{font-size:15px;font-weight:700;margin:0 0 6px}.sp-h{display:flex;justify-content:space-between;align-items:center}
+.sp-items{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:0}.sp-items li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}.sp-items li:first-child{border-top:0}.sp-items b{font-weight:600;white-space:nowrap}
+.sp-f{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}.sp-f span:last-child{display:flex;gap:12px}
+.sp-empty{display:grid;gap:4px;justify-items:start}.sp-empty span{font-size:13.5px;color:var(--muted)}.sp-empty .btn{margin-top:6px}
+.se-hours{display:grid;gap:6px;margin-top:6px}.se-d{display:grid;grid-template-columns:120px 1fr auto 1fr;gap:6px;align-items:center}.se-d .f{margin:0;height:38px;padding:0 8px}.se-d span{font-size:13px;color:var(--muted)}.se-dn{display:flex;gap:6px;align-items:center;font-size:14px}
+@media(max-width:420px){.se-d{grid-template-columns:96px 1fr auto 1fr}.se-dn{font-size:13px}}
 </style>
 
 <header class="top">
@@ -1615,7 +1650,7 @@ let MUTED=new Set(); try{ MUTED=new Set(JSON.parse(localStorage.getItem("tt-mute
 const saveMuted=()=>{ try{ localStorage.setItem("tt-muted",JSON.stringify([...MUTED].slice(-200))); }catch{} };
 const notifList=()=>S.notifs.filter(n=>!(n.topicId&&MUTED.has(n.topicId)&&!/^(friend_req|friend_ok|follow)$/.test(n.type))&&!NPOFF.has(NG[n.type]));
 const myBlocks=()=>[...S.blocks.values()].map(b=>b.blockedId);
-const REASONS=[["spam","Spam or scam"],["abuse","Harassment or abuse"],["hate","Hate or discrimination"],["sexual","Sexual or inappropriate"],["violence","Violence or threats"],["misinformation","False or misleading"],["privacy","Shares private information"],["other","Something else"]];
+const REASONS=[["spam","Spam or scam"],["abuse","Harassment or abuse"],["hate","Hate or discrimination"],["sexual","Sexual or inappropriate"],["violence","Violence or threats"],["misinformation","False or misleading"],["wronginfo","Wrong shop details (phone, hours, address)"],["privacy","Shares private information"],["other","Something else"]];
 function reportSheet(type,id){
   UI.rp={type,id,reason:""};
   const what=type==="user"?"this person":type==="topic"?"this topic":"this comment";
@@ -2042,16 +2077,102 @@ function topRatedList(n,mode){ const hp=homePlace(); const all=LIVE().filter(t=>
   if(mode==="split") return {near:srt(loc),other:srt(other)};
   return loc.length?{near:true,list:srt(loc)}:{near:false,list:srt(other)}; }
 // Local tab: Shops (every place in your area), News (posted by the admin only), Local feed (everything else local)
+/* ---------- local shops ---------- */
+const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], DAYS_L=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const istNow=()=>{ const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()); const g=k=>(p.find(x=>x.type===k)||{}).value; return {d:DAYS.indexOf(g("weekday")),m:(+g("hour")%24)*60+ +g("minute")}; };
+const toMin=v=>{ const [h,m]=v.split(":").map(Number); return h*60+m; };
+const fmt12=v=>{ const [h,m]=v.split(":").map(Number); return (h%12||12)+(m?":"+String(m).padStart(2,"0"):"")+(h<12?" am":" pm"); };
+const hasHours=sh=>!!(sh&&sh.hours&&Object.values(sh.hours).some(v=>v&&v!=="closed"));
+// open or closed right now, worked out in India time from the hours the shop listed
+function openState(sh){ if(!hasHours(sh)) return null; const H=sh.hours, {d,m}=istNow(); const iv=k=>{ const v=H[k]; return v&&v!=="closed"?v.split("-"):null; };
+  const t=iv(d); if(t){ const a=toMin(t[0]),b=toMin(t[1]); if(b>a?(m>=a&&m<b):(m>=a||m<b)) return {open:true,txt:"Open now · closes "+fmt12(t[1])}; }
+  const y=iv((d+6)%7); if(y){ const a=toMin(y[0]),b=toMin(y[1]); if(b<=a&&m<b) return {open:true,txt:"Open now · closes "+fmt12(y[1])}; }
+  if(t&&m<toMin(t[0])) return {open:false,txt:"Closed · opens "+fmt12(t[0])};
+  for(let i=1;i<=7;i++){ const k=(d+i)%7, v=iv(k); if(v) return {open:false,txt:"Closed · opens "+(i===1?"tomorrow ":DAYS[k]+" ")+fmt12(v[0])}; }
+  return {open:false,txt:"Closed"}; }
+const waLink=ph=>{ const d=String(ph||"").replace(/\D/g,""); const n=d.length===10&&/^[6-9]/.test(d)?"91"+d:d.length===12&&d.startsWith("91")?d:d.length===11&&d.startsWith("0")&&/^[6-9]/.test(d[1])?"91"+d.slice(1):""; return n?"https://wa.me/"+n:""; };
+const dirLink=t=>geoOk(t.geo)?`https://www.google.com/maps/dir/?api=1&destination=${t.geo.lat},${t.geo.lng}`:(t.shop&&t.shop.address)?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.shop.address+(t.location?", "+t.location:""))}`:"";
+const lsSeen=()=>{ try{ return JSON.parse(localStorage.getItem("tt_ls_seen")||"[]"); }catch{ return []; } };
+const lsRecent=()=>{ try{ return JSON.parse(localStorage.getItem("tt_ls_recent")||"[]"); }catch{ return []; } };
+const lsSaveRecent=q=>{ q=String(q||"").trim(); if(q.length<2) return; try{ localStorage.setItem("tt_ls_recent",JSON.stringify([q,...lsRecent().filter(x=>x.toLowerCase()!==q.toLowerCase())].slice(0,6))); }catch{} };
+const distKm=t=>UI.myLoc&&geoOk(t.geo)?geoDist(UI.myLoc,t.geo)/1000:null;
+const kmLbl=k=>k<1?Math.round(k*1000/10)*10+" m":k.toFixed(k<10?1:0)+" km";
+function shopPanel(t){
+  const sh=t.shop||{}, own=!!S.me&&(S.me===t.authorId||S.isOwner), st=openState(sh), wa=sh.whatsapp&&waLink(sh.phone), dir=dirLink(t), {d:today}=istNow();
+  const qs=LIVE().filter(x=>x.about===t.id).sort((a,b)=>lastAct(b)-lastAct(a));
+  const info=sh.address||sh.phone||hasHours(sh)||(sh.items||[]).length||sh.delivery;
+  const acts=[sh.phone?`<a class="btn sm" href="tel:${esc(String(sh.phone).replace(/[^+0-9]/g,""))}">📞 Call</a>`:"",wa?`<a class="btn sm" href="${esc(wa)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:"",dir?`<a class="btn sm" href="${esc(dir)}" target="_blank" rel="noopener">🧭 Directions</a>`:"",`<button type="button" class="btn sm" data-act="askShop" data-id="${t.id}">❓ Ask about this shop</button>`].join("");
+  const hours=hasHours(sh)?`<details class="sp-hours"><summary>${st?`<b class="sp-st ${st.open?"on":""}">${esc(st.txt)}</b>`:""}<span>All hours</span></summary><table>${[1,2,3,4,5,6,0].map(k=>{ const v=sh.hours[k]; return `<tr class="${k===today?"td":""}"><td>${DAYS_L[k]}</td><td>${v&&v!=="closed"?v.split("-").map(fmt12).join(" – "):"Closed"}</td></tr>`; }).join("")}</table><small>Times as listed for this shop, in India time.</small></details>`:"";
+  const items=(sh.items||[]).length?`<div class="sp-sec"><h3>Products and services</h3><ul class="sp-items">${sh.items.map(it=>`<li><span>${esc(it.n)}</span>${it.p?`<b>${esc(it.p)}</b>`:""}</li>`).join("")}</ul><small class="muted">Prices are as listed and may change. Check with the shop.</small></div>`:"";
+  const ask=`<div class="sp-sec"><div class="sp-h"><h3>Questions about this shop${qs.length?` · ${qs.length}`:""}</h3><button type="button" class="linkb" data-act="askShop" data-id="${t.id}">Ask</button></div>${qs.length?`<div class="list">${qs.slice(0,5).map(x=>{ const s2=stat(x.id); return `<a href="#t-${x.id}"><div class="txt"><b>${esc(cleanTitle(x))}</b><div class="meta"><span>${esc(nameOf(x.authorId))}</span><span>${s2.comments} answer${s2.comments===1?"":"s"}</span><span>${agoShort(x.createdAt)}</span></div></div></a>`; }).join("")}</div>`:`<p class="muted" style="margin:0;font-size:14px">No questions yet. Ask people who have been here about prices, service or quality.</p>`}</div>`;
+  const foot=`<div class="sp-f"><span>${sh.updatedAt?"Shop details updated "+agoShort(sh.updatedAt)+" · ":""}Listed by ${esc(nameOf(t.authorId))}. Not verified by TopicTalk.</span><span>${own?`<button type="button" class="linkb" data-act="shopEdit" data-id="${t.id}">✏️ Edit shop details</button>`:""}${S.me&&!own?`<button type="button" class="linkb" data-act="rpShop" data-id="${t.id}">🚩 Report wrong details</button>`:""}</span></div>`;
+  return `<section class="sp">${info?`<div class="sp-top">${hours||(sh.address?"":"")}${sh.address?`<div class="sp-addr">📍 ${esc(sh.address)}</div>`:""}${sh.delivery?`<div class="sp-tag">🚚 Home delivery available</div>`:""}</div>`:own?`<div class="sp-empty"><b>Add the shop’s details</b><span>Phone, address, opening hours and what they sell, so people can call or visit.</span><button type="button" class="btn pri sm" data-act="shopEdit" data-id="${t.id}">Add details</button></div>`:""}
+    <div class="sp-acts">${acts}</div>${items}${ask}${foot}</section>`;
+}
+function shopEditModal(t){
+  const sh=t.shop||{}, H=sh.hours||{};
+  const row=k=>{ const v=H[k], on=v&&v!=="closed", [a,b]=on?v.split("-"):["09:00","21:00"]; return `<div class="se-d" data-d="${k}"><label class="se-dn"><input type="checkbox" class="se-on" ${on||!Object.keys(H).length&&k!==0?"checked":""}> ${DAYS_L[k]}</label><input type="time" class="f se-a" value="${a}"><span>to</span><input type="time" class="f se-b" value="${b}"></div>`; };
+  openModal(`<h2>Shop details</h2><p class="muted" style="margin:-6px 0 4px;font-size:14px">Only add what you know is correct. Everyone can see these.</p>
+    <label class="l">Address<input class="f" id="se-addr" maxlength="200" value="${esc(sh.address||"")}" placeholder="Door no, street, landmark"></label>
+    <label class="l">Shop phone number<input class="f" id="se-ph" type="tel" maxlength="20" value="${esc(sh.phone||"")}" placeholder="e.g. 98765 43210"></label>
+    <label class="privrow"><input type="checkbox" id="se-wa" ${sh.whatsapp?"checked":""}> <span>This number is on WhatsApp</span></label>
+    <label class="privrow"><input type="checkbox" id="se-del" ${sh.delivery?"checked":""}> <span>They do home delivery</span></label>
+    <div class="l">Opening hours <small class="muted">Untick a day when the shop is closed</small><div class="se-hours">${[1,2,3,4,5,6,0].map(row).join("")}</div><button type="button" class="linkb" data-act="seCopy">Use Monday’s hours for every open day</button></div>
+    <label class="l">Products and services <small class="muted">one per line, add a price after | if you know it</small><textarea class="f" id="se-items" rows="5" maxlength="3000" placeholder="Phone screen guard | ₹150&#10;Laptop service | from ₹500&#10;Fresh bread">${esc((sh.items||[]).map(it=>it.n+(it.p?" | "+it.p:"")).join("\n"))}</textarea></label>
+    <label class="privrow"><input type="checkbox" id="se-nohours" ${Object.keys(H).length&&!hasHours(sh)?"checked":""}> <span>I don’t know the opening hours</span></label>
+    <div class="hint" id="se-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="shopSave" data-id="${t.id}">Save details</button></div>`);
+}
+function lsMatch(t,toks){ if(!toks.length) return 1; const sh=t.shop||{};
+  const F=[[t.title,6],[(sh.items||[]).map(i=>i.n).join(" "),4],[t.category,3],[(t.tags||[]).join(" "),2],[sh.address,1],[t.desc,1]].map(([v,w])=>[String(v||"").toLowerCase(),w]);
+  let sc=0; for(const k of toks){ let best=0; for(const [v,w] of F){ if(!v) continue; if(new RegExp("(^|[^a-z0-9])"+k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).test(v)) best=Math.max(best,w*2); else if(v.includes(k)) best=Math.max(best,w); } if(!best) return 0; sc+=best; } return sc; }
+function lsTokens(q,hp){ const stop=new Set(["near","me","in","the","a","an","best","good","shop","shops","store","stores","for","and","of","to","where","is","nearby","around","cheap","affordable"]); if(hp) normTok(hp.name).forEach(w=>stop.add(w));
+  return String(q||"").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w&&w.length>1&&!stop.has(w)); }
+function shopRow(t,hit){ const s2=stat(t.id), st=openState(t.shop), km=distKm(t), sh=t.shop||{};
+  let snip=""; if(hit&&hit.length){ const it=(sh.items||[]).find(i=>hit.some(k=>i.n.toLowerCase().includes(k))); if(it) snip=`<div class="shr-s">Sells: ${esc(it.n)}${it.p?" · "+esc(it.p):""}</div>`; }
+  return `<a class="shr" href="#t-${t.id}"><i class="shr-ic" style="--h:${catHue(t.category)}">${HF_IC[t.category]||"🏪"}</i><div class="shr-b"><b>${esc(t.title)}</b><div class="shr-m"><span>${esc(t.category)}</span>${st?`<span class="shr-o ${st.open?"on":""}">${st.open?"Open now":"Closed"}</span>`:""}${km!=null?`<span>${kmLbl(km)}</span>`:""}${sh.delivery?`<span>🚚 Delivery</span>`:""}</div>${snip}</div><div class="shr-r">${s2.reviews?`<b>★ ${s2.avg.toFixed(1)}</b><small>${s2.reviews} review${s2.reviews===1?"":"s"}</small>`:`<small>No reviews yet</small>`}</div></a>`; }
+function lsResults(hp){
+  const all=LIVE().filter(t=>t.kind==="place"&&inPlace(t,hp)), q=(UI.lsQ||"").trim(), toks=lsTokens(q,hp), cat=UI.lsCat||"All", F=UI.lsF||{};
+  let list=all.map(t=>[t,lsMatch(t,toks)]).filter(x=>x[1]>0).map(x=>x[0]);
+  if(cat!=="All") list=list.filter(t=>t.category===cat);
+  if(F.open) list=list.filter(t=>openState(t.shop)?.open); if(F.rated) list=list.filter(t=>stat(t.id).reviews); if(F.del) list=list.filter(t=>t.shop&&t.shop.delivery);
+  const sort=UI.lsSort||(toks.length?"rel":"top"), sc=new Map(list.map(t=>[t.id,lsMatch(t,toks)]));
+  const byTop=(a,b)=>(stat(b.id).reviews?1:0)-(stat(a.id).reviews?1:0)||rvScore(b)-rvScore(a)||a.title.localeCompare(b.title);
+  list.sort(sort==="rel"?((a,b)=>sc.get(b.id)-sc.get(a.id)||byTop(a,b)):sort==="new"?((a,b)=>b.createdAt-a.createdAt):sort==="upd"?((a,b)=>((b.shop&&b.shop.updatedAt)||b.createdAt)-((a.shop&&a.shop.updatedAt)||a.createdAt)):sort==="near"?((a,b)=>(distKm(a)??1e9)-(distKm(b)??1e9)):byTop);
+  UI._lsList=list;
+  const filtered=toks.length||cat!=="All"||F.open||F.rated||F.del;
+  if(UI.lsView==="map"){ const pinned=list.filter(t=>geoOk(t.geo)); return `<div class="ls-cnt">${pinned.length} of ${list.length} shop${list.length===1?"":"s"} have a map pin</div><div id="ls-map" class="ls-map" role="img" aria-label="Map of shops"></div>`; }
+  if(!list.length) return emptyBox(q?`No shops match “${esc(q)}”`:"No shops match these filters","Try a shorter word or another category. Or ask people nearby, they often know a good shop.",`<button class="btn pri sm" data-act="newQuestion" data-help="1" data-title="${esc(q?"Where can I find "+q+"?":"")}">🙋 Ask people nearby</button>${filtered?` <button class="btn sm" data-act="lsReset">Clear filters</button>`:""}`);
+  let disc="";
+  if(!filtered){ const row4=(title,arr)=>arr.length?`<section class="ls-sec"><h3>${title}</h3><div class="list shl">${arr.slice(0,4).map(t=>shopRow(t)).join("")}</div></section>`:"";
+    const wk=Date.now()-14*864e5, seen=lsSeen().map(id=>S.topics.get(id)).filter(t=>t&&t.kind==="place"&&inPlace(t,hp));
+    disc=row4("⭐ Highly rated",all.filter(t=>stat(t.id).reviews).sort(byTop))+row4("🆕 Recently added",all.filter(t=>t.createdAt>wk).sort((a,b)=>b.createdAt-a.createdAt))+row4("👀 You viewed recently",seen)+row4("🔔 Shops you follow",all.filter(t=>IX.myFollows.has(t.id)));
+  }
+  const n=UI.lsN||20;
+  return disc+`<section class="ls-sec"><h3>${filtered?`${list.length} result${list.length===1?"":"s"}`:"All shops"}</h3><div class="list shl">${list.slice(0,n).map(t=>shopRow(t,toks)).join("")}</div>${list.length>n?`<button type="button" class="btn hmore" data-act="lsMore">Show more</button>`:""}</section>`;
+}
+async function lsMapMount(){ const el=$("#ls-map"); if(!el||el._map) return; let LF; try{ LF=await leaflet(); }catch{ el.innerHTML=`<p class="muted" style="padding:16px">The map couldn’t load. Check your connection.</p>`; return; } if(!el.isConnected) return;
+  const pts=(UI._lsList||[]).filter(t=>geoOk(t.geo)); const m=LF.map(el,{scrollWheelZoom:false}); el._map=m;
+  m.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
+  LF.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(m);
+  const ic=LF.divIcon({className:"ttpin",html:"<span></span>",iconSize:[30,42],iconAnchor:[15,40]});
+  pts.forEach(t=>{ const s2=stat(t.id); LF.marker([t.geo.lat,t.geo.lng],{icon:ic,title:t.title}).addTo(m).bindPopup(`<a href="#t-${t.id}"><b>${esc(t.title)}</b></a><br>${esc(t.category)}${s2.reviews?` · ★ ${s2.avg.toFixed(1)}`:""}`); });
+  if(UI.myLoc) LF.circleMarker([UI.myLoc.lat,UI.myLoc.lng],{radius:7,color:"#178A4B",fillOpacity:.9}).addTo(m).bindPopup("You");
+  if(pts.length) m.fitBounds(pts.map(t=>[t.geo.lat,t.geo.lng]),{padding:[30,30],maxZoom:16}); else m.setView([13.0835,79.6705],13); }
 function localShops(hp,ha){
-  const all=LIVE().filter(t=>t.kind==="place"&&inPlace(t,hp));
-  const cats=["All",...[...new Set(all.map(t=>t.category))].sort()], cat=cats.includes(UI.lsCat)?UI.lsCat:"All";
-  const items=cat==="All"?all:all.filter(t=>t.category===cat);
-  const rated=items.filter(t=>stat(t.id).reviews).sort((a,b)=>rvScore(b)-rvScore(a)), unrated=items.filter(t=>!stat(t.id).reviews).sort((a,b)=>a.title.localeCompare(b.title));
-  const head=`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${all.length} place${all.length===1?"":"s"}</span><button type="button" class="btn pri sm" data-act="reviewPick">+ Add a shop</button></div>`;
+  const all=LIVE().filter(t=>t.kind==="place"&&inPlace(t,hp)), F=UI.lsF||{}, cat=UI.lsCat||"All";
+  const cc=new Map(); all.forEach(t=>cc.set(t.category,(cc.get(t.category)||0)+1)); const cats=[...cc].sort((a,b)=>b[1]-a[1]);
+  const head=`<div class="harea"><span>📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b> · ${all.length} shop${all.length===1?"":"s"} and places · <button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button></span><button type="button" class="btn pri sm" data-act="reviewPick">+ Add a shop</button></div>`;
   if(!all.length) return head+emptyBox("No shops here yet","Add a shop or place you know. Paste its Google Maps link to put it on the map, then rate it.",`<button class="btn pri sm" data-act="reviewPick">+ Add a shop</button>`);
-  return head+(cats.length>2?`<div class="tagrow catrow" style="margin-bottom:12px">${cats.map(c=>`<button class="chip ${cat===c?"on":""}" data-act="lsCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`:"")
-    +(rated.length?`<div class="list rvlist">${rated.map(rvRow).join("")}</div>`:"")
-    +(unrated.length?`<section class="sec"><div class="sech"><h2>Waiting for a first review</h2></div><div class="list">${unrated.map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${catChip(t.category)}<span>No reviews yet</span></div></div><span class="btn sm">★ Rate it</span></a>`).join("")}</div></section>`:"");
+  const rec=lsRecent(), q=UI.lsQ||"";
+  const anyH=all.some(t=>hasHours(t.shop)), anyD=all.some(t=>t.shop&&t.shop.delivery), anyG=all.some(t=>geoOk(t.geo));
+  const chip=(k,l)=>`<button type="button" class="chip ${F[k]?"on":""}" data-act="lsF" data-k="${k}" aria-pressed="${!!F[k]}">${l}</button>`;
+  const sorts=[["top","Best rated"],["new","Newest"],["upd","Recently updated"],...(anyG?[["near","Nearest"]]:[]),...(q.trim()?[["rel","Best match"]]:[])], so=UI.lsSort||(q.trim()?"rel":"top");
+  return head+`<div class="ls-s"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="ls-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="Search a shop, product or service" aria-label="Search shops" value="${esc(q)}"></div>
+    ${!q&&rec.length?`<div class="ls-rec"><span>Recent:</span>${rec.map(r=>`<button type="button" class="chip" data-act="lsRecent" data-v="${esc(r)}">${esc(r)}</button>`).join("")}<button type="button" class="linkb" data-act="lsRecentClear">Clear</button></div>`:""}
+    <div class="tagrow catrow ls-cats">${[["All",all.length],...cats].map(([c,n])=>`<button class="chip ${cat===c?"on":""}" data-act="lsCat" data-v="${esc(c)}">${c==="All"?"All":(HF_IC[c]||"🏪")+" "+esc(c)} <small>${n}</small></button>`).join("")}</div>
+    <div class="ls-fl">${anyH?chip("open","Open now"):""}${chip("rated","Has reviews")}${anyD?chip("del","Delivery"):""}<span class="ls-sp"></span><label class="ls-so">Sort <select id="ls-sort" aria-label="Sort shops">${sorts.map(([k,l])=>`<option value="${k}" ${so===k?"selected":""}>${l}</option>`).join("")}</select></label>${anyG?`<span class="seg ls-v"><button type="button" class="${UI.lsView!=="map"?"on":""}" data-act="lsView" data-v="list">List</button><button type="button" class="${UI.lsView==="map"?"on":""}" data-act="lsView" data-v="map">Map</button></span>`:""}</div>
+    ${so==="near"&&!UI.myLoc?`<div class="ls-loc"><span>To sort by distance, allow your location. It stays on your phone.</span><button type="button" class="btn sm" data-act="lsLoc">📍 Use my location</button></div>`:""}
+    <div id="ls-res">${lsResults(hp)}</div>`;
 }
 function localNews(hp,ha){
   const list=LIVE().filter(t=>t.kind==="news"&&inPlace(t,hp)).sort((a,b)=>b.createdAt-a.createdAt);
@@ -2857,9 +2978,11 @@ function vTopic(id){
     ${parent&&oc?`<div class="origin">Started from ${who(oc.authorId)}’s comment in <a href="#t-${parent.id}~${oc.id}" style="color:var(--brand-deep);font-weight:600">${esc(parent.title)}</a>: <q>${esc(oc.text.slice(0,180))}${oc.text.length>180?"…":""}</q></div>`:""}
     ${(()=>{ const gs=(t.taggedGroups||[]).map(g=>S.groups.get(g)).filter(Boolean), us=t.tagged||[]; if(!gs.length&&!us.length) return "";
       return `<div class="withrow">With ${[...gs.map(g=>`<a href="#g-${esc(g.id)}">👥 ${esc(g.name)}</a>`),...us.map(who)].join(", ")}</div>`; })()}
+    ${t.about&&S.topics.get(t.about)?`<div class="withrow">🏪 About <a href="#t-${esc(t.about)}">${esc(S.topics.get(t.about).title)}</a></div>`:""}
     ${isHelp(t)&&!t.deletedAt?hfBox(t):""}
     ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>`:""}${t.deletedAt?"":videoCards((t.title||"")+" "+(t.desc||""))}
     ${t.deletedAt?"":phStrip([...(t.media||[]),...(IX.rByTopic.get(id)||[]).flatMap(r=>r.media||[])].slice(0,12))}
+    ${t.kind==="place"&&!t.deletedAt?shopPanel(t):""}
     ${t.kind==="place"&&geoOk(t.geo)&&!t.deletedAt?`<div class="tmapw"><div class="tmap" data-k="tm-${esc(id)}-${t.geo.lat},${t.geo.lng}" data-lat="${t.geo.lat}" data-lng="${t.geo.lng}" data-t="${esc(t.title)}" role="img" aria-label="Map showing where ${esc(t.title)} is"></div><div class="tmap-f"><a href="${geoLink(t.geo)}" target="_blank" rel="noopener">Open in Google Maps ↗</a>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div>`:""}
     ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
@@ -3454,7 +3577,7 @@ function insertToken(ta,ch){
   ta.focus(); ta.setRangeText(pad+ch, s0, ta.selectionEnd, "end"); ta.dispatchEvent(new Event("input",{bubbles:true}));
 }
 let draftT=0;
-document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ if(e.target.tagName==="TEXTAREA"&&/\n/.test(e.target.value)) e.target.value=e.target.value.replace(/\s*\n+\s*/g," "); locSuggest(); if(UI.help&&!UI.catTouched){ const g=catGuess(e.target.value), cs=document.querySelector("#n-cat"); if(cs) cs.value=g||"Other"; } clearTimeout(UI.simT); UI.simT=setTimeout(simRender,180); } if(e.target.id==="rp-name"){ rpHits(); const f=$("#gp-find"); if(f) f.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent([e.target.value.trim(),$("#rp-loc")?.value||""].filter(Boolean).join(" ")||"Arakkonam"); } if(e.target.id==="gp-link"){ clearTimeout(UI.gpT); const v=e.target.value; UI.gpT=setTimeout(()=>gpRead(v),250); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
+document.addEventListener("input",e=>{ if(/^dur-[dhm]$/.test(e.target.id)){ durClamp(e.target); return; } if(e.target.id==="n-title"){ if(e.target.tagName==="TEXTAREA"&&/\n/.test(e.target.value)) e.target.value=e.target.value.replace(/\s*\n+\s*/g," "); locSuggest(); if(UI.help&&!UI.catTouched){ const g=catGuess(e.target.value), cs=document.querySelector("#n-cat"); if(cs) cs.value=g||"Other"; } clearTimeout(UI.simT); UI.simT=setTimeout(simRender,180); } if(e.target.id==="rp-name"){ rpHits(); const f=$("#gp-find"); if(f) f.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent([e.target.value.trim(),$("#rp-loc")?.value||""].filter(Boolean).join(" ")||"Arakkonam"); } if(e.target.id==="gp-link"){ clearTimeout(UI.gpT); const v=e.target.value; UI.gpT=setTimeout(()=>gpRead(v),250); } if(e.target.id==="mg-q"){ mgRender(); } if(e.target.id==="ls-q"){ UI.lsQ=e.target.value; UI.lsSort=null; UI.lsN=20; const hp=homePlace(); const r=$("#ls-res"); if(r&&hp){ r.innerHTML=lsResults(hp); enhance(r); } clearTimeout(UI.lsT); UI.lsT=setTimeout(()=>lsSaveRecent(UI.lsQ),2500); } if(e.target.id==="n-loc"){ UI.locVal=e.target.value; const pl=placeOf(e.target.value), n=document.querySelector("#n-locbox .locnote"); if(n&&pl) n.innerHTML=`📍 <b>${esc(pl.label)}${pl.state?", "+esc(pl.state):""}</b> · people in this area will see it locally`; } if(e.target.id==="pl-q"){ plRender(e.target.value); return; }
   const ta=e.target; if(!(ta instanceof HTMLTextAreaElement||ta instanceof HTMLInputElement)) return;
   TY.last=Date.now();
   { const jp=UI.justPosted; if(jp&&ta.id===jp.id&&Date.now()-jp.t<3000&&jp.text&&ta.value.trim()===jp.text){ ta.value=""; try{ localStorage.removeItem(draftKey(ta)); }catch{} syncRich(ta); return; } }
@@ -3532,7 +3655,8 @@ function render(){
     view.innerHTML=(r==="home"||own?"":`<button type="button" class="backbtn${tab?" bk-tab":""}" data-act="goBack" aria-label="Go back">← Back</button>`)+html; }
   for(const id in keep){ const jp=UI.justPosted; if(jp&&id===jp.id&&Date.now()-jp.t<3000&&String(keep[id]).trim()===jp.text) continue; const el=document.getElementById(id); if(el) el.value=keep[id]; }
   if(UI.whyPrefill) applyWhy();
-  enhance(view); mapsMount(view);
+  enhance(view); mapsMount(view); if($("#ls-map")) lsMapMount();
+  { const rt=parseRoute(); if(rt.startsWith("t-")){ const tv=S.topics.get(rt.slice(2).split("~")[0]); if(tv&&tv.kind==="place"){ const sn=lsSeen(); if(sn[0]!==tv.id) try{ localStorage.setItem("tt_ls_seen",JSON.stringify([tv.id,...sn.filter(x=>x!==tv.id)].slice(0,12))); }catch{} } } }
   view.querySelectorAll(".htabs").forEach(tb=>{ const f=()=>tb.classList.toggle("ov",tb.scrollWidth>tb.clientWidth+2&&tb.scrollLeft+tb.clientWidth<tb.scrollWidth-4); f(); if(!tb._ov){ tb._ov=1; tb.addEventListener("scroll",f,{passive:true}); } });
   markSeen(); maybeAskHome();
   if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
@@ -3880,11 +4004,11 @@ const catSelect=(id,cat)=>`<select class="f" id="${id}">${CATS.map(c=>`<option $
 function topicModal(o={}){ PH.tn=[];
   const fdk=(o.branchFrom||o.watch)?null:(o.kind==="question"?(o.help?"help":"ask"):"topic"); let fdRestored=false;
   if(fdk&&!o.title&&!o.desc&&!o.loc){ const d=fdLoad(fdk); if(d){ o={...o,title:d.title,desc:d.desc,category:(d.category&&d.category!=="Other"?d.category:o.category),loc:d.loc||o.loc,budget:d.budget,when:d.when,tags:d.tags||o.tags}; fdRestored=true; } }
-  const fdNote=()=>{ UI.fdKind=fdk; if(fdRestored){ const h=$("#modal h2"); if(h) h.insertAdjacentHTML("afterend",'<div class="fd-note">Draft restored · <button type="button" class="linkb" data-act="fdClear">Start fresh</button></div>'); } };
+  const fdNote=()=>{ UI.fdKind=fdk; if(UI.newAbout){ const sh=S.topics.get(UI.newAbout), h=$("#modal h2"); if(sh&&h) h.insertAdjacentHTML("afterend",`<div class="fd-note">🏪 About <b>${esc(sh.title)}</b>. It will show on the shop’s page.</div>`); } if(fdRestored){ const h=$("#modal h2"); if(h) h.insertAdjacentHTML("afterend",'<div class="fd-note">Draft restored · <button type="button" class="linkb" data-act="fdClear">Start fresh</button></div>'); } };
   const b=o.branchFrom&&S.comments.get(o.branchFrom), bt=b&&S.topics.get(b.topicId);
   const cat=o.category||(bt?bt.category:"Tech");
   const tags=o.tags||(bt?(bt.tags||[]).slice(0,3).join(" "):"");
-  UI.newKind=o.kind||"topic"; UI.locMode=(o.loc||bt?.location)?"place":null; UI.locVal=o.loc||bt?.location||""; UI.locDis=new Set(); UI.tagged=[]; UI.taggedG=[]; UI.bn="";
+  UI.newAbout=o.about||null; UI.newKind=o.kind||"topic"; UI.locMode=(o.loc||bt?.location)?"place":null; UI.locVal=o.loc||bt?.location||""; UI.locDis=new Set(); UI.tagged=[]; UI.taggedG=[]; UI.bn="";
   UI.newWatch=!!o.watch; UI.fromWatch=!!o.watch; UI.help=!!o.help&&o.kind==="question"; UI.hfWhen=o.when||""; UI.catTouched=!!(o.category&&o.category!=="Other");
   const ask=o.kind==="question"&&!b&&!o.watch, gpre=o.groupId??curGroup(), gName=gpre&&S.groups.get(gpre)?.name;
   if(ask){ const hf=UI.help;
@@ -4274,7 +4398,26 @@ document.addEventListener("click", async e=>{
     case "rvHome": UI.exPlace=null; UI.rvNear=true; schedule(); break;
     case "rvCat": UI.rvCat=el.dataset.v; schedule(); break;
     case "lSub": UI.lsub=el.dataset.v; UI.fyN=10; schedule(); break;
-    case "lsCat": UI.lsCat=el.dataset.v; schedule(); break;
+    case "lsCat": UI.lsCat=el.dataset.v; UI.lsN=20; schedule(); break;
+    case "lsF": { UI.lsF={...(UI.lsF||{})}; UI.lsF[el.dataset.k]=!UI.lsF[el.dataset.k]; UI.lsN=20; schedule(); break; }
+    case "lsView": UI.lsView=el.dataset.v; schedule(); break;
+    case "lsMore": UI.lsN=(UI.lsN||20)+20; schedule(); break;
+    case "lsReset": UI.lsQ=""; UI.lsCat="All"; UI.lsF={}; UI.lsSort=null; schedule(); break;
+    case "lsRecent": UI.lsQ=el.dataset.v; lsSaveRecent(UI.lsQ); UI.lsSort=null; schedule(); break;
+    case "lsRecentClear": try{ localStorage.removeItem("tt_ls_recent"); }catch{} schedule(); break;
+    case "lsLoc": { if(!navigator.geolocation){ toast("This browser can’t share your location."); break; } el.disabled=true;
+      navigator.geolocation.getCurrentPosition(p=>{ UI.myLoc={lat:p.coords.latitude,lng:p.coords.longitude}; UI.lsSort="near"; schedule(); },()=>{ el.disabled=false; toast("Location is off. You can still pick your area manually."); },{timeout:10000,maximumAge:300000}); break; }
+    case "rpShop": reportSheet("topic",id); setTimeout(()=>{ const r=document.querySelector('#rp-list input[value="wronginfo"]'); if(r){ r.checked=true; UI.rp.reason="wronginfo"; } },0); break;
+    case "shopEdit": { const t=S.topics.get(id); if(!t||!(S.me===t.authorId||S.isOwner)) break; shopEditModal(t); break; }
+    case "seCopy": { const f=document.querySelector('.se-d[data-d="1"]'); if(!f) break; const a=f.querySelector(".se-a").value, b=f.querySelector(".se-b").value; document.querySelectorAll(".se-d").forEach(r=>{ if(r.querySelector(".se-on").checked){ r.querySelector(".se-a").value=a; r.querySelector(".se-b").value=b; } }); break; }
+    case "shopSave": { const t=S.topics.get(id); if(!t) break; const err=$("#se-err"); const ph=($("#se-ph").value||"").trim();
+      if(ph&&(!/^\+?[0-9 ()-]{6,20}$/.test(ph)||ph.replace(/\D/g,"").length<6)){ err.textContent="That phone number doesn’t look right."; break; }
+      const hours={}; let bad=false; if(!$("#se-nohours").checked) document.querySelectorAll(".se-d").forEach(r=>{ const k=r.dataset.d, on=r.querySelector(".se-on").checked, a=r.querySelector(".se-a").value, b=r.querySelector(".se-b").value; if(!on){ hours[k]="closed"; return; } if(!/^\d\d:\d\d$/.test(a)||!/^\d\d:\d\d$/.test(b)||a===b){ bad=true; return; } hours[k]=a+"-"+b; });
+      else for(let k=0;k<7;k++) hours[k]="";
+      if(bad){ err.textContent="Check the opening and closing times for each open day."; break; }
+      const items=($("#se-items").value||"").split("\n").map(l=>l.trim()).filter(Boolean).slice(0,40).map(l=>{ const [n,...p]=l.split("|"); const o={n:n.trim().slice(0,80)}; const pr=p.join("|").trim().slice(0,40); if(pr) o.p=pr; return o; }).filter(o=>o.n);
+      const shop={address:($("#se-addr").value||"").trim().slice(0,200),phone:ph,whatsapp:!!$("#se-wa").checked&&!!ph,delivery:!!$("#se-del").checked,hours,items,updatedAt:Date.now()};
+      el.disabled=true; if(await W(()=>db.doc("topics/"+id).update({shop}))){ closeModal(true); toast("Shop details saved"); } else el.disabled=false; break; }
     case "newsNew": if(!(await gate())) break; if(!S.isOwner){ toast("Only the TopicTalk team can post news."); break; } newsModal(); break;
     case "newsSave": { if(!S.isOwner) break; const title=($("#nw-title").value||"").trim(), desc=($("#nw-desc").value||"").trim(), err=$("#nw-err"), pl=placeOf($("#nw-loc").value);
       if(title.length<5){ err.textContent="Write a headline (at least 5 letters)."; break; } if(!pl){ err.textContent="Choose the area from the list."; break; }
@@ -4566,7 +4709,7 @@ document.addEventListener("click", async e=>{
       break; }
     case "loginNow": await gate(); break;
     case "simOpen": closeModal(false); location.hash="t-"+id; break;
-    case "askAbout": { const t=S.topics.get(id); if(!t) break; topicModal({kind:"question",category:t.category,title:`Is ${t.title} worth it?`.slice(0,120),loc:t.location||"",groupId:t.groupId||undefined}); break; }
+    case "askAbout": case "askShop": { const t=S.topics.get(id); if(!t) break; if(!(await gate())) break; topicModal({kind:"question",category:t.category,title:(t.kind==="place"?`Has anyone been to ${t.title}?`:`Is ${t.title} worth it?`).slice(0,120),loc:t.location||"",groupId:t.groupId||undefined,about:t.kind==="place"?t.id:undefined}); break; }
     case "compareIt": { const t=S.topics.get(id); if(!t) break; if(!(await gate())) break; const nm=t.title.slice(0,40); battleModal({q:`${nm} or …?`.slice(0,100),a:nm,cat:t.category,loc:t.location||"",groupId:t.groupId||undefined}); setTimeout(()=>{ const b=$("#bt-b"); if(b) b.focus(); },60); break; }
     case "q2battle": if(!(await gate())) break; battleModal({qTopic:id}); break;
     case "predFromBattle": { const q0=($("#bt-q")?.value||"").trim(); closeModal(false); if(!(await gate())) break; predModal({title:q0&&q0!=="Who’s right?"?q0:"",groupId:el.dataset.group||undefined}); break; }
@@ -4737,7 +4880,7 @@ document.addEventListener("click", async e=>{
         if(lk){ if(!videoLinks(lk).length){ err.textContent="Paste a YouTube or Instagram link, or leave the link box empty."; break; } desc=(videoLinks(lk)[0].url+"\n"+desc).trim().slice(0,2000); }
         else if(UI.newWatch&&!(PH.tn||[]).length){ err.textContent="Add a YouTube or Instagram link, or a photo."; break; } }
       const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:loc,authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
-        groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null)};
+        groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null),...(UI.newAbout&&!oc&&S.topics.has(UI.newAbout)?{about:UI.newAbout}:{})};
       if(UI.help&&!oc){ t.help=true; const bu=($("#n-budget")?.value||"").trim().slice(0,30); if(bu) t.budget=bu; if(UI.hfWhen) t.when=UI.hfWhen; }
       let acc=$("#n-acc")?.value||"open"; if(acc==="selected") acc="invite";
       if(acc!=="open"&&t.groupId){ err.textContent="Choose a group or a privacy level, not both."; break; }
@@ -4897,7 +5040,8 @@ document.addEventListener("change", async e=>{
     UI.dp=c.toDataURL("image/jpeg",0.82); $("#h-dp").innerHTML=`<img class="av lg" src="${UI.dp}" alt="">`; if(err) err.textContent="";
   }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t use that photo."; }
 });
-document.addEventListener("change",e=>{ if(e.target.id==="n-cat") UI.catTouched=true; });
+document.addEventListener("change",e=>{ if(e.target.id==="n-cat") UI.catTouched=true; if(e.target.id==="ls-sort"){ UI.lsSort=e.target.value; schedule(); } });
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="ls-q"){ e.preventDefault(); lsSaveRecent(e.target.value); e.target.blur(); } });
 document.addEventListener("input",e=>{ if(UI.fdKind&&/^n-(title|desc|budget|tags|loc)$/.test(e.target.id||"")){ clearTimeout(UI.fdT); UI.fdT=setTimeout(fdSave,400); } });
 document.addEventListener("change",e=>{ if(UI.fdKind&&/^n-(cat|loc)$/.test(e.target.id||"")) fdSave(); });
 document.addEventListener("click",e=>{ if(UI.fdKind&&e.target.closest&&e.target.closest("#modal [data-act=hfWhen],#modal #n-locbox,#modal #n-locseg")) setTimeout(fdSave,150); });

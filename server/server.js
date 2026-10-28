@@ -192,6 +192,39 @@ function snapshotFor(uid) {
   return cols;
 }
 
+// ---------- shop details ----------
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+function shopOK(x, kind) {
+  if (kind !== "place") bad("Shop details are only for places.");
+  if (typeof x !== "object" || Array.isArray(x)) bad("Those shop details aren’t valid.");
+  const keys = ["address", "phone", "whatsapp", "hours", "items", "delivery", "updatedAt"];
+  if (Object.keys(x).some(k => !keys.includes(k))) bad("Those shop details aren’t valid.");
+  const str = (v, n) => v == null || (typeof v === "string" && v.length <= n);
+  if (!str(x.address, 200)) bad("Keep the address under 200 characters.");
+  if (x.phone != null && x.phone !== "" && (typeof x.phone !== "string" || !/^\+?[0-9 ()-]{6,20}$/.test(x.phone) || x.phone.replace(/\D/g, "").length < 6)) bad("That phone number doesn’t look right.");
+  if (x.whatsapp != null && typeof x.whatsapp !== "boolean") bad();
+  if (x.delivery != null && typeof x.delivery !== "boolean") bad();
+  if (x.updatedAt != null && !Number.isFinite(x.updatedAt)) bad();
+  if (x.hours != null) {
+    if (typeof x.hours !== "object" || Array.isArray(x.hours)) bad("Those opening hours aren’t valid.");
+    for (const [d, v] of Object.entries(x.hours)) {
+      if (!/^[0-6]$/.test(d)) bad("Those opening hours aren’t valid.");
+      if (v === "" || v === "closed") continue;
+      const m = typeof v === "string" && v.split("-");
+      if (!m || m.length !== 2 || !HHMM.test(m[0]) || !HHMM.test(m[1])) bad("Those opening hours aren’t valid.");
+    }
+  }
+  if (x.items != null) {
+    if (!Array.isArray(x.items) || x.items.length > 40) bad("Up to 40 products and services.");
+    for (const it of x.items) {
+      if (!it || typeof it !== "object" || Object.keys(it).some(k => !["n", "p", "k"].includes(k))) bad("A product or service isn’t valid.");
+      if (typeof it.n !== "string" || !it.n.trim() || it.n.length > 80) bad("Each product or service needs a name under 80 characters.");
+      if (!str(it.p, 40)) bad("Keep prices under 40 characters.");
+      if (it.k != null && !["product", "service"].includes(it.k)) bad();
+    }
+  }
+}
+
 // ---------- write rules ----------
 const ID_RE = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
 const HANDLE_RE = /^[A-Za-z0-9_]{3,24}$/;
@@ -220,7 +253,7 @@ function check(op, col, id, prev, next, patch, uid) {
     if (!uid || next.reporterId !== uid) deny();
     if (!["topic", "comment", "user"].includes(next.type) || typeof next.targetId !== "string" || !next.targetId) bad();
     if (id !== `${uid}__${next.type}__${next.targetId}`) bad();
-    if (!["spam", "abuse", "hate", "sexual", "violence", "misinformation", "privacy", "other"].includes(next.reason)) bad();
+    if (!["spam", "abuse", "hate", "sexual", "violence", "misinformation", "privacy", "wronginfo", "other"].includes(next.reason)) bad();
     if (typeof next.note === "string" && next.note.length > 300) bad("Keep the note under 300 characters.");
     const tgt = next.type === "topic" ? DOCS.topics.get(next.targetId) : next.type === "comment" ? DOCS.comments.get(next.targetId) : DOCS.handles.get(next.targetId);
     if (!tgt) bad("That no longer exists.");
@@ -238,6 +271,10 @@ function check(op, col, id, prev, next, patch, uid) {
       // a place's map pin: just two numbers
       if (next && next.geo != null) { const g = next.geo; if (typeof g !== "object" || Object.keys(g).some(k => k !== "lat" && k !== "lng") || !Number.isFinite(g.lat) || !Number.isFinite(g.lng) || Math.abs(g.lat) > 90 || Math.abs(g.lng) > 180) bad("That map pin isn’t valid."); }
       if (next && !OPEN(next.access) && next.groupId) bad("A topic can be in a group or private, not both.");
+      // shop details on a place: plain text only, checked field by field
+      if (next && next.shop != null) shopOK(next.shop, next.kind);
+      // a question about a shop points at that shop
+      if (next && next.about != null && (typeof next.about !== "string" || !(DOCS.topics.get(next.about) || {}).kind || DOCS.topics.get(next.about).kind !== "place")) bad("That shop wasn’t found.");
       if (next && next.kind === "news" && !admin && (!prev || prev.kind !== "news")) deny("Only the TopicTalk team can post news.");
       if (!prev && next.parentId) { const par = DOCS.topics.get(next.parentId); if (par && !topicVisible(par, uid)) deny("You can’t branch from a topic you can’t see."); }
       if (!prev && next.kind === "place" && !admin) { let n = 0; const since = Date.now() - 864e5; for (const t of DOCS.topics.values()) if (t.authorId === uid && t.kind === "place" && t.createdAt > since) n++; if (n >= 5) deny("You can add up to 5 places a day. Try again tomorrow."); }
