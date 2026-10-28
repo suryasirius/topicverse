@@ -1362,6 +1362,20 @@ body{font-size:15.5px;letter-spacing:-.003em}
 .fcard,.focard,.excard,.list,.panel,.st-card,.gcard,.sbox{border-radius:16px!important}
 .btn.sm,.chip,.tag{border-radius:999px}
 .fcard p,.fbody,.fdesc,.cbody,.ctext{font-weight:400}
+
+/* ---- MOBILE v2 ---- */
+.hf-all{display:block;width:100%;margin-top:8px;padding:8px 2px;border:0;background:none;text-align:left;font:600 13.5px var(--f-body);color:color-mix(in srgb,var(--ink) 82%,var(--muted));cursor:pointer}.hf-all:hover{color:var(--brand-deep)}
+.hf-loc .hf-row .btn.sm,.home2 .hf-loc .hf-row a.btn.sm,.hf-loc .hf-row a.btn.pri.sm{height:30px!important;min-height:30px!important;padding:0 12px!important;font-size:13px!important}
+@media(max-width:720px){
+  .htabs{scroll-padding-inline:16px;padding-left:2px!important}
+  .htabs button{flex:none}
+  .hf-loc .hf-row small{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+  .hfeed,.home2 .hfeed{gap:14px!important}
+  /* header: a bit shorter, everything on one line, 40px touch targets */
+  .top .wrap{height:52px!important;gap:10px!important}
+  .top .search input{height:40px}
+  .top .lang,.top #meLink>*{height:36px;min-width:36px}
+}
 </style>
 
 <header class="top">
@@ -2000,12 +2014,12 @@ function vHome(){
       :`<div class="harea fyarea"><span class="muted">Add your city to see what’s happening near you.</span><button type="button" class="linkb" data-act="plOpen" data-m="home">Choose city</button></div>`;
     const live=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)).sort((a,b)=>{ const x=IX.bv.get(a.id),y=IX.bv.get(b.id); return (y.a+y.b)-(x.a+x.b)||b.createdAt-a.createdAt; }).slice(0,6);
     const liveIds=new Set(live.map(b=>b.topicId)), tr=topRatedList(6), trIds=new Set(tr.list.map(t=>t.id));
-    const hfOpen=LIVE().filter(t=>isHelp(t)&&!t.solved&&(!hp||inPlace(t,hp))).sort((a,b)=>b.createdAt-a.createdAt).slice(0,3), hfIds=new Set(hfOpen.map(t=>t.id));
+    const hfAll=LIVE().filter(t=>isHelp(t)&&!t.solved&&(!hp||inPlace(t,hp))).sort((a,b)=>b.createdAt-a.createdAt), hfOpen=hfAll.slice(0,2), hfIds=new Set(hfAll.map(t=>t.id));
     const weakEnded=t=>{ if(t.kind!=="battle") return false; const b=(IX.bByTopic.get(t.id)||[])[0]; if(!b||b.endsAt>now) return false; const v=IX.bv.get(b.id)||{a:0,b:0}; return v.a+v.b<5; };
     const all=LIVE().filter(t=>t.kind!=="prediction"&&!(t.kind==="battle"&&liveIds.has(t.id))&&!trIds.has(t.id)&&!hfIds.has(t.id)&&!weakEnded(t)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1)).map(x=>x[0]);
     { const m=mixFeed(all); all.length=0; all.push(...m); }
     const n=UI.fyN||10, items=all.slice(0,n);
-    const hfSec=hfOpen.length?`<section class="hsec hf-loc">${SH("🙋 "+(hp?"People near you need help":"People need help"),hp?"Know someone good? Recommend them.":"","")}${hfOpen.map(t=>`<div class="hf-row"><a href="#t-${t.id}"><b>${esc(cleanTitle(t))}</b><small>${[t.budget?"Budget "+esc(t.budget):"",t.when?"Needed "+esc(hfWhenLabel(t.when).toLowerCase()):"",hfRecs(t).length?hfRecs(t).length+" recommendation"+(hfRecs(t).length===1?"":"s"):"No replies yet",agoShort(t.createdAt)].filter(Boolean).join(" · ")}</small></a>${t.authorId===S.me?`<a class="btn sm" href="#t-${t.id}">View</a>`:`<a class="btn pri sm" href="#t-${t.id}">Recommend</a>`}</div>`).join("")}</section>`:"";
+    const hfSec=hfOpen.length?`<section class="hsec hf-loc">${SH("🙋 "+(hp?"People near you need help":"People need help"),hp?"Know someone good? Recommend them.":"","")}${hfOpen.map(t=>`<div class="hf-row"><a href="#t-${t.id}"><b>${esc(cleanTitle(t))}</b><small>${[t.budget?"Budget "+esc(t.budget):"",t.when?"Needed "+esc(hfWhenLabel(t.when).toLowerCase()):"",hfRecs(t).length?hfRecs(t).length+" recommendation"+(hfRecs(t).length===1?"":"s"):"0 replies",agoShort(t.createdAt)].filter(Boolean).join(" · ")}</small></a>${t.authorId===S.me?`<a class="btn sm" href="#t-${t.id}">View</a>`:`<a class="btn pri sm" href="#t-${t.id}">Recommend</a>`}</div>`).join("")}${hp?`<button type="button" class="hf-all" data-act="seeHelp">See all ${hfAll.length} request${hfAll.length===1?"":"s"} →</button>`:""}</section>`:"";
     const strip=tr.list.length?`<section class="hstrip">${SH(tr.near?"⭐ Reviews near you":"⭐ Popular reviews","",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</small></a>`; }).join("")}</div></section>`:"";
     const feed=items.map((t,i)=>fCard(t)+(i===2?strip:"")).join("")+(items.length<3?strip:"");
     const tagCount=new Map(), wk=now-7*864e5; for(const t of LIVE()) if(lastAct(t)>wk&&(!hp||inPlace(t,hp))) (t.tags||[]).forEach(x=>{ if(!hp||x!==PLACES.sl(hp.name).replace(/-/g,"")) tagCount.set(x,(tagCount.get(x)||0)+1); });
@@ -4210,8 +4224,9 @@ document.addEventListener("click", async e=>{
     case "dur": { UI.durC=el.dataset.v==="c"; if(!UI.durC) UI.dur=+el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const dc=$("#durc"); if(dc) dc.hidden=!UI.durC; break; }
     case "exSort": UI.exSort=el.dataset.v; if(UI.exSort==="watch"){ UI.wN=5; ev("watch_open"); } schedule(); break;
     case "lnCat": UI.exCat=el.dataset.v; UI.exSort="trending"; if(location.hash==="#explore") schedule(); else location.hash="explore"; window.scrollTo({top:0}); break;
+    case "seeHelp": UI.htab="nb"; UI.lsub="help"; UI.fyN=10; schedule(); window.scrollTo({top:0}); break;
     case "goTab": UI.htab=el.dataset.v; UI.fyN=10; if(location.hash!=="#home"&&location.hash!=="") location.hash="home"; else schedule(); window.scrollTo({top:0}); break;
-    case "hTab": UI.htab=el.dataset.v; UI.fyN=10; UI.foSeen0=null; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); }setTimeout(()=>{ const tb=document.querySelector(".htabs"), on=tb&&tb.querySelector(".on"); if(on) tb.scrollLeft=Math.max(0,on.offsetLeft-(tb.clientWidth-on.offsetWidth)/2); },150); break;
+    case "hTab": UI.htab=el.dataset.v; UI.fyN=10; UI.foSeen0=null; if(UI.htab==="wt"){ UI.wN=5; ev("watch_open"); } schedule(); { const tb=document.querySelector(".htabs"); if(tb&&tb.getBoundingClientRect().top<0) window.scrollTo({top:0}); }setTimeout(()=>{ const tb=document.querySelector(".htabs"), on=tb&&tb.querySelector(".on"); if(on){ const L=on.offsetLeft-tb.offsetLeft, R=L+on.offsetWidth, pad=36; if(L-pad<tb.scrollLeft) tb.scrollLeft=Math.max(0,L-pad); else if(R+pad>tb.scrollLeft+tb.clientWidth) tb.scrollLeft=R+pad-tb.clientWidth; } },150); break;
     case "bFilter": UI.bf=el.dataset.v; UI.fyN=10; UI.btEndAll=false; schedule(); break;
     case "btEndAll": UI.btEndAll=!UI.btEndAll; schedule(); break;
     case "fyMore": UI.fyN=(UI.fyN||10)+10; schedule(); break;
