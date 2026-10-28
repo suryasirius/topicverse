@@ -273,6 +273,8 @@ function check(op, col, id, prev, next, patch, uid) {
       if (next && !OPEN(next.access) && next.groupId) bad("A topic can be in a group or private, not both.");
       // shop details on a place: plain text only, checked field by field
       if (next && next.shop != null) shopOK(next.shop, next.kind);
+      // where a place came from (OpenStreetMap import): set by the admin only, kept as a short id
+      if (next && next.src != null && (typeof next.src !== "string" || !/^osm:[nwr]\d{1,15}$/.test(next.src) || (!admin && (!prev || prev.src !== next.src)))) bad("That source isn’t valid.");
       // a question about a shop points at that shop
       if (next && next.about != null && (typeof next.about !== "string" || !(DOCS.topics.get(next.about) || {}).kind || DOCS.topics.get(next.about).kind !== "place")) bad("That shop wasn’t found.");
       if (next && next.kind === "news" && !admin && (!prev || prev.kind !== "news")) deny("Only the TopicTalk team can post news.");
