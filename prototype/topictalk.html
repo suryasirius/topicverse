@@ -1430,6 +1430,26 @@ body{font-size:15.5px;letter-spacing:-.003em}
 .gtx{line-height:1.4!important}
 .gpb{display:block;height:6px}
 .gb{padding:6px 11px 5px!important}
+
+/* ---- HELP CARDS v1: requests look like real people asking for help ---- */
+.hfcs{display:grid;gap:10px;margin-top:8px}
+@media(min-width:900px){.home2 .hfcs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.hfc{display:flex;flex-direction:column;gap:6px;padding:14px 14px 12px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:14px;color:var(--ink);text-decoration:none}
+.hfc:hover{border-color:var(--brand)}
+.hfc-h{display:flex;align-items:center;gap:8px;min-width:0}
+.hfc-ic{font-style:normal;flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px;background:hsl(var(--h) 55% var(--tile-l))}
+.hfc-k{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hfc-k b{font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:color-mix(in srgb,var(--ink) 75%,var(--muted))}
+.hfc-t{font-size:15.5px;font-weight:700;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hfc-d{margin:0;font-size:13.5px;line-height:1.4;color:color-mix(in srgb,var(--ink) 72%,var(--muted));display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.hfc-cs{display:flex;flex-wrap:wrap;gap:6px}
+.hfc-c{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--chip);color:color-mix(in srgb,var(--ink) 80%,var(--muted))}
+.hfc-c.hot{background:color-mix(in srgb,#E5484D 14%,var(--surface));color:#C2343A}.hfc-c.ok{background:var(--brand-soft);color:var(--brand-deep)}
+.hfc-f{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px;font-size:12.5px;color:var(--muted)}
+.hfc-f>span:first-child{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hf-loc .hfc .hfc-f .btn.sm,.home2 .hf-loc .hfc .hfc-f .btn.sm{flex:none;height:30px!important;min-height:30px!important;padding:0 12px!important;font-size:13px!important}
+.hf-loc .hfc .hfc-k b{display:inline;font-size:12px}
+.hf-loc .hfc .hfc-t{display:-webkit-box;font-size:15.5px}
+.hfc .hfc-c{text-transform:none!important;letter-spacing:0!important}
 </style>
 
 <header class="top">
@@ -1790,6 +1810,13 @@ function duelMini(d){
 /* ---------- components ---------- */
 const isHelp=t=>!!(t&&t.help&&t.kind==="question");
 const HF_WHEN=[["today","Today"],["week","This week"],["any","No rush"]];
+const HF_IC={Services:"🛠️",Tech:"💻",Apps:"📱",Education:"📚",Health:"🩺",Food:"🍽️",Shopping:"🛍️",Travel:"🧭",Local:"📍",Cars:"🚗",Bikes:"🏍️",Finance:"💰",Entertainment:"🎬",Movies:"🎬",Sports:"🏏",Gaming:"🎮",Lifestyle:"✨",Other:"💬"};
+function hfCard(t){ const n=hfRecs(t).length, mine=t.authorId===S.me, d=String(t.desc||"").replace(/\s+/g," ").trim();
+  const chips=[t.budget?`<span class="hfc-c">💰 ${esc(t.budget)}</span>`:"",t.when?`<span class="hfc-c${t.when==="today"?" hot":""}">⏱ ${esc(hfWhenLabel(t.when))}</span>`:"",t.solved?`<span class="hfc-c ok">✅ Solved</span>`:""].filter(Boolean).join("");
+  return `<a class="hfc" href="#t-${t.id}"><div class="hfc-h"><i class="hfc-ic" style="--h:${catHue(t.category)}">${HF_IC[t.category]||"🔎"}</i><span class="hfc-k"><b>${esc(t.category||"Other")}</b> · Recommendation needed</span></div>
+    <b class="hfc-t">${esc(cleanTitle(t))}</b>${d?`<p class="hfc-d">${esc(d.slice(0,140))}</p>`:""}
+    ${chips?`<div class="hfc-cs">${chips}</div>`:""}
+    <div class="hfc-f"><span>${n} repl${n===1?"y":"ies"} · ${agoShort(t.createdAt)}</span><span class="btn sm ${mine||t.solved?"":"pri"}">${mine?"View":t.solved?"See answer":"Recommend →"}</span></div></a>`; }
 const hfWhenLabel=k=>(HF_WHEN.find(x=>x[0]===k)||[])[1]||"";
 const hfRecs=t=>(IX.cByTopic.get(t.id)||[]).filter(c=>!c.parentId&&!c.deletedAt&&(c.text||"").trim());
 function hfStatus(t){ return t.solved?"solved":hfRecs(t).length?"getting":"open"; }
@@ -2037,10 +2064,10 @@ function localHelp(hp){
   const all=LIVE().filter(t=>isHelp(t)&&inPlace(t,hp)), open=all.filter(t=>!t.solved).sort((a,b)=>b.createdAt-a.createdAt), done=all.filter(t=>t.solved).sort((a,b)=>(b.solved.at||0)-(a.solved.at||0));
   const ask=`<button type="button" class="btn pri sm" data-act="newQuestion" data-help="1">🙋 Ask for help</button>`;
   const head=`<div class="harea"><span>🙋 People in <b>${esc(hp.name)}</b> looking for something${open.length?` · ${open.length} open`:""}</span>${ask}</div>`;
-  const row=t=>{ const n=hfRecs(t).length; return `<div class="hf-row"><a href="#t-${t.id}"><b>${esc(t.title)}</b><small>${[t.solved?"✅ Solved":"",t.budget?"Budget "+esc(t.budget):"",n+" recommendation"+(n===1?"":"s"),agoShort(t.createdAt)].filter(Boolean).join(" · ")}</small></a>${t.solved?`<a class="btn sm" href="#t-${t.id}">See answer</a>`:`<a class="btn sm" href="#t-${t.id}">Recommend</a>`}</div>`; };
+  const row=hfCard;
   if(!all.length) return head+emptyBox("No help requests yet","Looking for a good electrician, tailor, tuition or anything else nearby? Ask, and people from "+esc(hp.name)+" will recommend.",ask);
-  return head+(open.length?`<section class="hsec hf-loc">${SH("Open requests","Know someone good? Recommend them.","")}${open.map(row).join("")}</section>`:`<p class="muted" style="margin:0 0 12px">No open requests right now.</p>`)
-    +(done.length?`<section class="hsec hf-loc">${SH("Solved","What helped other people","")}${done.slice(0,10).map(row).join("")}</section>`:"");
+  return head+(open.length?`<section class="hsec hf-loc">${SH("Open requests","Know someone good? Recommend them.","")}<div class="hfcs">${open.map(row).join("")}</div></section>`:`<p class="muted" style="margin:0 0 12px">No open requests right now.</p>`)
+    +(done.length?`<section class="hsec hf-loc">${SH("Solved","What helped other people","")}<div class="hfcs">${done.slice(0,10).map(row).join("")}</div></section>`:"");
 }
 function newsModal(){
   const hp=homePlace(), ha=homeArea();
@@ -2073,7 +2100,7 @@ function vHome(){
     const all=LIVE().filter(t=>t.kind!=="prediction"&&!(t.kind==="battle"&&liveIds.has(t.id))&&!trIds.has(t.id)&&!hfIds.has(t.id)&&!weakEnded(t)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1)).map(x=>x[0]);
     { const m=mixFeed(all); all.length=0; all.push(...m); }
     const n=UI.fyN||10, items=all.slice(0,n);
-    const hfSec=hfOpen.length?`<section class="hsec hf-loc">${SH("🙋 "+(hp?"People near you need help":"People need help"),hp?"Know someone good? Recommend them.":"","")}${hfOpen.map(t=>`<div class="hf-row"><a href="#t-${t.id}"><b>${esc(cleanTitle(t))}</b><small>${[t.budget?"Budget "+esc(t.budget):"",t.when?"Needed "+esc(hfWhenLabel(t.when).toLowerCase()):"",hfRecs(t).length?hfRecs(t).length+" recommendation"+(hfRecs(t).length===1?"":"s"):"0 replies",agoShort(t.createdAt)].filter(Boolean).join(" · ")}</small></a>${t.authorId===S.me?`<a class="btn sm" href="#t-${t.id}">View</a>`:`<a class="btn pri sm" href="#t-${t.id}">Recommend</a>`}</div>`).join("")}${hp?`<button type="button" class="hf-all" data-act="seeHelp">See all ${hfAll.length} request${hfAll.length===1?"":"s"} →</button>`:""}</section>`:"";
+    const hfSec=hfOpen.length?`<section class="hsec hf-loc">${SH("🙋 "+(hp?"People near you need help":"People need help"),"Someone nearby needs a recommendation. Can you help?","")}<div class="hfcs">${hfOpen.map(hfCard).join("")}</div>${hp?`<button type="button" class="hf-all" data-act="seeHelp">See all ${hfAll.length} request${hfAll.length===1?"":"s"} →</button>`:""}</section>`:"";
     const strip=tr.list.length?`<section class="hstrip">${SH(tr.near?"⭐ Reviews near you":"⭐ Popular reviews","",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</small></a>`; }).join("")}</div></section>`:"";
     const feed=items.map((t,i)=>fCard(t)+(i===2?strip:"")).join("")+(items.length<3?strip:"");
     const tagCount=new Map(), wk=now-7*864e5; for(const t of LIVE()) if(lastAct(t)>wk&&(!hp||inPlace(t,hp))) (t.tags||[]).forEach(x=>{ if(!hp||x!==PLACES.sl(hp.name).replace(/-/g,"")) tagCount.set(x,(tagCount.get(x)||0)+1); });
