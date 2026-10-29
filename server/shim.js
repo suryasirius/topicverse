@@ -151,6 +151,13 @@
         <label id="tt-cdw" hidden>6-digit code from your email<input id="tt-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"></label>
         <label id="tt-unw">Username<input id="tt-user" autocomplete="username" maxlength="24" spellcheck="false" autocapitalize="off"></label>
         <label id="tt-pww">Password<input id="tt-pass" type="password" autocomplete="current-password" maxlength="200"></label>
+        <div id="tt-actw" hidden style="display:grid;gap:5px;font-size:12px;font-weight:600;color:var(--muted,#66756F);letter-spacing:.04em">Account type
+          <div class="tt-acseg" style="display:flex;gap:6px" role="group" aria-label="Account type">
+            <button type="button" class="tt-acbtn on" data-tt-acc="personal" style="flex:1;height:38px;border-radius:10px;border:1px solid var(--line,#E1E8E4);background:var(--brand,#1F9D63);color:#fff;font-weight:700;font-size:13px;cursor:pointer">Personal</button>
+            <button type="button" class="tt-acbtn" data-tt-acc="business" style="flex:1;height:38px;border-radius:10px;border:1px solid var(--line,#E1E8E4);background:none;color:inherit;font-weight:700;font-size:13px;cursor:pointer">Business / Shop owner</button>
+          </div>
+          <span id="tt-acsub" style="font-weight:400;letter-spacing:0;font-size:12.5px"></span>
+        </div>
         <label id="tt-agw" hidden style="display:flex;flex-direction:row;align-items:flex-start;gap:8px;font-weight:400;letter-spacing:0;color:inherit;font-size:13px"><input id="tt-agree" type="checkbox" style="width:16px;height:16px;flex:none;margin-top:2px"> <span>I'm 13 or older and agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Community Guidelines</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
         <div class="err" id="tt-err" role="alert"></div>
         <p id="tt-forgot" hidden><button type="button" class="switch" data-tt="forgot">Forgot password?</button></p>
@@ -158,7 +165,8 @@
         <p id="tt-alt">New here? <button type="button" class="switch" data-tt="swap">Create an account</button></p>
       </form>`;
       document.body.append(box);
-      box.addEventListener("click", e => { if (e.target === box || e.target.closest("[data-tt=close]")) box.hidden = true; if (e.target.closest("[data-tt=swap]")) setMode(box.dataset.mode === "login" ? "signup" : "login"); if (e.target.closest("[data-tt=forgot]")) setMode("reset"); if (e.target.closest("[data-tt=back]")) setMode("login"); });
+      box.addEventListener("click", e => { if (e.target === box || e.target.closest("[data-tt=close]")) box.hidden = true; if (e.target.closest("[data-tt=swap]")) setMode(box.dataset.mode === "login" ? "signup" : "login"); if (e.target.closest("[data-tt=forgot]")) setMode("reset"); if (e.target.closest("[data-tt=back]")) setMode("login");
+        const ab = e.target.closest("[data-tt-acc]"); if (ab) { box.dataset.acc = ab.dataset.ttAcc; box.querySelectorAll(".tt-acbtn").forEach(b => { const on = b === ab; b.classList.toggle("on", on); b.style.background = on ? "var(--brand,#1F9D63)" : "none"; b.style.color = on ? "#fff" : "inherit"; }); box.querySelector("#tt-acsub").textContent = ab.dataset.ttAcc === "business" ? "You'll be able to add or claim your shop right after signing up." : "For everyday browsing, reviews and discussion."; } });
       box.querySelector("form").addEventListener("submit", async e => {
         e.preventDefault();
         const err = box.querySelector("#tt-err"), go = box.querySelector("#tt-go");
@@ -179,8 +187,10 @@
           if (box.dataset.mode === "signup") {
             if (!box.querySelector("#tt-agree").checked) { err.textContent = "Please confirm you’re 13+ and agree to the Terms to continue."; go.disabled = false; return; }
             body.agree = true;
+            body.accountType = box.dataset.acc === "business" ? "business" : "personal";
           }
           await api(box.dataset.mode === "signup" ? "/api/signup" : "/api/login", body);
+          if (box.dataset.mode === "signup" && body.accountType === "business") { try { sessionStorage.setItem("tt-biz-new", "1"); } catch { } }
           location.reload();
         } catch (ex) { err.textContent = ex.message || "Couldn’t log in. Try again."; go.disabled = false; }
       });
@@ -197,6 +207,8 @@
     q("#tt-emw").hidden = !s || code; q("#tt-cdw").hidden = !code;
     q("#tt-unw").hidden = rs || (s && !code); q("#tt-pww").hidden = s && !code;
     q("#tt-agw").hidden = !(m === "signup" && (!s || code)); if (!q("#tt-agw").hidden) q("#tt-agree").checked = false;
+    q("#tt-actw").hidden = !(m === "signup" && (!s || code));
+    if (!q("#tt-actw").hidden && box.dataset.acc !== "business") box.querySelector('[data-tt-acc="personal"]').click();
     q("#tt-go").textContent = rs ? (code ? "Reset password" : "Send code") : m !== "signup" ? "Log in" : !s ? "Create account" : code ? "Create account" : "Send code";
     q("#tt-pass").autocomplete = (m === "signup" || rs) ? "new-password" : "current-password";
     q("#tt-pww").firstChild.textContent = rs ? "New password (8+ characters)" : "Password";

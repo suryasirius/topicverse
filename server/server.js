@@ -315,6 +315,8 @@ function check(op, col, id, prev, next, patch, uid) {
       // a question about a shop points at that shop
       if (next && next.about != null && (typeof next.about !== "string" || !(DOCS.topics.get(next.about) || {}).kind || DOCS.topics.get(next.about).kind !== "place")) bad("That shop wasn’t found.");
       if (next && next.kind === "news" && !admin && (!prev || prev.kind !== "news")) deny("Only the TopicTalk team can post news.");
+      // "Need 4 for cricket Saturday": a short interest tag so the author can invite nearby people who listed it
+      if (next && next.playFor != null && (typeof next.playFor !== "string" || next.playFor.length > 24)) bad("Keep the interest tag under 24 characters.");
       if (!prev && next.parentId) { const par = DOCS.topics.get(next.parentId); if (par && !topicVisible(par, uid)) deny("You can’t branch from a topic you can’t see."); }
       if (!prev && next.kind === "place" && !admin) { let n = 0; const since = Date.now() - 864e5; for (const t of DOCS.topics.values()) if (t.authorId === uid && t.kind === "place" && t.createdAt > since) n++; if (n >= 5) deny("You can add up to 5 places a day. Try again tomorrow."); }
       if (next && (next.ownerId ?? null) !== ((prev && prev.ownerId) ?? null) && !admin) deny("Only the admin can verify a shop owner.");
@@ -393,6 +395,16 @@ function check(op, col, id, prev, next, patch, uid) {
         if (!HANDLE_RE.test(next.handle || "")) bad("Use 3–24 letters, numbers or underscores.");
         for (const [hid, h] of DOCS.handles) if (hid !== uid && (h.handle || "").toLowerCase() === next.handle.toLowerCase()) deny("That username is taken.");
         const u = q.userByName.get(next.handle); if (u && u.id !== uid) deny("That username is taken.");
+        if (next.accountType != null && !["personal", "business"].includes(next.accountType)) bad();
+        if (next.profession != null && (typeof next.profession !== "string" || next.profession.length > 30)) bad("Keep your profession under 30 characters.");
+        if (next.professionOn != null && typeof next.professionOn !== "boolean") bad();
+        if (next.interests != null) {
+          if (!Array.isArray(next.interests) || next.interests.length > 5 || next.interests.some(x => typeof x !== "string" || !x.trim() || x.length > 24)) bad("Up to 5 interests, each under 24 characters.");
+        }
+        if (next.interestsOn != null && typeof next.interestsOn !== "boolean") bad();
+        if (next.mutedInterests != null) {
+          if (!Array.isArray(next.mutedInterests) || next.mutedInterests.length > 5 || next.mutedInterests.some(x => typeof x !== "string")) bad();
+        }
       }
       return;
     }
@@ -438,7 +450,14 @@ function check(op, col, id, prev, next, patch, uid) {
       return;
     }
     case "notifs":
-      if (!prev) { if (next.from !== uid) deny(); return; }
+      if (!prev) {
+        if (next.from !== uid) deny();
+        if (!["askhelp", "playcall"].includes(next.type)) deny("Notifications of that kind can’t be sent directly.");
+        if (!next.to || next.to === uid || !DOCS.handles.has(next.to)) bad();
+        if (next.text != null && (typeof next.text !== "string" || next.text.length > 240)) bad("Keep your message under 240 characters.");
+        if (next.type === "playcall" && (!next.topicId || !DOCS.topics.get(next.topicId))) bad();
+        return;
+      }
       if (op === "delete") { if (prev.to !== uid) deny(); return; }
       if (prev.to !== uid || !onlyKeys(patch, ["read"])) deny(); return;
   }
@@ -481,9 +500,9 @@ function addMember(tid, mu, by) {
   if (!t || t.authorId === mu || DOCS.tmembers.has(k) || !DOCS.handles.has(mu)) return;
   apply("tmembers", k, { topicId: tid, userId: mu, role: "member", addedBy: by || t.authorId, createdAt: Date.now() });
 }
-const PUSH_LABEL = { reply: "replied to you", mention: "mentioned you", gmention: "mentioned you in a group chat", tagged: "tagged you in a topic", comment: "commented on a topic you follow", branch: "branched your comment into a new topic", newbranch: "started a branch from a topic you follow", review: "reviewed a topic you follow", like: "liked your post", battle: "started a battle about your comment", newbattle: "started a battle in a topic you follow", resolved: "resolved a prediction you voted on", grouppost: "posted in your group", joined: "joined your group", duel_challenge: "challenged you to a debate duel", duel_accept: "accepted your debate challenge", duel_decline: "declined your debate challenge", duel_turn: "replied in your debate. Your turn", duel_vote: "finished a debate. Voting is open", friend_req: "sent you a friend request", friend_ok: "accepted your friend request", follow: "started following you", invited: "invited you to a discussion", helpreq: "needs help finding something near you", helped: "marked your recommendation as the one that helped", claim: "says they own a shop. Check and approve", claimok: "approved you as the owner of", claimno: "couldn’t verify your shop claim for", shopupd: "posted an update from a shop you follow" };
+const PUSH_LABEL = { reply: "replied to you", mention: "mentioned you", gmention: "mentioned you in a group chat", tagged: "tagged you in a topic", comment: "commented on a topic you follow", branch: "branched your comment into a new topic", newbranch: "started a branch from a topic you follow", review: "reviewed a topic you follow", like: "liked your post", battle: "started a battle about your comment", newbattle: "started a battle in a topic you follow", resolved: "resolved a prediction you voted on", grouppost: "posted in your group", joined: "joined your group", duel_challenge: "challenged you to a debate duel", duel_accept: "accepted your debate challenge", duel_decline: "declined your debate challenge", duel_turn: "replied in your debate. Your turn", duel_vote: "finished a debate. Voting is open", friend_req: "sent you a friend request", friend_ok: "accepted your friend request", follow: "started following you", invited: "invited you to a discussion", helpreq: "needs help finding something near you", helped: "marked your recommendation as the one that helped", claim: "says they own a shop. Check and approve", claimok: "approved you as the owner of", claimno: "couldn’t verify your shop claim for", shopupd: "posted an update from a shop you follow", askhelp: "asked you for help", playcall: "invited you to join" };
 // Settings categories (same grouping as the app). A person can switch each one off; all are on by default.
-const NCAT = { reply: "reply", comment: "reply", helped: "reply", branch: "reply", newbranch: "reply", mention: "mention", gmention: "mention", tagged: "mention", battle: "battle", newbattle: "battle", duel_vote: "battle", duel_turn: "battle", duel_challenge: "battle", duel_accept: "battle", duel_decline: "battle", like: "like", review: "like", grouppost: "group", joined: "group", invited: "group", friend_req: "friends", friend_ok: "friends", follow: "friends", helpreq: "local", resolved: "pred", claim: "shops", claimok: "shops", claimno: "shops", shopupd: "shops" };
+const NCAT = { reply: "reply", comment: "reply", helped: "reply", branch: "reply", newbranch: "reply", mention: "mention", gmention: "mention", tagged: "mention", battle: "battle", newbattle: "battle", duel_vote: "battle", duel_turn: "battle", duel_challenge: "battle", duel_accept: "battle", duel_decline: "battle", like: "like", review: "like", grouppost: "group", joined: "group", invited: "group", friend_req: "friends", friend_ok: "friends", follow: "friends", helpreq: "local", resolved: "pred", claim: "shops", claimok: "shops", claimno: "shops", shopupd: "shops", askhelp: "local", playcall: "playcall" };
 const NCATS = new Set(Object.values(NCAT));
 function pushLatest(uid) {
   let n = 0, last = null; const off = push.off(uid);
@@ -591,7 +610,7 @@ function readBody(req, max) {
 function meFor(uid) {
   if (!uid) return null;
   const u = q.userById.get(uid); if (!u) return null;
-  return { id: uid, username: u.username, isOwner: isAdmin(uid) };
+  return { id: uid, username: u.username, isOwner: isAdmin(uid), accountType: (DOCS.handles.get(uid) || {}).accountType || "personal" };
 }
 const CARD_DIR = path.join(DATA_DIR, "cards"); fs.mkdirSync(CARD_DIR, { recursive: true }); const CARDMETA = new Map();
 const STATIC = {};
@@ -696,10 +715,11 @@ const server = http.createServer(async (req, res) => {
         CODES.delete(email);
       }
       const id = newId("u_"), salt = crypto.randomBytes(16).toString("hex");
+      const accountType = body.accountType === "business" ? "business" : "personal";
       q.addUser.run(id, username, salt, hashPw(password, salt), Date.now(), email);
       if (!adminUid() && (!ADMIN_USERNAME || ADMIN_USERNAME === username.toLowerCase())) q.setMeta.run("admin", id);
       if (ADMIN_USERNAME && ADMIN_USERNAME === username.toLowerCase()) q.setMeta.run("admin", id);
-      apply("handles", id, { handle: username, bio: "", createdAt: Date.now(), agreedAt: Date.now() });
+      apply("handles", id, { handle: username, bio: "", createdAt: Date.now(), agreedAt: Date.now(), accountType });
       broadcast("handles", id, DOCS.handles.get(id), null);
       setSession(res, id);
       return json(res, 200, { me: meFor(id) });

@@ -808,6 +808,10 @@ body:has(.sp-mode) .toast{bottom:auto;top:calc(16px + env(safe-area-inset-top,0p
 .pfh{gap:12px!important;align-items:flex-start;flex-wrap:nowrap!important}.pfh>:first-child{flex:none;width:56px!important;height:56px!important;font-size:20px!important;margin-top:2px!important}
 .pf-main{flex:1;min-width:0}.pf-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.pf-top h1{margin:0;font-size:22px!important;line-height:1.2;min-width:0;overflow-wrap:anywhere}.pf-act{display:flex;gap:6px;flex:none}
 .pf-act .btn{min-height:34px!important;height:34px;padding:0 12px!important}.pf-id{margin-top:1px;line-height:1.3}.pf-id .act{min-height:0!important;padding:2px 6px!important}.pf-loc{font-size:13px;margin-top:2px;line-height:1.3}.pf-bio{margin:4px 0 0;font-size:14px;line-height:1.35}.pf-addbio{margin-top:2px;padding:0!important;min-height:0!important;line-height:1.3;font-size:13px;display:block}.pf-cnt{font-size:13px;margin-top:4px;line-height:1.3}
+.pf-pro{font-size:13.5px;margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.invrow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.invrow:last-child{border-bottom:none}
+.invrow input[type=checkbox]{width:18px;height:18px;flex:none}
 .ptabs{margin-top:12px!important;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.ptabs::-webkit-scrollbar{display:none}.ptabs button{flex:none;white-space:nowrap;padding:9px 12px!important;font-size:14px}.ptabs button .muted{font-size:13px;margin-left:2px}
 .ptabnote{margin:8px 0 6px!important;font-size:13px!important}
 .pfeed.grid{grid-template-columns:1fr;gap:8px}
@@ -1714,6 +1718,14 @@ function plRender(q){
   const wp=x=>x.toLowerCase().split(/[\s.]+/).some(w=>w.startsWith(q))||x.toLowerCase().startsWith(q); const hits=PLACES.list.filter(pl=>wp(pl.name)||(pl.type==="area"&&wp(pl.cityName))).sort((a,b)=>(a.name.toLowerCase().startsWith(q)?0:1)-(b.name.toLowerCase().startsWith(q)?0:1)||(a.type==="city"?0:1)-(b.type==="city"?0:1)).slice(0,24);
   box.innerHTML=hits.length?hits.map(row).join(""):`<div class="muted" style="padding:14px 4px">No match yet. Try the nearest big town.</div>`;
 }
+function maybeAskBusiness(){
+  if(UI.bizAsked||!S.me||!S.ready.handles||!handleOf(S.me)||$("#modal").innerHTML) return;
+  let flag=false; try{ flag=sessionStorage.getItem("tt-biz-new")==="1"; }catch{}
+  if(!flag) return;
+  UI.bizAsked=true; try{ sessionStorage.removeItem("tt-biz-new"); }catch{}
+  openModal(`<h2>🏪 Set up your business</h2><p class="muted" style="margin:0 0 4px">Add your shop, or find it if someone's already listed it. Once you add it or claim it, we'll call or visit to confirm before giving it the verified-owner badge.</p>
+    <div class="acts" style="flex-direction:column;align-items:stretch;gap:8px"><button class="btn pri" data-act="bizAdd">➕ Add my shop</button><button class="btn" data-act="bizFind">🔎 Find my shop to claim it</button><button class="btn" data-act="closeModal">I'll do this later</button></div>`);
+}
 function maybeAskHome(){
   if(UI.homeAsked||!S.me||!S.ready.handles||!handleOf(S.me)||$("#modal").innerHTML) return;
   UI.homeAsked=true; const h=S.handles.get(S.me);
@@ -1729,7 +1741,7 @@ const TS_Z={s:.94,m:1.07,l:1.2,x:1.33}; let curTS="";
 function applyTheme(v){ const r=document.documentElement; if(v==="dark"||v==="light") r.dataset.theme=v; else delete r.dataset.theme; }
 const getTheme=()=>{ try{ return localStorage.getItem("tt_theme")||"auto"; }catch{ return "auto"; } };
 applyTheme(getTheme());
-const NG={claim:"shops",claimok:"shops",claimno:"shops",shopupd:"shops",reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like",grouppost:"group",joined:"group",invited:"group",friend_req:"friends",friend_ok:"friends",follow:"friends",helpreq:"local",resolved:"pred"};
+const NG={claim:"shops",claimok:"shops",claimno:"shops",shopupd:"shops",reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like",grouppost:"group",joined:"group",invited:"group",friend_req:"friends",friend_ok:"friends",follow:"friends",helpreq:"local",askhelp:"local",playcall:"playcall",resolved:"pred"};
 let NPOFF=new Set(); try{ NPOFF=new Set(JSON.parse(localStorage.getItem("tt-npoff")||"[]")); }catch{}
 function applyTS(v){ if(!TS_Z[v]) v="m"; curTS=v; document.documentElement.style.setProperty("--tz",TS_Z[v]); }
 try{ applyTS(localStorage.getItem("tt_ts")||"m"); }catch{ applyTS("m"); }
@@ -2908,10 +2920,12 @@ function vSearch(){
   const hpS=homePlace(), shopR=hpS&&!q.startsWith("@")?shopSearch(hpS,q):null, shopL=shopR?shopR.list.slice(0,4):[];
   const shopIds=new Set(shopR?shopR.list.map(t=>t.id):[]), shopOff=shopR&&shopR.need.length?shopPostsIn(hpS).filter(x=>x.kind==="offer"&&shopIds.has(x.topicId)).slice(0,3):[];
   const shopSec=shopL.length?`<section class="sec srsec"><div class="sech"><h2>🏪 Shops in ${esc(hpS.name)}</h2><button type="button" class="linkb" data-act="srShops" data-q="${esc(q)}">See all ${shopR.list.length} in Local →</button></div><div class="list shl">${shopL.map(t=>shopRow(t,shopR.toks)).join("")}</div>${shopOff.length?`<div class="spcs" style="margin-top:10px">${shopOff.map(x=>spCard(x)).join("")}</div>`:""}</section>`:"";
+  const proIds=hpS&&!q.startsWith("@")?professionSearch(hpS,q):[];
+  const proSec=proIds.length?`<section class="sec srsec"><div class="sech"><h2>🙋 People who can help</h2></div><div class="list">${proIds.map(id=>{ const h=S.handles.get(id); return `<div class="prow"><a href="#u-${esc(id)}">${avatar(id)}<div class="txt"><b>${esc(nameOf(id))}</b><div class="meta">${esc(h.profession)}</div></div></a><button type="button" class="btn sm pri" data-act="askHelp" data-id="${esc(id)}">Ask for help</button></div>`; }).join("")}</div></section>`:"";
   if(tab==="all"){
     const ppFirst=r.people.length&&(q.startsWith("@")||!r.topics.length);
-    body=(r.topics.length?answerPanel(q,r.topics):q.startsWith("@")?"":shopSec?"":ask)
-      +shopSec+(!r.topics.length&&shopSec?`<div class="sr-ask"><span>Not sure which one? People nearby can tell you.</span><button class="btn sm" data-act="newQuestion" data-help="1" data-title="${esc("Who is good for "+q+" near "+hpS.name+"?")}">🙋 Ask the neighbourhood</button></div>`:"")
+    body=(r.topics.length?answerPanel(q,r.topics):q.startsWith("@")?"":(shopSec||proSec)?"":ask)
+      +shopSec+proSec+(!r.topics.length&&(shopSec||proSec)?`<div class="sr-ask"><span>Not sure which one? People nearby can tell you.</span><button class="btn sm" data-act="newQuestion" data-help="1" data-title="${esc("Who is good for "+q+" near "+hpS.name+"?")}">🙋 Ask the neighbourhood</button></div>`:"")
       +(ppFirst?sec("👤 People","pp",r.people.length,4,pc(r.people.slice(0,4))):"")
       +(r.battles.length?sec("⚔️ Battles","bt",r.battles.length,2,bc(r.battles.slice(0,2))):"")
       +(disc.length?sec("💬 Discussions","ds",disc.length,6,tc(disc.slice(0,6))):"")
@@ -3102,7 +3116,7 @@ function vTopic(id){
     ${t.banner&&!t.deletedAt?`<div class="banner"><img src="${esc(t.banner)}" alt=""></div>`:""}
     ${chain.length?`<div class="lineage"><span>Branched from</span>${chain.map(p=>`<a href="#t-${p.id}">${esc(p.deletedAt?"Deleted topic":p.title)}</a>`).join("<span>›</span>")}</div>`:""}
     <div class="thead"><div class="tile" style="--h:${catHue(t.category)}">${esc(abbr(t))}</div>
-      <div style="min-width:0"><div class="meta">${catChip(t.category)}${accOf(t)!=="open"?`<span class="tag c-gen" title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span class="tag c-gen">${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.branchOf?`<span class="tag c-gen">🌿 From group chat</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" class="tag c-loc">📍 ${esc(t.location)}</a>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}${t.editedAt?" · edited":""}</span></div>
+      <div style="min-width:0"><div class="meta">${catChip(t.category)}${accOf(t)!=="open"?`<span class="tag c-gen" title="${esc(ACC[accOf(t)][1])}">${LOCK} ${esc(ACC[accOf(t)][0])}</span>`:""}${t.kind!=="topic"?`<span class="tag c-gen">${esc(t.kind[0].toUpperCase()+t.kind.slice(1))}</span>`:""}${t.branchOf?`<span class="tag c-gen">🌿 From group chat</span>`:""}${t.location?`<a href="#city-${enc(slugCity(t.location))}" class="tag c-loc">📍 ${esc(t.location)}</a>`:""}${t.playFor?`<span class="tag c-gen">🏏 Looking for: ${esc(t.playFor)}</span>`:""}<span>by ${who(t.authorId)}</span><span>${ago(t.createdAt)}${t.editedAt?" · edited":""}</span></div>
       <h1 class="${LT(t.title)}">${t.deletedAt?`<span class="muted" style="font-style:italic">Topic deleted by creator</span>`:esc(t.title)}</h1></div></div>
     ${t.deletedAt&&t.mergedInto&&S.topics.get(t.mergedInto)?`<div class="gbanner">This page was merged into <a href="#t-${esc(t.mergedInto)}">${esc(S.topics.get(t.mergedInto).title)}</a>.</div>`:t.deletedAt?`<div class="gbanner">The creator deleted this topic. The discussion stays, but new comments, reviews and votes are closed.</div>`:""}
     ${(()=>{ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private";
@@ -3126,7 +3140,8 @@ function vTopic(id){
     ${t.deletedAt?"":(()=>{ const own=S.me&&S.me===t.authorId, reqN=canManageT(t)?[...S.joinreqs.values()].filter(r=>r.topicId===id&&r.status==="pending").length:0;
       const mi=(act,ic,label,extra="")=>`<button type="button" role="menuitem" class="tmi${extra}" data-act="${act}" data-id="${id}"><span class="tmi-i">${ic}</span><span>${label}</span></button>`;
       const g1=[(t.kind==="place"||s.reviews)?mi("askAbout","❓","Ask about it")+mi("compareIt","⚔️","Compare with another"):"",
-        S.me&&(accOf(t)==="open"||canManageT(t)||(t.membersCanAdd&&tRoleOf(t,S.me)))?mi("inviteF","👋","Invite friends"):""].join("");
+        S.me&&(accOf(t)==="open"||canManageT(t)||(t.membersCanAdd&&tRoleOf(t,S.me)))?mi("inviteF","👋","Invite friends"):"",
+        own&&t.playFor?mi("playInvite","🏏","Invite players"):""].join("");
       const g2=[own&&t.kind!=="battle"?mi("editTopic","✏️","Edit topic"):"",
         t.kind==="battle"&&battles[0]&&(own||S.isOwner)?`<button type="button" role="menuitem" class="tmi" data-act="editBattle" data-id="${battles[0].id}"><span class="tmi-i">✏️</span><span>Edit battle</span></button>`:"",
         own&&(t.media||[]).length<PH_MAX?mi("addPhotos","📷","Add photos"):"",
@@ -3220,7 +3235,7 @@ async function pushRefresh(){
     if(on) await pushPost("/api/push/subscribe",sub.endpoint);
     PUSH.sub=on; if(was!==on) schedule(); }catch{} pushAuto();
 }
-const NCATS=[["shops","Shops and offers","Offers and news from shops you follow, and your shop claims"],["reply","Replies","When someone replies to you or your comment"],["mention","Mentions","When someone mentions or tags you, in topics or group chats"],["battle","Battles and debates","New battles and debate duels you’re part of"],["like","Likes and reviews","Likes on your posts, reviews on topics you follow"],["group","Groups","Group posts, new members and invites"],["friends","Friends and followers","Friend requests, accepted requests, new followers"],["local","Help near you","When someone nearby asks for a recommendation"],["pred","Predictions","When a prediction you voted on is resolved"]];
+const NCATS=[["shops","Shops and offers","Offers and news from shops you follow, and your shop claims"],["reply","Replies","When someone replies to you or your comment"],["mention","Mentions","When someone mentions or tags you, in topics or group chats"],["battle","Battles and debates","New battles and debate duels you’re part of"],["like","Likes and reviews","Likes on your posts, reviews on topics you follow"],["group","Groups","Group posts, new members and invites"],["friends","Friends and followers","Friend requests, accepted requests, new followers"],["local","Help near you","When someone nearby asks for a recommendation, or a neighbour asks you for help"],["playcall","Player invites","When someone invites you to join something, like a cricket game"],["pred","Predictions","When a prediction you voted on is resolved"]];
 const pushPrefs=()=>{ if(S.me) fetch("/api/push/prefs",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({off:[...NPOFF]})}).catch(()=>{}); };
 async function pushEnable(manual){
   try{ const perm=Notification.permission==="granted"?"granted":await Notification.requestPermission(); if(perm!=="granted"){ if(manual) toast("Alerts stay off. You can allow them in your browser settings."); return false; }
@@ -3269,10 +3284,10 @@ function groupNotifs(ns){
 function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
   const ns=notifList().sort((a,b)=>b.createdAt-a.createdAt);
-  const label={claim:"asked to be verified as the shop owner",claimok:"approved you as the verified owner",claimno:"couldn’t verify your shop claim",shopupd:"posted a new offer or news",reply:"replied to you",mention:"mentioned you",gmention:"mentioned you in",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped"};
+  const label={claim:"asked to be verified as the shop owner",claimok:"approved you as the verified owner",claimno:"couldn’t verify your shop claim",shopupd:"posted a new offer or news",reply:"replied to you",mention:"mentioned you",gmention:"mentioned you in",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped",askhelp:"asked you for help",playcall:"invited you to join"};
   if(!PUSH.checked) pushRefresh();
   return pushCard(false)+`<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read||UI.keep?.has(n.id))?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
-  ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}"${n.gmsgId?` data-gm="${esc(n.gmsgId)}"`:""} href="${n.duelId?"#d-"+esc(n.duelId):(n.type==="joined"||n.type==="gmention")?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
+  ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}"${n.gmsgId?` data-gm="${esc(n.gmsgId)}"`:""} href="${n.duelId?"#d-"+esc(n.duelId):(n.type==="joined"||n.type==="gmention")?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow|askhelp)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
    :emptyBox("You’re all caught up","Replies, @mentions, branches and battles from your comments, and activity on topics you follow show up here.")}`;
 }
 
@@ -3385,6 +3400,8 @@ function vSettings(){
     ${pushRow()}
     <div class="st-sub"><span>What to notify me about</span><span class="st-all"><button type="button" class="linkb" data-act="nAll" data-v="on">All on</button> · <button type="button" class="linkb" data-act="nAll" data-v="off">All off</button></span></div>
     ${np.map(([k,t,sub])=>row(t,sub,sw(!NPOFF.has(k),"nPref",k))).join("")}</section>
+  <section class="st-card"><h3>Profile</h3>${(()=>{ const hh=S.handles.get(S.me)||{}; return row("Profession",hh.profession?(hh.professionOn?`${esc(hh.profession)} · visible in search`:`${esc(hh.profession)} · hidden`):"Not set — e.g. teacher, electrician",`<button type="button" class="btn sm" data-act="prOpen">Edit</button>`)
+    +row("Interests",(hh.interests||[]).length?`${esc((hh.interests||[]).join(", "))} · ${hh.interestsOn?"invites on":"invites off"}`:"Not set — e.g. cricket, chess",`<button type="button" class="btn sm" data-act="ivOpen">Edit</button>`); })()}</section>
   <section class="st-card"><h3>Blocked people</h3>${bl.length?bl.map(u=>`<div class="st-row"><div style="display:flex;gap:10px;align-items:center">${avatar(u,"xs")}<b>${esc(nameOf(u))}</b></div><button type="button" class="btn sm" data-act="unblock" data-id="${esc(u)}">Unblock</button></div>`).join(""):`<p class="st-note" style="margin:0">You haven’t blocked anyone.</p>`}</section>
   <section class="st-card"><h3>Account</h3>${row("Password","Change it any time",`<button type="button" class="btn sm" data-act="pwOpen">Change</button>`)}
     ${row("Sign out","",`<button type="button" class="btn sm danger" data-act="logout2">Sign out</button>`)}</section>
@@ -3396,6 +3413,57 @@ function pwModal(){
     <label class="l">New password<input class="f" id="pw-new" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label>
     <label class="l">Confirm new password<input class="f" id="pw-new2" type="password" autocomplete="new-password"></label>
     <div class="hint" id="pw-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="pwSave">Save password</button></div>`);
+}
+const inHome=(h,hp)=>{ if(!h.homeCity||!hp) return false; return hp.type==="area"?(h.homeArea===hp.id||h.homeCity===hp.id):(h.homeCity===hp.id); };
+function professionSearch(hp,q){
+  const toks=qWords(q); if(!toks.length) return [];
+  const bl=new Set(myBlocks());
+  return [...S.handles].filter(([id,h])=>h.professionOn&&h.profession&&id!==S.me&&!bl.has(id)&&!isSeed(id)&&inHome(h,hp)&&sNorm(h.profession).split(" ").some(w=>w&&toks.some(t=>w.startsWith(t)))).map(([id])=>id).slice(0,8);
+}
+const PROFESSIONS=["Teacher","Tutor","Electrician","Plumber","Doctor","Nurse","Mechanic","Carpenter","Painter","Driver","Cook","Tailor","Hair stylist","Photographer","Lawyer","Accountant","Software developer","Farmer","Shopkeeper"];
+const INTERESTS=["Cricket","Football","Badminton","Volleyball","Chess","Carrom","Running","Cycling","Yoga","Gym","Music","Singing","Dance","Photography","Gardening","Cooking","Reading","Gaming","Painting","Trekking"];
+function professionModal(){
+  const h=S.handles.get(S.me)||{};
+  openModal(`<h2>Your profession</h2><p class="muted" style="margin:-4px 0 8px;font-size:14px">Let neighbours find you when they need help, e.g. “teacher” or “electrician”. Never shows your phone number.</p>
+    <label class="l">Profession<input class="f" id="pr-v" maxlength="30" placeholder="e.g. Electrician" value="${esc(h.profession||"")}"></label>
+    <div class="tagrow">${PROFESSIONS.map(p=>`<button type="button" class="chip" data-act="prPick" data-v="${esc(p)}">${esc(p)}</button>`).join("")}</div>
+    <label class="qtog" style="margin-top:4px"><input type="checkbox" id="pr-on" ${h.professionOn?"checked":""}><span><b>Show on my profile and in search</b><small>Off by default. Turn on so people searching your profession near them can find you and ask for help.</small></span></label>
+    <div class="hint" id="pr-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="prSave">Save</button></div>`);
+}
+function interestsModal(){
+  const h=S.handles.get(S.me)||{}, cur=h.interests||[];
+  UI.ivTmp=[...cur]; UI.ivMute=[...(h.mutedInterests||[])];
+  openModal(`<h2>Your interests</h2><p class="muted" style="margin:-4px 0 8px;font-size:14px">Pick up to 5. When someone nearby posts something like “Need 4 for cricket Saturday”, they can invite people who listed that interest.</p>
+    <div class="tagbox" id="iv-box"></div>
+    <input class="f" id="iv-in" maxlength="24" placeholder="Type an interest and press Enter" autocomplete="off">
+    <div class="tagrow">${INTERESTS.map(p=>`<button type="button" class="chip" data-act="ivPick" data-v="${esc(p)}">${esc(p)}</button>`).join("")}</div>
+    <label class="qtog" style="margin-top:4px"><input type="checkbox" id="iv-on" ${h.interestsOn?"checked":""}><span><b>Show my interests and allow invites</b><small>Off by default. Turn on so people can invite you to things like a cricket game nearby.</small></span></label>
+    <div id="iv-mutes" style="margin-top:2px"></div>
+    <div class="hint" id="iv-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="ivSave">Save</button></div>`);
+  ivRender();
+}
+function ivRender(){
+  const box=$("#iv-box"), mb=$("#iv-mutes"); if(!box) return;
+  box.innerHTML=(UI.ivTmp||[]).map(x=>`<span class="chip tg">${esc(x)}<button type="button" data-act="ivRemove" data-v="${esc(x)}" aria-label="Remove ${esc(x)}">×</button></span>`).join("");
+  if(mb) mb.innerHTML=(UI.ivTmp||[]).length?`<div class="muted" style="font-size:12.5px;margin:6px 0 2px">Want to keep an interest but skip its invites?</div>${(UI.ivTmp||[]).map(x=>`<label class="qtog" style="padding:3px 0"><input type="checkbox" data-act="ivMuteTog" data-v="${esc(x)}" ${(UI.ivMute||[]).some(m=>m.toLowerCase()===x.toLowerCase())?"checked":""}><span style="font-size:13px">Mute invites for “${esc(x)}”</span></label>`).join("")}`:"";
+}
+function ivAdd(v){
+  v=(v||"").trim().slice(0,24); if(!v) return;
+  UI.ivTmp=UI.ivTmp||[]; if(UI.ivTmp.length>=5||UI.ivTmp.some(x=>x.toLowerCase()===v.toLowerCase())) return;
+  UI.ivTmp.push(v); ivRender();
+}
+function interestCandidates(interest,hp){
+  const norm=sNorm(interest).trim(), bl=new Set(myBlocks());
+  return [...S.handles].filter(([id,h])=>id!==S.me&&!bl.has(id)&&!isSeed(id)&&h.interestsOn&&(h.interests||[]).some(x=>sNorm(x).trim()===norm)&&!(h.mutedInterests||[]).some(x=>sNorm(x).trim()===norm)&&inHome(h,hp)).map(([id])=>id);
+}
+function playInviteModal(tid,interest){
+  const t=S.topics.get(tid); if(!t) return;
+  const hp=placeOf(t.location)||homePlace();
+  const cands=interestCandidates(interest,hp);
+  UI.invSel=new Set();
+  openModal(`<h2>Invite people who like ${esc(interest)}</h2><p class="muted" style="margin:-4px 0 8px;font-size:14px">${cands.length?`${cands.length} ${cands.length===1?"person":"people"} near you listed this interest. Pick who to invite — only they'll be notified, and they can always turn invites off.`:"No one near you has listed this interest yet. You can still share the post yourself, and people can turn this on in Settings later."}</p>
+    ${cands.length?`<div class="list" id="inv-list">${cands.map(id=>`<label class="invrow"><input type="checkbox" data-act="invTog" data-id="${esc(id)}">${avatar(id,"xs")}<b>${esc(nameOf(id))}</b></label>`).join("")}</div>`:""}
+    <div class="acts"><button class="btn" data-act="closeModal">${cands.length?"Skip for now":"Close"}</button>${cands.length?`<button class="btn pri" data-act="inviteSend" data-id="${esc(tid)}" data-v="${esc(interest)}">Invite selected</button>`:""}</div>`);
 }
 function vProfile(id){
   if(!id) return emptyBox("Sign in to see your profile","Open this page in claude.ai while signed in.");
@@ -3422,6 +3490,8 @@ function vProfile(id){
   return `<div class="phead pfh">${avatar(id,"lg")}<div class="pf-main"><div class="pf-top"><h1>${esc(nameOf(id))}${isSeed(id)?' <span class="sample">sample account</span>':""}</h1><div class="pf-act">${isMe?`<button class="btn sm" data-act="editHandle">Edit profile</button><a class="btn sm" href="#settings" aria-label="Settings">⚙️ Settings</a>`:peopleBtns(id)}</div></div>
      <div class="pf-id">${idTag(id)}${isMe?` <button class="act" data-act="copyId" data-id="${ttCode(id)}" title="Share it so friends can search for you">Copy</button> `:""}</div>
      ${h?.bio?`<p class="pf-bio">${esc(h.bio)}</p>`:isMe?`<button type="button" class="linkb pf-addbio" data-act="editHandle">＋ Add a bio</button>`:""}${(()=>{ const hc=PLACES.byId.get(h?.homeCity||(isMe?UI.homeLocal?.c:"")), ha2=PLACES.byId.get(h?.homeArea||(isMe?UI.homeLocal?.a:"")); return hc?`<div class="muted pf-loc">📍 ${esc(ha2?ha2.name+", ":"")}${esc(hc.name)}${hc.state?", "+esc(hc.state):""}</div>`:""; })()}
+     ${h?.profession&&(isMe||h.professionOn)?`<div class="pf-pro">🧰 ${esc(h.profession)}${isMe&&!h.professionOn?` <small class="muted">(hidden — <a href="javascript:void 0" data-act="prOpen">show it</a>)</small>`:!isMe?` <button type="button" class="btn sm" data-act="askHelp" data-id="${esc(id)}">Ask for help</button>`:""}</div>`:""}
+     ${h?.interests?.length&&(isMe||h.interestsOn)?`<div class="pf-pro">⭐ ${esc(h.interests.join(", "))}${isMe&&!h.interestsOn?` <small class="muted">(hidden — <a href="javascript:void 0" data-act="ivOpen">show it</a>)</small>`:""}</div>`:""}
      <div class="muted pf-cnt"><a class="cnt" href="#ppl-followers-${esc(id)}"><b>${followerN(id)}</b> followers</a> · <a class="cnt" href="#ppl-following-${esc(id)}"><b>${followingN(id)}</b> following</a> · <a class="cnt" href="#ppl-friends-${esc(id)}"><b>${friendsOf(id).length}</b> ${friendsOf(id).length===1?"friend":"friends"}</a></div>
      ${isMe&&incomingReqs().length?`<div class="panel" style="margin-top:10px"><h3 style="margin:0 0 6px">Friend requests</h3>${incomingReqs().map(f=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 0">${avatar(f.fromId,"xs")}<a href="#u-${esc(f.fromId)}" style="font-weight:600;flex:1">${esc(nameOf(f.fromId))}</a><button class="btn pri sm" data-act="friendAccept" data-id="${esc(f.fromId)}">Accept</button><button class="btn sm" data-act="friendRemove" data-id="${esc(f.fromId)}">Decline</button></div>`).join("")}</div>`:""}</div></div>
    ${isMe?(()=>{ const cc=new Map(); for(const f of S.follows.values()){ if(f.userId!==S.me) continue; const t=S.topics.get(f.topicId); if(t&&t.category) cc.set(t.category,(cc.get(t.category)||0)+1); } const arr=[...cc].sort((x,y)=>y[1]-x[1]).slice(0,8); return arr.length?`<div class="panel pf-fol"><h3>Topics I follow</h3><div class="tagrow">${arr.map(([c])=>catChip(c)).join("")}</div></div>`:""; })():""}
@@ -3793,7 +3863,7 @@ function render(){
   enhance(view); mapsMount(view); if($("#ls-map")) lsMapMount();
   { const rt=parseRoute(); if(rt.startsWith("t-")){ const tv=S.topics.get(rt.slice(2).split("~")[0]); if(tv&&tv.kind==="place"){ const sn=lsSeen(); if(sn[0]!==tv.id) try{ localStorage.setItem("tt_ls_seen",JSON.stringify([tv.id,...sn.filter(x=>x!==tv.id)].slice(0,12))); }catch{} } } }
   view.querySelectorAll(".htabs").forEach(tb=>{ const f=()=>tb.classList.toggle("ov",tb.scrollWidth>tb.clientWidth+2&&tb.scrollLeft+tb.clientWidth<tb.scrollWidth-4); f(); if(!tb._ov){ tb._ov=1; tb.addEventListener("scroll",f,{passive:true}); } });
-  markSeen(); maybeAskHome();
+  markSeen(); maybeAskHome(); maybeAskBusiness();
   if(fid){ const el=document.getElementById(fid); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0],sel[1]); }catch{} } }
   if(changed){ if(UI.lastRoute) UI.navN=(UI.navN||0)+1; UI.lastRoute=r;
     const el=focusC&&document.getElementById("c-"+focusC);
@@ -4162,6 +4232,8 @@ function topicModal(o={}){ PH.tn=[];
     ${gName?`<div class="askg">👥 Posting in <b>${esc(gName)}</b> · you can change this in More options</div>`:""}
     <details class="askm"><summary>More options <small>hashtags, tag friends, who can see it, pictures</small></summary><div class="askm-b">
     ${b||hf?"":`<label class="qtog"><input type="checkbox" id="n-isq" data-act="qtog" ${UI.newKind==="question"?"checked":""}><span><b>This is a question</b><small>People answer it, and the community answer is summarised from what they say.</small></span></label>`}
+    ${b?"":`<label class="qtog"><input type="checkbox" id="n-play" data-act="playTog"><span><b>👥 Looking for people to join</b><small>e.g. “Need 4 for cricket Saturday”. After posting, you can invite nearby people who listed that interest.</small></span></label>
+    <div class="l" id="n-playbox" hidden>Interest<input class="f" id="n-playv" maxlength="24" placeholder="e.g. Cricket"><div class="tagrow">${INTERESTS.slice(0,10).map(p=>`<button type="button" class="chip" data-act="playPick" data-v="${esc(p)}">${esc(p)}</button>`).join("")}</div></div>`}
     <label class="l">Hashtags<input class="f" id="n-tags" placeholder="iphone17 camera smartphones" value="${esc(tags)}"></label>
     <div class="l">Tag friends (optional)<div class="tagbox" id="n-tagged"></div><input class="f" id="n-tagin" autocomplete="off" maxlength="30" placeholder="Type a friend’s name, their ID, or a group name"><div class="tagsug" id="n-tagsug" hidden></div><span class="hint" style="margin:0">Tag friends or a whole group you belong to. They get a notification and are shown on the topic. Up to 10 friends.</span></div>
     ${b?"":`<label class="l">Post to<select class="f" id="n-group">${groupOptions(o.groupId??curGroup())}</select></label>`}
@@ -4512,6 +4584,8 @@ document.addEventListener("click", async e=>{
     case "newBattle": if(!(await gate())) break; battleModal({loc:el.dataset.loc||"",groupId:el.dataset.group}); break;
     case "newPred": if(!(await gate())) break; predModal({groupId:el.dataset.group}); break;
     case "reviewPick": closeModal(false); reviewPicker(); break;
+    case "bizAdd": closeModal(false); reviewPicker(); break;
+    case "bizFind": closeModal(false); UI.htab="nb"; UI.lsub="shops"; location.hash="home"; schedule(); window.scrollTo({top:0}); break;
     case "rvCatH": UI.rvc=el.dataset.v; UI.fyN=10; schedule(); break;
     case "rpKind": { UI.rpKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const l=$("#rp-locl"); if(l) l.hidden=UI.rpKind!=="place"; const gb=$("#rp-geo"); if(gb) gb.hidden=UI.rpKind!=="place"; break; }
     case "rpForce": UI.rpDupOk=true; $("#rp-err").textContent=""; $("[data-act=rpSave]")?.click(); break;
@@ -5053,6 +5127,7 @@ document.addEventListener("click", async e=>{
       const t={title:title.slice(0,120),desc,category:$("#n-cat").value,kind:oc?"topic":(UI.newKind||"topic"),tags:[...new Set([...parseTags($("#n-tags").value),...tagsIn(desc)])].slice(0,8),location:loc,authorId:S.me,tagged:(UI.tagged||[]).filter(u=>S.handles.has(u)&&u!==S.me).slice(0,10),taggedGroups:(UI.taggedG||[]).filter(g=>memberOf(g)).slice(0,3),parentId:oc?oc.topicId:null,originCommentId:oc?oc.id:null,createdAt:Date.now(),
         groupId: oc ? (S.topics.get(oc.topicId)?.madePublic?null:(S.topics.get(oc.topicId)?.groupId||null)) : ($("#n-group")?.value||null),...(UI.newAbout&&!oc&&S.topics.has(UI.newAbout)?{about:UI.newAbout}:{})};
       if(UI.help&&!oc){ t.help=true; const bu=($("#n-budget")?.value||"").trim().slice(0,30); if(bu) t.budget=bu; if(UI.hfWhen) t.when=UI.hfWhen; }
+      if(!oc&&$("#n-play")?.checked){ const pf=($("#n-playv")?.value||"").trim().slice(0,24); if(pf) t.playFor=pf.toLowerCase(); }
       let acc=$("#n-acc")?.value||"open"; if(acc==="selected") acc="invite";
       if(acc!=="open"&&t.groupId){ err.textContent="Choose a group or a privacy level, not both."; break; }
       if(acc!=="open") t.access=acc; if(UI.bn) t.banner=UI.bn;
@@ -5072,6 +5147,7 @@ document.addEventListener("click", async e=>{
         if(inGChat()&&t.groupId===UI.gcLast){ stayInChat(); break; }
         if(videoLinks(t.title+" "+t.desc).length||(t.media||[]).length) setTimeout(()=>openCard("topic",tid,"feed",{title:"🎬 Posted!",sub:"Share it so people join the conversation."}),650);
         location.hash="t-"+tid;
+        if(t.playFor) setTimeout(()=>playInviteModal(tid,t.playFor),300);
       } else el.disabled=false;
       break; }
     case "saveHandle": {
@@ -5136,6 +5212,35 @@ document.addEventListener("click", async e=>{
     case "nPref": { const k=el.dataset.k; if(NPOFF.has(k)) NPOFF.delete(k); else NPOFF.add(k); try{ localStorage.setItem("tt-npoff",JSON.stringify([...NPOFF])); }catch{} pushPrefs(); schedule(); break; }
     case "nAll": { const on=el.dataset.v==="on"; NPOFF=on?new Set():new Set(NCATS.map(c=>c[0])); try{ localStorage.setItem("tt-npoff",JSON.stringify([...NPOFF])); }catch{} pushPrefs(); schedule(); break; }
     case "pwOpen": pwModal(); break;
+    case "askHelp": { if(!(await gate())) break; const h=S.handles.get(id); if(!h) break;
+      openModal(`<h2>Ask ${esc(nameOf(id))} for help</h2><p class="muted" style="margin:-4px 0 8px;font-size:14px">Listed as <b>${esc(h.profession)}</b>. They'll get a notification with your message and can reply or ignore it. Your phone number is never shared.</p>
+        <textarea class="f" id="ah-text" rows="3" maxlength="240" placeholder="What do you need help with?"></textarea>
+        <div class="hint" id="ah-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="askHelpSend" data-id="${esc(id)}">Send</button></div>`); break; }
+    case "askHelpSend": { const text=$("#ah-text").value.trim(), err=$("#ah-err");
+      if(text.length<3){ err.textContent="Write a short message first."; break; }
+      el.disabled=true; await notify([[id,"askhelp"]],{text:text.slice(0,240)}); closeModal(true); toast("Sent"); break; }
+    case "playTog": { const on=el.checked; const bx=$("#n-playbox"); if(bx){ bx.hidden=!on; if(on) setTimeout(()=>$("#n-playv")?.focus(),30); } break; }
+    case "playPick": { const v=$("#n-playv"); if(v) v.value=el.dataset.v; break; }
+    case "prOpen": professionModal(); break;
+    case "prPick": $("#pr-v").value=el.dataset.v; break;
+    case "prSave": { const v=$("#pr-v").value.trim().slice(0,30), on=$("#pr-on").checked, err=$("#pr-err"), prev=S.handles.get(S.me)||{};
+      if(on&&!v){ err.textContent="Add a profession first, or leave Show off."; break; }
+      el.disabled=true;
+      if(await W(()=>db.doc("handles/"+S.me).update({profession:v,professionOn:!!v&&on}))){ Object.assign(prev,{profession:v,professionOn:!!v&&on}); closeModal(true); toast("Saved"); schedule(); } else el.disabled=false;
+      break; }
+    case "ivOpen": interestsModal(); break;
+    case "ivPick": ivAdd(el.dataset.v); break;
+    case "ivRemove": UI.ivTmp=(UI.ivTmp||[]).filter(x=>x!==el.dataset.v); UI.ivMute=(UI.ivMute||[]).filter(x=>x.toLowerCase()!==el.dataset.v.toLowerCase()); ivRender(); break;
+    case "ivMuteTog": { UI.ivMute=UI.ivMute||[]; const v=el.dataset.v; if(el.checked){ if(!UI.ivMute.some(x=>x.toLowerCase()===v.toLowerCase())) UI.ivMute.push(v); } else UI.ivMute=UI.ivMute.filter(x=>x.toLowerCase()!==v.toLowerCase()); break; }
+    case "ivSave": { const list=UI.ivTmp||[], mutes=(UI.ivMute||[]).filter(x=>list.some(y=>y.toLowerCase()===x.toLowerCase())), on=$("#iv-on").checked, err=$("#iv-err"), prev=S.handles.get(S.me)||{};
+      if(on&&!list.length){ err.textContent="Add at least one interest first, or leave Show off."; break; }
+      el.disabled=true;
+      if(await W(()=>db.doc("handles/"+S.me).update({interests:list,interestsOn:!!list.length&&on,mutedInterests:mutes}))){ Object.assign(prev,{interests:list,interestsOn:!!list.length&&on,mutedInterests:mutes}); closeModal(true); toast("Saved"); schedule(); } else el.disabled=false;
+      break; }
+    case "invTog": { UI.invSel=UI.invSel||new Set(); if(el.checked) UI.invSel.add(el.dataset.id); else UI.invSel.delete(el.dataset.id); break; }
+    case "inviteSend": { const t=S.topics.get(id), sel=[...(UI.invSel||[])];
+      if(!sel.length){ toast("Pick at least one person first"); break; }
+      el.disabled=true; await notify(sel.map(u=>[u,"playcall"]),{topicId:id,text:(t?.title||"").slice(0,240)}); closeModal(true); toast(`Invited ${sel.length} ${sel.length===1?"person":"people"}`); break; }
     case "pwSave": { const cur=$("#pw-cur").value, n1=$("#pw-new").value, n2=$("#pw-new2").value, err=$("#pw-err");
       if(!cur){ err.textContent="Enter your current password."; break; } if(n1.length<8){ err.textContent="Use a new password of at least 8 characters."; break; } if(n1!==n2){ err.textContent="The two new passwords don’t match."; break; }
       el.disabled=true; try{ const r=await fetch("/api/password",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({current:cur,password:n1})}); const j=await r.json().catch(()=>({})); if(!r.ok){ err.textContent=j.error?.message||"Couldn’t change the password."; el.disabled=false; break; } closeModal(true); toast("Password changed. Other devices were signed out."); }catch{ err.textContent="Couldn’t reach the server. Try again."; el.disabled=false; }
@@ -5152,6 +5257,7 @@ document.addEventListener("click", async e=>{
       else if(await W(()=>db.doc("ufollows/"+k).set({followerId:S.me,followingId:id,createdAt:Date.now()}))) notify([[id,"follow"]],{text:""});
       schedule(); break; }
     case "inviteF": { if(!(await gate())) break; inviteModal(id); break; }
+    case "playInvite": { const t=S.topics.get(id); if(!t||t.authorId!==S.me||!t.playFor) break; playInviteModal(id,t.playFor); break; }
     case "invTick": if(el.checked) UI.inv.add(id); else UI.inv.delete(id); break;
     case "copyLink": try{ await navigator.clipboard.writeText(location.origin+"/#t-"+id); toast("Link copied"); }catch{ toast(location.origin+"/#t-"+id); } break;
     case "invSend": { const t=S.topics.get(id); const list=[...UI.inv]; if(!list.length){ toast("Pick at least one friend."); break; } el.disabled=true;
@@ -5213,6 +5319,7 @@ document.addEventListener("change", async e=>{
 });
 document.addEventListener("change",e=>{ if(e.target.closest&&e.target.closest(".se-hours")){ const nh=document.getElementById("se-nohours"); if(nh) nh.checked=false; } if(e.target.id==="n-cat") UI.catTouched=true; if(e.target.id==="ls-sort"){ UI.lsSort=e.target.value; schedule(); } });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="ls-q"){ e.preventDefault(); lsSaveRecent(e.target.value); e.target.blur(); } });
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="iv-in"){ e.preventDefault(); ivAdd(e.target.value); e.target.value=""; } });
 document.addEventListener("input",e=>{ if(UI.fdKind&&/^n-(title|desc|budget|tags|loc)$/.test(e.target.id||"")){ clearTimeout(UI.fdT); UI.fdT=setTimeout(fdSave,400); } });
 document.addEventListener("change",e=>{ if(UI.fdKind&&/^n-(cat|loc)$/.test(e.target.id||"")) fdSave(); });
 document.addEventListener("click",e=>{ if(UI.fdKind&&e.target.closest&&e.target.closest("#modal [data-act=hfWhen],#modal #n-locbox,#modal #n-locseg")) setTimeout(fdSave,150); });
