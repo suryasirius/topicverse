@@ -14,7 +14,7 @@ let srv, dir, ip = 1;
 
 const headers = cookie => ({ "content-type": "application/json", "x-tt": "1", "x-forwarded-for": `10.77.0.${ip++ % 250}`, ...(cookie ? { cookie } : {}) });
 async function account(name) {
-  const r = await fetch(BASE + "/api/signup", { method: "POST", headers: headers(), body: JSON.stringify({ username: name, password: "password123" }) });
+  const r = await fetch(BASE + "/api/signup", { method: "POST", headers: headers(), body: JSON.stringify({ username: name, password: "password123", agree: true }) });
   assert.equal(r.status, 200, "sign-up works");
   return { cookie: r.headers.get("set-cookie").split(";")[0], id: (await r.json()).me.id };
 }

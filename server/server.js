@@ -595,7 +595,7 @@ function meFor(uid) {
 }
 const CARD_DIR = path.join(DATA_DIR, "cards"); fs.mkdirSync(CARD_DIR, { recursive: true }); const CARDMETA = new Map();
 const STATIC = {};
-for (const [p, f, t] of [["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json"], ["/sw.js", "sw.js", "text/javascript; charset=utf-8"], ["/icon-192.png", "icon-192.png", "image/png"], ["/icon-512.png", "icon-512.png", "image/png"], ["/icon-maskable.png", "icon-maskable.png", "image/png"], ["/leaflet.js", "leaflet.js", "text/javascript; charset=utf-8"], ["/leaflet.css", "leaflet.css", "text/css; charset=utf-8"]])
+for (const [p, f, t] of [["/manifest.webmanifest", "manifest.webmanifest", "application/manifest+json"], ["/sw.js", "sw.js", "text/javascript; charset=utf-8"], ["/icon-192.png", "icon-192.png", "image/png"], ["/icon-512.png", "icon-512.png", "image/png"], ["/icon-maskable.png", "icon-maskable.png", "image/png"], ["/leaflet.js", "leaflet.js", "text/javascript; charset=utf-8"], ["/leaflet.css", "leaflet.css", "text/css; charset=utf-8"], ["/privacy", "privacy.html", "text/html; charset=utf-8"], ["/terms", "terms.html", "text/html; charset=utf-8"]])
   STATIC[p] = { t, b: fs.readFileSync(path.join(__dirname, "static", f)) };
 const SEC = { "X-Content-Type-Options": "nosniff", "Referrer-Policy": "same-origin", "X-Frame-Options": "DENY" };
 
@@ -682,6 +682,7 @@ const server = http.createServer(async (req, res) => {
         if (!email) return json(res, 400, { error: { code: "bad_request", message: "Enter a valid email address." } });
       }
       if (!HANDLE_RE.test(username)) return json(res, 400, { error: { code: "bad_request", message: "Usernames are 3–24 letters, numbers or underscores." } });
+      if (body.agree !== true) return json(res, 400, { error: { code: "bad_request", message: "Please confirm you’re 13+ and agree to the Terms to continue." } });
       if (password.length < 8) return json(res, 400, { error: { code: "bad_request", message: "Use a password of at least 8 characters." } });
       const taken = q.userByName.get(username) || [...DOCS.handles.values()].some(h => (h.handle || "").toLowerCase() === username.toLowerCase());
       if (taken) return json(res, 409, { error: { code: "permission_denied", message: "That username is taken." } });
@@ -698,7 +699,7 @@ const server = http.createServer(async (req, res) => {
       q.addUser.run(id, username, salt, hashPw(password, salt), Date.now(), email);
       if (!adminUid() && (!ADMIN_USERNAME || ADMIN_USERNAME === username.toLowerCase())) q.setMeta.run("admin", id);
       if (ADMIN_USERNAME && ADMIN_USERNAME === username.toLowerCase()) q.setMeta.run("admin", id);
-      apply("handles", id, { handle: username, bio: "", createdAt: Date.now() });
+      apply("handles", id, { handle: username, bio: "", createdAt: Date.now(), agreedAt: Date.now() });
       broadcast("handles", id, DOCS.handles.get(id), null);
       setSession(res, id);
       return json(res, 200, { me: meFor(id) });

@@ -3388,6 +3388,7 @@ function vSettings(){
   <section class="st-card"><h3>Blocked people</h3>${bl.length?bl.map(u=>`<div class="st-row"><div style="display:flex;gap:10px;align-items:center">${avatar(u,"xs")}<b>${esc(nameOf(u))}</b></div><button type="button" class="btn sm" data-act="unblock" data-id="${esc(u)}">Unblock</button></div>`).join(""):`<p class="st-note" style="margin:0">You haven’t blocked anyone.</p>`}</section>
   <section class="st-card"><h3>Account</h3>${row("Password","Change it any time",`<button type="button" class="btn sm" data-act="pwOpen">Change</button>`)}
     ${row("Sign out","",`<button type="button" class="btn sm danger" data-act="logout2">Sign out</button>`)}</section>
+  <section class="st-card"><h3>Legal</h3>${row("Privacy Policy","What we collect and why",`<a class="btn sm" href="/privacy" target="_blank" rel="noopener">Open</a>`)}${row("Terms &amp; Community Guidelines","The rules everyone agrees to",`<a class="btn sm" href="/terms" target="_blank" rel="noopener">Open</a>`)}</section>
   <section class="st-card"><h3>Coming soon</h3>${soon("Who can message me","Direct message privacy")}${soon("Who can see my activity","Comments, reviews and votes")}${soon("Mute people","Quieter than blocking")}${soon("Download my data","Get a copy as a file")}${soon("Delete my account","Remove your profile")}</section></div>`;
 }
 function pwModal(){

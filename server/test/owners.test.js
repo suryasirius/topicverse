@@ -10,7 +10,7 @@ let srv, dir, ip = 1, A, B, C;
 const headers = cookie => ({ "content-type": "application/json", "x-tt": "1", "x-forwarded-for": `10.83.0.${ip++ % 250}`, ...(cookie ? { cookie } : {}) });
 const post = async (u, p, body) => (await fetch(BASE + p, { method: "POST", headers: headers(u && u.cookie), body: JSON.stringify(body) })).status;
 const all = async u => (await (await fetch(BASE + "/api/all", { headers: headers(u && u.cookie) })).json()).cols;
-const signup = async name => { const r = await fetch(BASE + "/api/signup", { method: "POST", headers: headers(), body: JSON.stringify({ username: name, password: "password123" }) }); return { cookie: r.headers.get("set-cookie").split(";")[0], id: (await r.json()).me.id }; };
+const signup = async name => { const r = await fetch(BASE + "/api/signup", { method: "POST", headers: headers(), body: JSON.stringify({ username: name, password: "password123", agree: true }) }); return { cookie: r.headers.get("set-cookie").split(";")[0], id: (await r.json()).me.id }; };
 const w = (u, op, col, id, data) => post(u, "/api/write", { op, col, id, data });
 const claim = (u, tid, extra) => w(u, "set", "claims", `${tid}__${u.id}`, { topicId: tid, userId: u.id, phone: "98765 43210", role: "owner", status: "pending", createdAt: Date.now(), ...extra });
 const spost = (u, id, extra) => w(u, "set", "shopposts", id, { topicId: "s1", authorId: u.id, kind: "news", text: "New stock has arrived", createdAt: Date.now(), ...extra });

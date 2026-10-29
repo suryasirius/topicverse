@@ -151,6 +151,7 @@
         <label id="tt-cdw" hidden>6-digit code from your email<input id="tt-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="123456"></label>
         <label id="tt-unw">Username<input id="tt-user" autocomplete="username" maxlength="24" spellcheck="false" autocapitalize="off"></label>
         <label id="tt-pww">Password<input id="tt-pass" type="password" autocomplete="current-password" maxlength="200"></label>
+        <label id="tt-agw" hidden style="display:flex;flex-direction:row;align-items:flex-start;gap:8px;font-weight:400;letter-spacing:0;color:inherit;font-size:13px"><input id="tt-agree" type="checkbox" style="width:16px;height:16px;flex:none;margin-top:2px"> <span>I'm 13 or older and agree to the <a href="/terms" target="_blank" rel="noopener">Terms &amp; Community Guidelines</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
         <div class="err" id="tt-err" role="alert"></div>
         <p id="tt-forgot" hidden><button type="button" class="switch" data-tt="forgot">Forgot password?</button></p>
         <div class="row"><button type="button" class="btn" data-tt="close">Cancel</button><button type="submit" class="btn pri" id="tt-go">Log in</button></div>
@@ -175,6 +176,10 @@
           }
           const body = { username: g("#tt-user"), password: box.querySelector("#tt-pass").value };
           if (box.dataset.mode === "signup" && EMAIL_ON) { body.email = g("#tt-email"); body.code = g("#tt-code"); }
+          if (box.dataset.mode === "signup") {
+            if (!box.querySelector("#tt-agree").checked) { err.textContent = "Please confirm you’re 13+ and agree to the Terms to continue."; go.disabled = false; return; }
+            body.agree = true;
+          }
           await api(box.dataset.mode === "signup" ? "/api/signup" : "/api/login", body);
           location.reload();
         } catch (ex) { err.textContent = ex.message || "Couldn’t log in. Try again."; go.disabled = false; }
@@ -191,6 +196,7 @@
     const q = id => box.querySelector(id);
     q("#tt-emw").hidden = !s || code; q("#tt-cdw").hidden = !code;
     q("#tt-unw").hidden = rs || (s && !code); q("#tt-pww").hidden = s && !code;
+    q("#tt-agw").hidden = !(m === "signup" && (!s || code)); if (!q("#tt-agw").hidden) q("#tt-agree").checked = false;
     q("#tt-go").textContent = rs ? (code ? "Reset password" : "Send code") : m !== "signup" ? "Log in" : !s ? "Create account" : code ? "Create account" : "Send code";
     q("#tt-pass").autocomplete = (m === "signup" || rs) ? "new-password" : "current-password";
     q("#tt-pww").firstChild.textContent = rs ? "New password (8+ characters)" : "Password";

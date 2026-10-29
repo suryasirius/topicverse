@@ -9,7 +9,7 @@ const PORT = 5200 + Math.floor(Math.random() * 90), BASE = `http://127.0.0.1:${P
 let srv, dir, ip = 1, A, B;
 const headers = cookie => ({ "content-type": "application/json", "x-tt": "1", "x-forwarded-for": `10.81.0.${ip++ % 250}`, ...(cookie ? { cookie } : {}) });
 const post = async (u, p, body) => (await fetch(BASE + p, { method: "POST", headers: headers(u && u.cookie), body: JSON.stringify(body) })).status;
-const signup = async name => { const r = await fetch(BASE + "/api/signup", { method: "POST", headers: headers(), body: JSON.stringify({ username: name, password: "password123" }) }); return { cookie: r.headers.get("set-cookie").split(";")[0], id: (await r.json()).me.id }; };
+const signup = async name => { const r = await fetch(BASE + "/api/signup", { method: "POST", headers: headers(), body: JSON.stringify({ username: name, password: "password123", agree: true }) }); return { cookie: r.headers.get("set-cookie").split(";")[0], id: (await r.json()).me.id }; };
 const topic = (u, id, extra) => post(u, "/api/write", { op: "set", col: "topics", id, data: { title: "News test " + id, category: "Local", location: "Arakkonam", authorId: u.id, createdAt: Date.now(), ...extra } });
 
 before(async () => {

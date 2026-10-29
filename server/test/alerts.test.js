@@ -14,7 +14,7 @@ before(async () => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), "tt-alerts-"));
   srv = spawn(process.execPath, ["server.js"], { cwd: path.join(__dirname, ".."), stdio: "ignore", env: { ...process.env, PORT: String(PORT), HOST: "127.0.0.1", DATA_DIR: dir, SEED_DIR: path.join(dir, "no-seed") } });
   for (let i = 0; i < 100; i++) { try { if ((await fetch(BASE + "/healthz")).ok) break; } catch { } await new Promise(r => setTimeout(r, 100)); }
-  const r = await fetch(BASE + "/api/signup", { method: "POST", headers: headers(), body: JSON.stringify({ username: "alert_tester", password: "password123" }) });
+  const r = await fetch(BASE + "/api/signup", { method: "POST", headers: headers(), body: JSON.stringify({ username: "alert_tester", password: "password123", agree: true }) });
   A = { cookie: r.headers.get("set-cookie").split(";")[0], id: (await r.json()).me.id };
 });
 after(() => { srv?.kill(); fs.rmSync(dir, { recursive: true, force: true }); });
