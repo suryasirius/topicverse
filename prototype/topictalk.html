@@ -1485,6 +1485,31 @@ body{font-size:15.5px;letter-spacing:-.003em}
 .sp-empty{display:grid;gap:4px;justify-items:start}.sp-empty span{font-size:13.5px;color:var(--muted)}.sp-empty .btn{margin-top:6px}
 .se-hours{display:grid;gap:6px;margin-top:6px}.se-d{display:grid;grid-template-columns:120px 1fr auto 1fr;gap:6px;align-items:center}.se-d .f{margin:0;height:38px;padding:0 8px}.se-d span{font-size:13px;color:var(--muted)}.se-dn{display:flex;gap:6px;align-items:center;font-size:14px}
 @media(max-width:420px){.se-d{grid-template-columns:96px 1fr auto 1fr}.se-dn{font-size:13px}}
+
+.ls-need{font-size:13.5px;color:var(--muted);margin:0 0 12px}.ls-need b{color:var(--ink);font-weight:600}
+.se-types{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;max-height:180px;overflow:auto}.se-ty{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px}.se-ty input{margin:0}.se-ty:has(input:checked){background:var(--brand-soft);border-color:var(--brand);color:var(--brand-deep)}
+
+/* ===== SHOP OWNERS v1: claims, verified badge, offers ===== */
+.vbadge{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:700;color:#0B6B4F;background:#E3F5EC;border:1px solid #BFE6D3;border-radius:999px;padding:1px 8px;white-space:nowrap;letter-spacing:0}
+.sp-v{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13.5px;color:var(--muted);padding:10px 12px;border-radius:12px;background:#F3FAF6}
+.sp-v.pend{background:#FFF7E6;color:#7A5200}
+.sp-adm{font-size:12.5px}
+.spcs{display:grid;gap:10px}
+.spc{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--surface);display:grid;gap:6px}
+.spc.offer{border-color:#F2D7A6;background:linear-gradient(180deg,#FFFBF2,var(--surface) 70%)}
+.spc-s{display:flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none;min-width:0}.spc-s b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spc-s i{font-style:normal;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px;background:hsl(var(--h,150) 60% 94%);flex:none}
+.spc-k{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12.5px;color:var(--muted)}
+.spc-t{font-weight:700;color:var(--ink)}.spc.offer .spc-t{color:#9A5B00}.spc-e{font-weight:600;color:#9A5B00}.spc-w{margin-left:auto}
+.spc-x{margin:0;font-size:14.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.spc-m{border:0;padding:0;background:none;cursor:zoom-in;justify-self:start;max-width:100%}.spc-m img{display:block;max-width:100%;max-height:260px;border-radius:10px;object-fit:cover}
+.spc-f{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.clc{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:6px 0;display:grid;gap:6px;font-size:13.5px;background:var(--surface)}
+.clc-h a{color:var(--ink)}.clc-p a{font-weight:700}.clc-n{font-size:13px}
+.lu-h{display:grid;gap:2px;margin:0 0 12px}.lu-h b{font-size:16px}.lu-h span{font-size:13px}
+.sr-ask{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:10px 0 18px;padding:12px 14px;border-radius:14px;background:var(--soft,#F4F6F5);font-size:14px}
+.sp-kind{display:flex;margin:2px 0 6px}.sp-kind button{flex:1}
+@media(max-width:480px){.lsub button{font-size:13.5px}}
 </style>
 
 <header class="top">
@@ -1542,7 +1567,7 @@ if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.roundRec
 (() => {
 const CATS = ["Tech","Food","Movies","Travel","Apps","Shopping","Sports","Gaming","Finance","Education","Health","Cars","Bikes","Local","Services","Entertainment","Lifestyle","Other"];
 const S = { topics:new Map(), comments:new Map(), reviews:new Map(), likes:new Map(), follows:new Map(), handles:new Map(),
-  battles:new Map(), bvotes:new Map(), pvotes:new Map(), groups:new Map(), gmembers:new Map(), duels:new Map(), dvotes:new Map(), media:new Map(), gmsgs:new Map(), friends:new Map(), ufollows:new Map(), reports:new Map(), blocks:new Map(), tmembers:new Map(), joinreqs:new Map(), myGroups:new Set(), notifs:[], me:null, isOwner:false, readOnly:false, ready:{}, dbOk:null };
+  claims:new Map(), shopposts:new Map(), battles:new Map(), bvotes:new Map(), pvotes:new Map(), groups:new Map(), gmembers:new Map(), duels:new Map(), dvotes:new Map(), media:new Map(), gmsgs:new Map(), friends:new Map(), ufollows:new Map(), reports:new Map(), blocks:new Map(), tmembers:new Map(), joinreqs:new Map(), myGroups:new Set(), notifs:[], me:null, isOwner:false, readOnly:false, ready:{}, dbOk:null };
 const UI = { more:new Set(), replyOpen:new Set(), tab:"discussion", rvOpen:false, rvRating:0, exCat:"All", exSort:"trending", ptab:"topics", query:"", lastRoute:"", lastPost:0,
   csort:"top", ai:{}, aiBusy:{}, ans:{}, ansBusy:null, dReady:{}, city:null, lang:"en" };
 if(/^\/t\/[\w-]+\/?$/.test(location.pathname)) history.replaceState(null,"","/#t-"+location.pathname.split("/")[2]);
@@ -1704,7 +1729,7 @@ const TS_Z={s:.94,m:1.07,l:1.2,x:1.33}; let curTS="";
 function applyTheme(v){ const r=document.documentElement; if(v==="dark"||v==="light") r.dataset.theme=v; else delete r.dataset.theme; }
 const getTheme=()=>{ try{ return localStorage.getItem("tt_theme")||"auto"; }catch{ return "auto"; } };
 applyTheme(getTheme());
-const NG={reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like",grouppost:"group",joined:"group",invited:"group",friend_req:"friends",friend_ok:"friends",follow:"friends",helpreq:"local",resolved:"pred"};
+const NG={claim:"shops",claimok:"shops",claimno:"shops",shopupd:"shops",reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like",grouppost:"group",joined:"group",invited:"group",friend_req:"friends",friend_ok:"friends",follow:"friends",helpreq:"local",resolved:"pred"};
 let NPOFF=new Set(); try{ NPOFF=new Set(JSON.parse(localStorage.getItem("tt-npoff")||"[]")); }catch{}
 function applyTS(v){ if(!TS_Z[v]) v="m"; curTS=v; document.documentElement.style.setProperty("--tz",TS_Z[v]); }
 try{ applyTS(localStorage.getItem("tt_ts")||"m"); }catch{ applyTS("m"); }
@@ -2098,57 +2123,161 @@ const lsSaveRecent=q=>{ q=String(q||"").trim(); if(q.length<2) return; try{ loca
 const distKm=t=>UI.myLoc&&geoOk(t.geo)?geoDist(UI.myLoc,t.geo)/1000:null;
 const kmLbl=k=>k<1?Math.round(k*1000/10)*10+" m":k.toFixed(k<10?1:0)+" km";
 function shopPanel(t){
-  const sh=t.shop||{}, own=!!S.me&&(S.me===t.authorId||S.isOwner), st=openState(sh), wa=sh.whatsapp&&waLink(sh.phone), dir=dirLink(t), {d:today}=istNow();
+  const sh=t.shop||{}, isOwnerOf=!!S.me&&t.ownerId===S.me, own=!!S.me&&(S.me===t.authorId||S.isOwner||isOwnerOf), st=openState(sh), wa=sh.whatsapp&&waLink(sh.phone), dir=dirLink(t), {d:today}=istNow();
   const qs=LIVE().filter(x=>x.about===t.id).sort((a,b)=>lastAct(b)-lastAct(a));
   const info=sh.address||sh.phone||hasHours(sh)||(sh.items||[]).length||sh.delivery;
   const acts=[sh.phone?`<a class="btn sm" href="tel:${esc(String(sh.phone).replace(/[^+0-9]/g,""))}">📞 Call</a>`:"",wa?`<a class="btn sm" href="${esc(wa)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:"",dir?`<a class="btn sm" href="${esc(dir)}" target="_blank" rel="noopener">🧭 Directions</a>`:"",`<button type="button" class="btn sm" data-act="askShop" data-id="${t.id}">❓ Ask about this shop</button>`].join("");
   const hours=hasHours(sh)?`<details class="sp-hours"><summary>${st?`<b class="sp-st ${st.open?"on":""}">${esc(st.txt)}</b>`:""}<span>All hours</span></summary><table>${[1,2,3,4,5,6,0].map(k=>{ const v=sh.hours[k]; return `<tr class="${k===today?"td":""}"><td>${DAYS_L[k]}</td><td>${v&&v!=="closed"?v.split("-").map(fmt12).join(" – "):"Closed"}</td></tr>`; }).join("")}</table><small>Times as listed for this shop, in India time.</small></details>`:"";
   const items=(sh.items||[]).length?`<div class="sp-sec"><h3>Products and services</h3><ul class="sp-items">${sh.items.map(it=>`<li><span>${esc(it.n)}</span>${it.p?`<b>${esc(it.p)}</b>`:""}</li>`).join("")}</ul><small class="muted">Prices are as listed and may change. Check with the shop.</small></div>`:"";
   const ask=`<div class="sp-sec"><div class="sp-h"><h3>Questions about this shop${qs.length?` · ${qs.length}`:""}</h3><button type="button" class="linkb" data-act="askShop" data-id="${t.id}">Ask</button></div>${qs.length?`<div class="list">${qs.slice(0,5).map(x=>{ const s2=stat(x.id); return `<a href="#t-${x.id}"><div class="txt"><b>${esc(cleanTitle(x))}</b><div class="meta"><span>${esc(nameOf(x.authorId))}</span><span>${s2.comments} answer${s2.comments===1?"":"s"}</span><span>${agoShort(x.createdAt)}</span></div></div></a>`; }).join("")}</div>`:`<p class="muted" style="margin:0;font-size:14px">No questions yet. Ask people who have been here about prices, service or quality.</p>`}</div>`;
-  const foot=`<div class="sp-f"><span>${sh.updatedAt?"Shop details updated "+agoShort(sh.updatedAt)+" · ":""}Listed by ${esc(nameOf(t.authorId))}${/^osm:[nwr]\d+$/.test(t.src||"")?` from <a href="https://www.openstreetmap.org/${({n:"node",w:"way",r:"relation"})[t.src[4]]}/${t.src.slice(5)}" target="_blank" rel="noopener">© OpenStreetMap contributors</a>`:""}. Not verified by TopicTalk.</span><span>${own?`<button type="button" class="linkb" data-act="shopEdit" data-id="${t.id}">✏️ Edit shop details</button>`:""}${S.me&&!own?`<button type="button" class="linkb" data-act="rpShop" data-id="${t.id}">🚩 Report wrong details</button>`:""}</span></div>`;
+  const myClaim=S.me&&S.claims.get(t.id+"__"+S.me);
+  const verify=t.ownerId?`<div class="sp-v"><span class="vbadge">✓ Owner verified</span><span>${isOwnerOf?"You are the verified owner. You can post offers and news here.":`Run by ${esc(nameOf(t.ownerId))}. TopicTalk checked this by phone or a visit.`}</span></div>`
+    :myClaim&&myClaim.status==="pending"?`<div class="sp-v pend"><span>⏳ Your claim is waiting for approval. We’ll call the number you gave.</span></div>`
+    :myClaim&&myClaim.status==="rejected"?`<div class="sp-v"><span>Your claim couldn’t be verified. Contact TopicTalk if this is your shop.</span></div>`:"";
+  const ups=[...S.shopposts.values()].filter(x=>x.topicId===t.id&&spLive(x)).sort((a,b)=>(b.kind==="offer")-(a.kind==="offer")||b.createdAt-a.createdAt);
+  const upSec=(ups.length||isOwnerOf||(S.isOwner&&t.ownerId))?`<div class="sp-sec"><div class="sp-h"><h3>Updates from the shop${ups.length?` · ${ups.length}`:""}</h3>${isOwnerOf||S.isOwner&&t.ownerId?`<button type="button" class="btn pri sm" data-act="spNew" data-id="${t.id}">📣 Post an update</button>`:""}</div>${ups.length?`<div class="spcs">${ups.slice(0,6).map(x=>spCard(x,{noShop:1})).join("")}</div>`:`<p class="muted" style="margin:0;font-size:14px">${isOwnerOf?"Post a new arrival, a festival offer or changed timings. People who follow the shop get a notification.":"No updates yet."}</p>`}</div>`:"";
+  const claimBtn=S.me&&!t.ownerId&&!myClaim&&!S.isOwner?`<button type="button" class="linkb" data-act="claimOpen" data-id="${t.id}">🏪 This is my shop</button>`:"";
+  const foot=`<div class="sp-f"><span>${sh.updatedAt?"Shop details updated "+agoShort(sh.updatedAt)+" · ":""}Listed by ${esc(nameOf(t.authorId))}${/^osm:[nwr]\d+$/.test(t.src||"")?` from <a href="https://www.openstreetmap.org/${({n:"node",w:"way",r:"relation"})[t.src[4]]}/${t.src.slice(5)}" target="_blank" rel="noopener">© OpenStreetMap contributors</a>`:""}.${t.ownerId?"":" Not verified by TopicTalk."}</span><span>${claimBtn}${own?`<button type="button" class="linkb" data-act="shopEdit" data-id="${t.id}">✏️ Edit shop details</button>`:""}${S.me&&!own?`<button type="button" class="linkb" data-act="rpShop" data-id="${t.id}">🚩 Report wrong details</button>`:""}</span></div>`;
   return `<section class="sp">${info?`<div class="sp-top">${hours||(sh.address?"":"")}${sh.address?`<div class="sp-addr">📍 ${esc(sh.address)}</div>`:""}${sh.delivery?`<div class="sp-tag">🚚 Home delivery available</div>`:""}</div>`:own?`<div class="sp-empty"><b>Add the shop’s details</b><span>Phone, address, opening hours and what they sell, so people can call or visit.</span><button type="button" class="btn pri sm" data-act="shopEdit" data-id="${t.id}">Add details</button></div>`:""}
-    <div class="sp-acts">${acts}</div>${items}${ask}${foot}</section>`;
+    ${verify}${S.isOwner?(()=>{ const pc=[...S.claims.values()].filter(c=>c.topicId===t.id&&c.status==="pending"); return (pc.length?`<div class="sp-sec"><h3>Owner claims to check · ${pc.length}</h3>${pc.map(c=>claimCard(c,{noShop:1})).join("")}<p class="muted" style="font-size:12.5px;margin:4px 0 0">Approve only after you call this number or visit the shop.</p></div>`:"")+(t.ownerId?`<div class="sp-adm"><button type="button" class="linkb" data-act="ownerRemove" data-id="${t.id}">Remove verified owner</button></div>`:""); })():""}<div class="sp-acts">${acts}</div>${upSec}${items}${ask}${foot}</section>`;
 }
 function shopEditModal(t){
   const sh=t.shop||{}, H=sh.hours||{};
   const row=k=>{ const v=H[k], on=v&&v!=="closed", [a,b]=on?v.split("-"):["09:00","21:00"]; return `<div class="se-d" data-d="${k}"><label class="se-dn"><input type="checkbox" class="se-on" ${on||!Object.keys(H).length&&k!==0?"checked":""}> ${DAYS_L[k]}</label><input type="time" class="f se-a" value="${a}"><span>to</span><input type="time" class="f se-b" value="${b}"></div>`; };
   openModal(`<h2>Shop details</h2><p class="muted" style="margin:-6px 0 4px;font-size:14px">Only add what you know is correct. Everyone can see these.</p>
+    <div class="l">What does it sell? <small class="muted">pick up to 3, so people searching “shirt” or “TV” find it</small><div class="se-types">${STYPES.map(([k,l,ic])=>`<label class="chip se-ty"><input type="checkbox" value="${k}" ${(sh.types&&sh.types.length?sh.types:shopTypes(t)).includes(k)?"checked":""}> ${ic} ${esc(l)}</label>`).join("")}</div></div>
     <label class="l">Address<input class="f" id="se-addr" maxlength="200" value="${esc(sh.address||"")}" placeholder="Door no, street, landmark"></label>
     <label class="l">Shop phone number<input class="f" id="se-ph" type="tel" maxlength="20" value="${esc(sh.phone||"")}" placeholder="e.g. 98765 43210"></label>
     <label class="privrow"><input type="checkbox" id="se-wa" ${sh.whatsapp?"checked":""}> <span>This number is on WhatsApp</span></label>
     <label class="privrow"><input type="checkbox" id="se-del" ${sh.delivery?"checked":""}> <span>They do home delivery</span></label>
     <div class="l">Opening hours <small class="muted">Untick a day when the shop is closed</small><div class="se-hours">${[1,2,3,4,5,6,0].map(row).join("")}</div><button type="button" class="linkb" data-act="seCopy">Use Monday’s hours for every open day</button></div>
     <label class="l">Products and services <small class="muted">one per line, add a price after | if you know it</small><textarea class="f" id="se-items" rows="5" maxlength="3000" placeholder="Phone screen guard | ₹150&#10;Laptop service | from ₹500&#10;Fresh bread">${esc((sh.items||[]).map(it=>it.n+(it.p?" | "+it.p:"")).join("\n"))}</textarea></label>
-    <label class="privrow"><input type="checkbox" id="se-nohours" ${Object.keys(H).length&&!hasHours(sh)?"checked":""}> <span>I don’t know the opening hours</span></label>
+    <label class="privrow"><input type="checkbox" id="se-nohours" ${!hasHours(sh)?"checked":""}> <span>I don’t know the opening hours</span></label>
     <div class="hint" id="se-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="shopSave" data-id="${t.id}">Save details</button></div>`);
 }
+/* What a shop sells: types with everyday search words (English, Tanglish, Tamil), name hints and well-known chains */
+const STYPES=[
+ ["restaurant","Restaurants","🍛","food","restaurant restaurants hotel hotels meals meal food eat eating lunch dinner breakfast tiffin biryani briyani dosa idli parotta porotta chicken mutton fish veg nonveg non-veg shawarma fried rice noodles saapadu sappadu unavu mess காலை சாப்பாடு உணவு உணவகம் பிரியாணி","restaurant hotel non veg fast food mess biryani bhavan dhaba kitchen thalapakkatu"],
+ ["bakery","Bakery & sweets","🍰","food","bakery bakeries cake cakes sweets sweet snacks puffs bread biscuit cookies halwa mysore pak ice cream icecream இனிப்பு கேக்","bakery sweets cake"],
+ ["cafe","Tea, coffee & juice","☕","food","tea coffee cafe juice milkshake shake chai coolbar டீ காபி","cafe tea coffee juice coolbar"],
+ ["grocery","Grocery & supermarket","🛒","shop","grocery groceries provisions supermarket super market rice dal oil vegetables vegetable fruits milk kirana department store மளிகை காய்கறி","super market supermarket stores provision mart"],
+ ["clothing","Clothing & textiles","👕","shop","shirt shirts tshirt t-shirt pant pants jeans trouser saree sarees sari dress dresses clothes clothing textile textiles silk silks kurti chudi churidar dhoti veshti lungi readymade uniform uniforms innerwear blouse kids wear ஆடை சேலை துணி சட்டை வேட்டி","wear cotton silks textiles readymade tailors boutique fashion garments"],
+ ["footwear","Footwear","👟","shop","shoe shoes chappal chappals slipper slippers sandal sandals footwear செருப்பு","footwear shoe"],
+ ["electronics","Electronics & appliances","📺","shop","tv tvs television led smart tv fridge refrigerator washing machine washer ac air conditioner aircooler cooler mixie mixer grinder fan fans iron box oven microwave appliance appliances electronics speaker home theatre water heater geyser","electronics appliances digital"],
+ ["mobile","Mobiles & accessories","📱","shop","mobile mobiles phone phones smartphone cell cellphone recharge sim charger earphones earbuds screen guard tempered glass mobile service","mobiles mobile cell phone"],
+ ["repair","Repairs & service","🛠️","shop","repair repairs repairing servicing fix fixing technician mechanic tv fridge refrigerator washing machine ac air conditioner mobile phone laptop computer mixie grinder fan inverter battery ups motor pump bike scooter watch","repair repairs service servicing technician"],
+ ["computer","Computers & laptops","💻","shop","laptop laptops computer computers pc printer printers xerox scanner keyboard mouse","computers laptop infotech systems"],
+ ["hardware","Hardware & electrical","🔧","shop","hardware paint paints cement pipe pipes wire wires switch switches electrical tools plumbing sanitary tiles bolt nails","hardware electricals paints"],
+ ["pharmacy","Medical & pharmacy","💊","health","medical medicine medicines pharmacy chemist tablet tablets மருந்து","medicals pharmacy chemist"],
+ ["hospital","Hospitals & clinics","🏥","health","hospital hospitals doctor doctors clinic clinics fever scan child doctor ent skin eye nursing home health centre phc மருத்துவமனை டாக்டர்","hospital clinic nursing phc health centre"],
+ ["dental","Dentists","🦷","health","dental dentist teeth tooth braces root canal பல்","dental dentist"],
+ ["school","Schools, colleges & coaching","🎓","learn","school schools college colleges tuition coaching academy neet jee classes polytechnic பள்ளி","school college academy vidyalaya vidya mandir polytechnic matric"],
+ ["bikes","Bikes, cars & service","🏍️","auto","bike bikes scooter scooty motorcycle two wheeler car cars bike service car service mechanic spare spares parts tyre tyres yamaha honda tvs hero bajaj suzuki royal enfield","motors honda yamaha automobiles auto tvs hero bajaj"],
+ ["fuel","Petrol bunks","⛽","auto","petrol diesel fuel bunk bunks pump gas cng","petrol petroleum bunk fuel"],
+ ["bank","Banks & ATMs","🏦","money","bank banks atm cash loan account","bank"],
+ ["jewellery","Jewellery","💍","shop","gold jewellery jewelry jewel silver ring chain necklace nagai நகை","jewellers jewellery jewels"],
+ ["beauty","Salon & beauty","💇","shop","salon saloon parlour parlor beauty haircut hair cut barber spa facial bridal makeup","salon parlour beauty"],
+ ["furniture","Furniture","🛋️","shop","furniture sofa bed cot table chair wardrobe mattress","furniture"],
+ ["optical","Opticals","👓","health","spectacles specs glasses optical opticals lens eye test","optical opticals"],
+ ["sports","Sports & turf","⚽","fun","turf cricket football sports gym ground badminton fitness","turf sports gym"],
+ ["worship","Temples, churches & mosques","🛕","place","temple temples church churches mosque masjid koil kovil worship கோவில்","temple church masjid mosque koil kovil amman perumal pentecostal basilica"],
+ ["transport","Bus & train","🚉","place","bus train railway station bus stand busstand","bus stand railway junction station"],
+ ["govt","Government offices","🏛️","place","office municipality revenue tahsildar taluk police post office government","office police municipality revenue"],
+];
+const STYPE=new Map(STYPES.map(x=>[x[0],x]));
+// well-known chains whose names don't say what they sell
+const SBRAND=[["vasanth","electronics"],["poorvika","mobile"],["sangeetha","mobile"],["ramraj","clothing"],["pothys","clothing"],["chennai silks","clothing"],["saravana stores","clothing"],["jayachandran","clothing"],["naidu hall","clothing"],["bata","footwear"],["lalitha","jewellery"],["joyalukkas","jewellery"],["grt","jewellery"],["apollo pharmacy","pharmacy"],["medplus","pharmacy"],["reliance digital","electronics"],["croma","electronics"],["kumaran","clothing"]];
+const CAT_TYPE={Food:"restaurant",Health:"hospital",Education:"school",Bikes:"bikes",Cars:"bikes",Finance:"bank",Sports:"sports",Travel:"transport"};
+const sNorm=v=>" "+String(v||"").toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu," ").trim()+" ";
+function shopTypes(t){ const sh=t.shop||{}; if(Array.isArray(sh.types)&&sh.types.length) return sh.types.filter(k=>STYPE.has(k));
+  const n=sNorm(t.title), out=[];
+  for(const [b,k] of SBRAND) if(n.includes(" "+b+" ")||n.includes(" "+b)&&b.includes(" ")) out.push(k);
+  for(const [k,,,,,hints] of STYPES) for(const h of hints.split(" ")) if(h&&n.includes(" "+h+" ")) { out.push(k); break; }
+  // "Kumaran Hospital" is a hospital, not a textile shop: a type found in the name beats a chain guess
+  const uniq=[...new Set(out)]; if(uniq.length>1&&uniq.includes("clothing")&&out.indexOf("clothing")===0&&uniq.some(k=>k!=="clothing")) uniq.shift();
+  { const ri=uniq.indexOf("repair"); if(ri>0){ uniq.splice(ri,1); uniq.unshift("repair"); } } // "Ravi TV Service" is a repair shop first
+  if(!uniq.length&&CAT_TYPE[t.category]) uniq.push(CAT_TYPE[t.category]);
+  return uniq.slice(0,3); }
+// which shop types a search means: "shirt" -> clothing, "washing machine" -> electronics, "food" -> all food types
+const REPAIR_W=/ (repair|repairs|repairing|service|servicing|fix|fixing|technician|mechanic|not working|broken) /;
+const NEED_GEN=new Set(["service","showroom","shop","store","machine","home","box","glass","guard","station","office","stand","smart","water","air","root","canal","two","wheeler","royal","post","nursing","kids","wear","fried","ice","cream","test","department","non","veg","tempered","child","cut","parts"]);
+function needTypes(q){ const n=sNorm(q), hit=new Set(); if(n.trim().length<2) return [];
+  for(const [k,,,fam,words] of STYPES){ const ws=words.split(" "); for(let i=0;i<ws.length;i++){ const w=ws[i]; if(w.length<2||NEED_GEN.has(w)) continue; if(n.includes(" "+w+" ")||(w.length>=4&&n.includes(" "+w))) { hit.add(k); break; } } }
+  // multi-word needs
+  if(/ washing machine | air conditioner | smart tv | home theatre | water heater | iron box | screen guard | root canal | two wheeler | royal enfield | post office | bus stand | nursing home | kids wear | ice cream | bike service | car service | mobile service /.test(n)) {
+    for(const [k,,,,words] of STYPES) for(const ph of [" washing machine "," air conditioner "," smart tv "," home theatre "," water heater "," iron box "," screen guard "," root canal "," two wheeler "," royal enfield "," post office "," bus stand "," nursing home "," kids wear "," ice cream "," bike service "," car service "," mobile service "]) if(n.includes(ph)&&(" "+words+" ").includes(ph)) hit.add(k); }
+  if(/ (food|eat|unavu|saapadu|sappadu|உணவு) /.test(n)) ["restaurant","bakery","cafe"].forEach(k=>hit.add(k));
+  // "TV repair" means the repair shops, not the showrooms; plain "TV" shows both, in separate groups
+  if(REPAIR_W.test(n)){ const veh=hit.has("bikes")&&/ (bike|bikes|scooter|scooty|car|cars|two wheeler|motorcycle) /.test(n); hit.clear(); hit.add("repair"); if(veh) hit.add("bikes"); }
+  else if(hit.has("repair")&&hit.size>1) { /* keep repair as a second group */ }
+  else if(hit.has("repair")&&hit.size===1&&!/ (repair) /.test(n)) {}
+  return [...hit]; }
 function lsMatch(t,toks){ if(!toks.length) return 1; const sh=t.shop||{};
   const F=[[t.title,6],[(sh.items||[]).map(i=>i.n).join(" "),4],[t.category,3],[(t.tags||[]).join(" "),2],[sh.address,1],[t.desc,1]].map(([v,w])=>[String(v||"").toLowerCase(),w]);
   let sc=0; for(const k of toks){ let best=0; for(const [v,w] of F){ if(!v) continue; if(new RegExp("(^|[^a-z0-9])"+k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).test(v)) best=Math.max(best,w*2); else if(v.includes(k)) best=Math.max(best,w); } if(!best) return 0; sc+=best; } return sc; }
 function lsTokens(q,hp){ const stop=new Set(["near","me","in","the","a","an","best","good","shop","shops","store","stores","for","and","of","to","where","is","nearby","around","cheap","affordable"]); if(hp) normTok(hp.name).forEach(w=>stop.add(w));
-  return String(q||"").toLowerCase().replace(/[^\p{L}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w&&w.length>1&&!stop.has(w)); }
+  return String(q||"").toLowerCase().replace(/[^\p{L}\p{M}\p{N}\s]/gu," ").split(/\s+/).filter(w=>w&&w.length>1&&!stop.has(w)); }
 function shopRow(t,hit){ const s2=stat(t.id), st=openState(t.shop), km=distKm(t), sh=t.shop||{};
   let snip=""; if(hit&&hit.length){ const it=(sh.items||[]).find(i=>hit.some(k=>i.n.toLowerCase().includes(k))); if(it) snip=`<div class="shr-s">Sells: ${esc(it.n)}${it.p?" · "+esc(it.p):""}</div>`; }
-  return `<a class="shr" href="#t-${t.id}"><i class="shr-ic" style="--h:${catHue(t.category)}">${HF_IC[t.category]||"🏪"}</i><div class="shr-b"><b>${esc(t.title)}</b><div class="shr-m"><span>${esc(t.category)}</span>${st?`<span class="shr-o ${st.open?"on":""}">${st.open?"Open now":"Closed"}</span>`:""}${km!=null?`<span>${kmLbl(km)}</span>`:""}${sh.delivery?`<span>🚚 Delivery</span>`:""}</div>${snip}</div><div class="shr-r">${s2.reviews?`<b>★ ${s2.avg.toFixed(1)}</b><small>${s2.reviews} review${s2.reviews===1?"":"s"}</small>`:`<small>No reviews yet</small>`}</div></a>`; }
+  return `<a class="shr" href="#t-${t.id}"><i class="shr-ic" style="--h:${catHue(t.category)}">${(STYPE.get(shopTypes(t)[0])||[])[2]||HF_IC[t.category]||"🏪"}</i><div class="shr-b"><b>${esc(t.title)}</b><div class="shr-m"><span>${(()=>{ const k=shopTypes(t)[0]; return k?esc(STYPE.get(k)[1]):esc(t.category); })()}</span>${st?`<span class="shr-o ${st.open?"on":""}">${st.open?"Open now":"Closed"}</span>`:""}${km!=null?`<span>${kmLbl(km)}</span>`:""}${sh.delivery?`<span>🚚 Delivery</span>`:""}</div>${snip}</div><div class="shr-r">${s2.reviews?`<b>★ ${s2.avg.toFixed(1)}</b><small>${s2.reviews} review${s2.reviews===1?"":"s"}</small>`:`<small>No reviews yet</small>`}</div></a>`; }
+function shopSearch(hp,q){
+  const all=LIVE().filter(t=>t.kind==="place"&&(!hp||inPlace(t,hp))), toks=lsTokens(q,hp), need=needTypes(q), needS=new Set(need);
+  const listsIt=t=>((t.shop&&t.shop.items)||[]).some(i=>toks.some(k=>sNorm(i.n).includes(" "+k+" ")||sNorm(i.n).includes(" "+k+"s ")));
+  const fix=need.includes("repair")&&REPAIR_W.test(sNorm(q)); // "tv repair": only repair shops, not shops that sell TVs
+  const score=t=>{ const m=lsMatch(t,toks); if(!need.length) return m; const ty=shopTypes(t).some(k=>needS.has(k)); return ty?100+m:(!fix&&listsIt(t))?10+m:0; };
+  const list=all.map(t=>[t,score(t)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]||(stat(b[0].id).reviews?1:0)-(stat(a[0].id).reviews?1:0)).map(x=>x[0]);
+  return {list,need,toks}; }
+function claimCard(c,o={}){ const t=S.topics.get(c.topicId); const R={owner:"Owner",manager:"Manager",staff:"Staff"}[c.role]||"Owner";
+  return `<div class="clc"><div class="clc-h">${o.noShop?"":`<a href="#t-${esc(c.topicId)}"><b>${esc(t?t.title:"Shop")}</b></a> · `}<a href="#u-${esc(c.userId)}">${esc(nameOf(c.userId))}</a> · ${esc(R)} · ${agoShort(c.createdAt)}</div>
+    <div class="clc-p">📞 <a href="tel:${esc(String(c.phone||"").replace(/[^0-9+]/g,""))}">${esc(c.phone||"")}</a>${t&&t.shop&&t.shop.phone?` <small class="muted">Listed shop number: ${esc(t.shop.phone)}</small>`:""}</div>${c.note?`<div class="muted clc-n">${esc(c.note)}</div>`:""}
+    <div class="dprow"><button class="btn sm pri" data-act="claimOk" data-id="${esc(c.id)}">✓ Approve</button><button class="btn sm" data-act="claimNo" data-id="${esc(c.id)}">Reject</button></div></div>`; }
+function localUpdates(hp){ const L2=shopPostsIn(hp), offers=L2.filter(x=>x.kind==="offer"), rest=L2.filter(x=>x.kind!=="offer");
+  const head=`<div class="lu-h"><b>🏷️ Offers and news from shops in ${esc(hp.name)}</b><span class="muted">Posted only by owners TopicTalk has verified. Expired offers disappear on their own.</span></div>`;
+  if(!L2.length) return head+emptyBox("No shop updates yet","When a verified shop owner posts an offer or news, it shows up here. Own a shop? Open it in Shops and tap “🏪 This is my shop”.",`<button class="btn sm" data-act="lSub" data-v="shops">Browse shops</button>`);
+  return head+(offers.length?`<section class="hsec">${SH("🏷️ Offers right now · "+offers.length,"")}<div class="spcs">${offers.map(x=>spCard(x)).join("")}</div></section>`:"")
+    +(rest.length?`<section class="hsec">${SH("📣 Shop news","")}<div class="spcs">${rest.slice(0,30).map(x=>spCard(x)).join("")}</div></section>`:""); }
+// offers and news from shops, newest first; expired offers are left out
+const spLive=x=>x.kind!=="offer"||x.endsAt>Date.now();
+function shopPostsIn(hp){ return [...S.shopposts.values()].filter(x=>{ const t=S.topics.get(x.topicId); return t&&!t.deletedAt&&spLive(x)&&(!hp||inPlace(t,hp)); }).sort((a,b)=>b.createdAt-a.createdAt); }
+function spCard(x,o={}){ const t=S.topics.get(x.topicId); if(!t) return ""; const own=S.me&&(x.authorId===S.me||S.isOwner), m=(x.media||[]).map(id=>S.media.get(id)).find(Boolean);
+  const K={offer:["🏷️","Offer"],news:["📣","News"],opened:["🎉","Just opened"]}[x.kind]||["📣","News"];
+  const left=x.kind==="offer"?Math.ceil((x.endsAt-Date.now())/864e5):0;
+  return `<div class="spc ${x.kind}">${o.noShop?"":`<a class="spc-s" href="#t-${t.id}"><i style="--h:${catHue(t.category)}">${(STYPE.get(shopTypes(t)[0])||[])[2]||"🏪"}</i><b>${esc(t.title)}</b>${t.ownerId?`<span class="vbadge" title="TopicTalk confirmed this person runs the shop">✓ Owner</span>`:""}</a>`}
+    <div class="spc-k"><span class="spc-t">${K[0]} ${K[1]}</span>${x.kind==="offer"?`<span class="spc-e">${left<=1?"Ends today":"Ends "+new Date(x.endsAt).toLocaleDateString("en-IN",{day:"numeric",month:"short"})+" · "+left+" days left"}</span>`:""}<span class="spc-w">${agoShort(x.createdAt)}</span></div>
+    <p class="spc-x">${rich(x.text)}</p>${m?`<button type="button" class="spc-m" data-act="viewMedia" data-id="${esc((x.media||[])[0])}"><img src="${m.data}" alt="" loading="lazy"></button>`:""}
+    <div class="spc-f"><span>Posted by the shop</span>${own?`<button type="button" class="linkb" data-act="spDel" data-id="${esc(x.id)}">Delete</button>`:""}</div></div>`; }
 function lsResults(hp){
-  const all=LIVE().filter(t=>t.kind==="place"&&inPlace(t,hp)), q=(UI.lsQ||"").trim(), toks=lsTokens(q,hp), cat=UI.lsCat||"All", F=UI.lsF||{};
-  let list=all.map(t=>[t,lsMatch(t,toks)]).filter(x=>x[1]>0).map(x=>x[0]);
+  const all=LIVE().filter(t=>t.kind==="place"&&inPlace(t,hp)), q=(UI.lsQ||"").trim(), cat=UI.lsCat||"All", F=UI.lsF||{};
+  const R=shopSearch(hp,q), toks=R.toks, need=R.need, needS=new Set(need), score=t=>0;
+  let list=R.list.slice();
   if(cat!=="All") list=list.filter(t=>t.category===cat);
   if(F.open) list=list.filter(t=>openState(t.shop)?.open); if(F.rated) list=list.filter(t=>stat(t.id).reviews); if(F.del) list=list.filter(t=>t.shop&&t.shop.delivery);
-  const sort=UI.lsSort||(toks.length?"rel":"top"), sc=new Map(list.map(t=>[t.id,lsMatch(t,toks)]));
+  const sort=UI.lsSort||(toks.length?"rel":"top");
   const byTop=(a,b)=>(stat(b.id).reviews?1:0)-(stat(a.id).reviews?1:0)||rvScore(b)-rvScore(a)||a.title.localeCompare(b.title);
-  list.sort(sort==="rel"?((a,b)=>sc.get(b.id)-sc.get(a.id)||byTop(a,b)):sort==="new"?((a,b)=>b.createdAt-a.createdAt):sort==="upd"?((a,b)=>((b.shop&&b.shop.updatedAt)||b.createdAt)-((a.shop&&a.shop.updatedAt)||a.createdAt)):sort==="near"?((a,b)=>(distKm(a)??1e9)-(distKm(b)??1e9)):byTop);
+  const ord=new Map(R.list.map((t,i)=>[t.id,i]));
+  list.sort(sort==="rel"?((a,b)=>ord.get(a.id)-ord.get(b.id)):sort==="new"?((a,b)=>b.createdAt-a.createdAt):sort==="upd"?((a,b)=>((b.shop&&b.shop.updatedAt)||b.createdAt)-((a.shop&&a.shop.updatedAt)||a.createdAt)):sort==="near"?((a,b)=>(distKm(a)??1e9)-(distKm(b)??1e9)):byTop);
   UI._lsList=list;
   const filtered=toks.length||cat!=="All"||F.open||F.rated||F.del;
   if(UI.lsView==="map"){ const pinned=list.filter(t=>geoOk(t.geo)); return `<div class="ls-cnt">${pinned.length} of ${list.length} shop${list.length===1?"":"s"} have a map pin</div><div id="ls-map" class="ls-map" role="img" aria-label="Map of shops"></div>`; }
-  if(!list.length) return emptyBox(q?`No shops match “${esc(q)}”`:"No shops match these filters","Try a shorter word or another category. Or ask people nearby, they often know a good shop.",`<button class="btn pri sm" data-act="newQuestion" data-help="1" data-title="${esc(q?"Where can I find "+q+"?":"")}">🙋 Ask people nearby</button>${filtered?` <button class="btn sm" data-act="lsReset">Clear filters</button>`:""}`);
+  const needLbl=need.length?`<div class="ls-need">Showing ${need.map(k=>`<b>${STYPE.get(k)[2]} ${esc(STYPE.get(k)[1])}</b>`).join(", ")} for “${esc(q)}”</div>`:"";
+  if(!list.length) return needLbl+emptyBox(q?(need.length?`No ${esc(need.map(k=>STYPE.get(k)[1].toLowerCase()).join(" or "))} listed here yet`:`No shops match “${esc(q)}”`):"No shops match these filters","Try a shorter word or another category. Or ask people nearby, they often know a good shop.",`<button class="btn pri sm" data-act="newQuestion" data-help="1" data-title="${esc(q?"Where can I find "+q+"?":"")}">🙋 Ask people nearby</button>${filtered?` <button class="btn sm" data-act="lsReset">Clear filters</button>`:""}`);
   let disc="";
   if(!filtered){ const row4=(title,arr)=>arr.length?`<section class="ls-sec"><h3>${title}</h3><div class="list shl">${arr.slice(0,4).map(t=>shopRow(t)).join("")}</div></section>`:"";
     const wk=Date.now()-14*864e5, seen=lsSeen().map(id=>S.topics.get(id)).filter(t=>t&&t.kind==="place"&&inPlace(t,hp));
     disc=row4("⭐ Highly rated",all.filter(t=>stat(t.id).reviews).sort(byTop))+row4("🆕 Recently added",all.filter(t=>t.createdAt>wk).sort((a,b)=>b.createdAt-a.createdAt))+row4("👀 You viewed recently",seen)+row4("🔔 Shops you follow",all.filter(t=>IX.myFollows.has(t.id)));
   }
   const n=UI.lsN||20;
-  return disc+`<section class="ls-sec"><h3>${filtered?`${list.length} result${list.length===1?"":"s"}`:"All shops"}</h3><div class="list shl">${list.slice(0,n).map(t=>shopRow(t,toks)).join("")}</div>${list.length>n?`<button type="button" class="btn hmore" data-act="lsMore">Show more</button>`:""}</section>`;
+  if(need.length&&toks.length&&!UI.lsCat||need.length&&toks.length&&UI.lsCat==="All"){
+    const groups=need.map(k=>[k,list.filter(t=>shopTypes(t)[0]===k||(!need.includes(shopTypes(t)[0])&&shopTypes(t).includes(k)))]).filter(g=>g[1].length);
+    const used=new Set(groups.flatMap(g=>g[1].map(t=>t.id))), rest=list.filter(t=>!used.has(t.id));
+    const inL=new Set(list.map(t=>t.id)), offers=shopPostsIn(hp).filter(x=>inL.has(x.topicId)).sort((a,b)=>(b.kind==="offer")-(a.kind==="offer")).slice(0,4);
+    const asked=LIVE().filter(t=>(t.kind==="question")&&inPlace(t,hp)&&(toks.some(k=>sNorm(t.title+" "+(t.desc||"")).includes(" "+k)))).sort((a,b)=>b.createdAt-a.createdAt).slice(0,3);
+    return needLbl+groups.map(([k,arr])=>`<section class="ls-sec"><h3>${STYPE.get(k)[2]} ${esc(STYPE.get(k)[1])} · ${arr.length}</h3><div class="list shl">${arr.slice(0,UI.lsN||20).map(t=>shopRow(t,toks)).join("")}</div></section>`).join("")
+      +(rest.length?`<section class="ls-sec"><h3>Also sells it</h3><div class="list shl">${rest.map(t=>shopRow(t,toks)).join("")}</div></section>`:"")
+      +(offers.length?`<section class="ls-sec"><h3>🏷️ Offers right now</h3><div class="spcs">${offers.map(x=>spCard(x)).join("")}</div></section>`:"")
+      +`<section class="ls-sec ls-ask"><h3>🙋 Ask the neighbourhood</h3>${asked.length?`<div class="list">${asked.map(t=>{ const n=stat(t.id).comments; return `<a href="#t-${t.id}"><div class="txt"><b>${esc(cleanTitle(t))}</b><div class="meta"><span>${n} answer${n===1?"":"s"}</span><span>${agoShort(t.createdAt)}</span></div></div></a>`; }).join("")}</div>`:""}<p class="muted">Not sure which one is good? People nearby can tell you who they trust.</p><button class="btn sm" data-act="newQuestion" data-help="1" data-title="${esc("Who is good for "+q+" near "+hp.name+"?")}">Ask people near ${esc(hp.name)}</button></section>`;
+  }
+  return needLbl+disc+`<section class="ls-sec"><h3>${filtered?`${list.length} result${list.length===1?"":"s"}`:"All shops"}</h3><div class="list shl">${list.slice(0,n).map(t=>shopRow(t,toks)).join("")}</div>${list.length>n?`<button type="button" class="btn hmore" data-act="lsMore">Show more</button>`:""}</section>`;
 }
 async function lsMapMount(){ const el=$("#ls-map"); if(!el||el._map) return; let LF; try{ LF=await leaflet(); }catch{ el.innerHTML=`<p class="muted" style="padding:16px">The map couldn’t load. Check your connection.</p>`; return; } if(!el.isConnected) return;
   const pts=(UI._lsList||[]).filter(t=>geoOk(t.geo)); const m=LF.map(el,{scrollWheelZoom:false}); el._map=m;
@@ -2231,11 +2360,12 @@ function vHome(){
       +(tags.length?`<section class="hsec hdisc">${SH(hp?"Popular in "+esc(hp.name)+" this week":"Popular this week","")}<div class="tagrow">${tags.map(([g])=>`<a class="chip" href="#tag-${enc(g)}">#${esc(g)}</a>`).join("")}</div></section>`:"");
   } else if(tab==="nb"){
     const sub=UI.lsub||"shops";
-    const seg=`<div class="tabs lsub" role="tablist">${[["shops",'<i class="le">🏪 </i>Shops'],["news",'<i class="le">📰 </i>News'],["help",'<i class="le">🙋 </i>Help'],["feed",'<i class="le">💬 </i><span class="lsx">Local feed</span><span class="lsm">Feed</span>']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${sub===k}" class="${sub===k?"on":""}" data-act="lSub" data-v="${k}">${l}</button>`).join("")}</div>`;
+    const seg=`<div class="tabs lsub" role="tablist">${[["shops",'<i class="le">🏪 </i>Shops'],["news",'<i class="le">📰 </i>News'],["offers",'<i class="le">🏷️ </i>Offers'],["help",'<i class="le">🙋 </i>Help'],["feed",'<i class="le">💬 </i><span class="lsx">Local feed</span><span class="lsm">Feed</span>']].map(([k,l])=>`<button type="button" role="tab" aria-selected="${sub===k}" class="${sub===k?"on":""}" data-act="lSub" data-v="${k}">${l}</button>`).join("")}</div>`;
     if(!hp) body=seg+emptyBox("Choose your city","See shops, news and talk from your area.",`<button class="btn pri sm" data-act="plOpen" data-m="home">Choose your city</button>`);
     else if(sub==="shops") body=seg+localShops(hp,ha);
     else if(sub==="news") body=seg+localNews(hp,ha);
     else if(sub==="help") body=seg+localHelp(hp);
+    else if(sub==="offers") body=seg+localUpdates(hp);
     else { const list=LIVE().filter(t=>inPlace(t,hp)&&t.kind!=="news"&&!isHelp(t)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
       const lw=watchItems().filter(it=>inPlace(it.t,hp)), lb=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)&&inPlace(S.topics.get(b.topicId),hp)).sort((a,b)=>b.createdAt-a.createdAt);
       const buzz=(lw.length?watchStrip({items:lw,n:6,cls:"hsec",title:"📣 Local buzz",sub:`Videos and photos people shared about ${esc(hp.name)}. They play from YouTube or Instagram.`,link:`<button type="button" class="linkb" data-act="buzzAll">See all →</button>`})
@@ -2775,9 +2905,13 @@ function vSearch(){
   const pc=list=>`<div class="list">${list.map(id=>`<div class="prow"><a href="#u-${esc(id)}">${avatar(id)}<div class="txt"><b>${esc(nameOf(id))}</b> ${idTag(id)}</div></a><span class="pbtns">${peopleBtns(id)}</span></div>`).join("")}</div>`;
   const ask=`<div class="answer"><div class="ahead">Community answer</div><div class="atext">Nobody has talked about this yet.</div><div class="muted" style="font-size:14px">Ask it, and the answer will come from people who know.</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri sm" data-act="newQuestion" data-title="${esc(q)}">Ask the community</button><button class="btn sm" data-act="newTopic" data-title="${esc(q)}">Start a topic</button></div></div>`;
   let body="";
+  const hpS=homePlace(), shopR=hpS&&!q.startsWith("@")?shopSearch(hpS,q):null, shopL=shopR?shopR.list.slice(0,4):[];
+  const shopIds=new Set(shopR?shopR.list.map(t=>t.id):[]), shopOff=shopR&&shopR.need.length?shopPostsIn(hpS).filter(x=>x.kind==="offer"&&shopIds.has(x.topicId)).slice(0,3):[];
+  const shopSec=shopL.length?`<section class="sec srsec"><div class="sech"><h2>🏪 Shops in ${esc(hpS.name)}</h2><button type="button" class="linkb" data-act="srShops" data-q="${esc(q)}">See all ${shopR.list.length} in Local →</button></div><div class="list shl">${shopL.map(t=>shopRow(t,shopR.toks)).join("")}</div>${shopOff.length?`<div class="spcs" style="margin-top:10px">${shopOff.map(x=>spCard(x)).join("")}</div>`:""}</section>`:"";
   if(tab==="all"){
     const ppFirst=r.people.length&&(q.startsWith("@")||!r.topics.length);
-    body=(r.topics.length?answerPanel(q,r.topics):q.startsWith("@")?"":ask)
+    body=(r.topics.length?answerPanel(q,r.topics):q.startsWith("@")?"":shopSec?"":ask)
+      +shopSec+(!r.topics.length&&shopSec?`<div class="sr-ask"><span>Not sure which one? People nearby can tell you.</span><button class="btn sm" data-act="newQuestion" data-help="1" data-title="${esc("Who is good for "+q+" near "+hpS.name+"?")}">🙋 Ask the neighbourhood</button></div>`:"")
       +(ppFirst?sec("👤 People","pp",r.people.length,4,pc(r.people.slice(0,4))):"")
       +(r.battles.length?sec("⚔️ Battles","bt",r.battles.length,2,bc(r.battles.slice(0,2))):"")
       +(disc.length?sec("💬 Discussions","ds",disc.length,6,tc(disc.slice(0,6))):"")
@@ -3086,7 +3220,7 @@ async function pushRefresh(){
     if(on) await pushPost("/api/push/subscribe",sub.endpoint);
     PUSH.sub=on; if(was!==on) schedule(); }catch{} pushAuto();
 }
-const NCATS=[["reply","Replies","When someone replies to you or your comment"],["mention","Mentions","When someone mentions or tags you, in topics or group chats"],["battle","Battles and debates","New battles and debate duels you’re part of"],["like","Likes and reviews","Likes on your posts, reviews on topics you follow"],["group","Groups","Group posts, new members and invites"],["friends","Friends and followers","Friend requests, accepted requests, new followers"],["local","Help near you","When someone nearby asks for a recommendation"],["pred","Predictions","When a prediction you voted on is resolved"]];
+const NCATS=[["shops","Shops and offers","Offers and news from shops you follow, and your shop claims"],["reply","Replies","When someone replies to you or your comment"],["mention","Mentions","When someone mentions or tags you, in topics or group chats"],["battle","Battles and debates","New battles and debate duels you’re part of"],["like","Likes and reviews","Likes on your posts, reviews on topics you follow"],["group","Groups","Group posts, new members and invites"],["friends","Friends and followers","Friend requests, accepted requests, new followers"],["local","Help near you","When someone nearby asks for a recommendation"],["pred","Predictions","When a prediction you voted on is resolved"]];
 const pushPrefs=()=>{ if(S.me) fetch("/api/push/prefs",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({off:[...NPOFF]})}).catch(()=>{}); };
 async function pushEnable(manual){
   try{ const perm=Notification.permission==="granted"?"granted":await Notification.requestPermission(); if(perm!=="granted"){ if(manual) toast("Alerts stay off. You can allow them in your browser settings."); return false; }
@@ -3135,7 +3269,7 @@ function groupNotifs(ns){
 function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
   const ns=notifList().sort((a,b)=>b.createdAt-a.createdAt);
-  const label={reply:"replied to you",mention:"mentioned you",gmention:"mentioned you in",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped"};
+  const label={claim:"asked to be verified as the shop owner",claimok:"approved you as the verified owner",claimno:"couldn’t verify your shop claim",shopupd:"posted a new offer or news",reply:"replied to you",mention:"mentioned you",gmention:"mentioned you in",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped"};
   if(!PUSH.checked) pushRefresh();
   return pushCard(false)+`<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read||UI.keep?.has(n.id))?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
   ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}"${n.gmsgId?` data-gm="${esc(n.gmsgId)}"`:""} href="${n.duelId?"#d-"+esc(n.duelId):(n.type==="joined"||n.type==="gmention")?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:""}</div></a>`; }).join("")}</div>`
@@ -3293,7 +3427,7 @@ function vProfile(id){
    <div class="pf-actl">Activity</div>
    <div class="tabs ptabs">${tabs.map(([k,l,n])=>`<button class="${UI.ptab===k?"on":""}" data-act="ptab" data-v="${k}">${l}${n?` <span class="muted">${n}</span>`:""}</button>`).join("")}</div>${{topics:"Topics started by "+(isMe?"you":nameOf(id)),sparks:"New topics created from "+(isMe?"your":"their")+" comments"}[UI.ptab]?`<div class="muted ptabnote">${{topics:"Topics started by "+(isMe?"you":esc(nameOf(id))),sparks:"New topics created from "+(isMe?"your":"their")+" comments"}[UI.ptab]}</div>`:""}${body}
    <details class="how pstats"><summary>Stats</summary><div class="pst-g"><div><b>${rep}</b>Reputation</div><div><b>${ts.length}</b>Topics</div><div><b>${cs.length}</b>Comments</div><div><b>${rs.length}</b>Reviews</div><div><b>${rec.total?rec.w+"–"+rec.l+(rec.d?"–"+rec.d:""):"0"}</b>Debates</div><div><b>${resolved.length?correct+"/"+resolved.length:"–"}</b>Called it</div></div><a class="spk" data-act="ptab" data-v="sparks" href="javascript:void 0"><span class="sp-i">🌱</span><span><b>${branchesFrom} topic${branchesFrom===1?"":"s"} sparked</b><small>${branchesFrom?"Comments that inspired new conversations.":"When someone branches a comment, it counts here."}</small></span></a><div class="muted" style="font-size:12.5px;padding:6px 0 2px;line-height:1.6">${esc(lvl[1])}. You earn reputation by starting topics (+3), getting likes (+1), writing reviews (+2), having a comment branched (+10) and calling predictions right (+5).</div></details>
-   ${isMe&&S.isOwner?`<details class="how setd"><summary>Admin</summary>${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Reports to review (${S.reports.size})</div>${[...S.reports.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,30).map(r=>{ const lnk=r.type==="topic"?"#t-"+r.targetId:r.type==="comment"?"#t-"+(S.comments.get(r.targetId)?.topicId||"")+"~"+r.targetId:"#u-"+r.targetId; return `<div class="panel" style="margin:6px 0;padding:10px"><div style="font-size:13px"><b>${esc(r.type)}</b> · ${esc(r.reason)} · by ${esc(nameOf(r.reporterId))}</div>${r.note?`<div class="muted" style="font-size:13px">${esc(r.note)}</div>`:""}<div class="dprow" style="margin-top:6px"><a class="btn sm" href="${esc(lnk)}">Open</a><button class="btn sm" data-act="rpDismiss" data-id="${esc(r.id)}">Dismiss</button>${r.type!=="user"?`<button class="btn sm danger" data-act="rpRemove" data-id="${esc(r.id)}">Remove content</button>`:""}</div></div>`; }).join("")}`:""}${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Admin (owner only)</div><button class="btn sm" data-act="wStats" style="margin-bottom:8px">Watch numbers (7 days)</button><p class="muted" style="margin:0 0 8px;font-size:13px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button>`:""}</details>`:""}`;
+   ${isMe&&S.isOwner?`<details class="how setd"><summary>Admin</summary>${S.isOwner?(()=>{ const pc=[...S.claims.values()].filter(c=>c.status==="pending").sort((a,b)=>a.createdAt-b.createdAt); return `<div class="muted" style="font-size:12px;margin:14px 0 4px">Shop claims to check (${pc.length})</div>${pc.length?pc.slice(0,30).map(c=>claimCard(c)).join(""):`<p class="muted" style="font-size:13px;margin:0">None waiting.</p>`}`; })():""}${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Reports to review (${S.reports.size})</div>${[...S.reports.values()].sort((a,b)=>b.createdAt-a.createdAt).slice(0,30).map(r=>{ const lnk=r.type==="topic"?"#t-"+r.targetId:r.type==="comment"?"#t-"+(S.comments.get(r.targetId)?.topicId||"")+"~"+r.targetId:"#u-"+r.targetId; return `<div class="panel" style="margin:6px 0;padding:10px"><div style="font-size:13px"><b>${esc(r.type)}</b> · ${esc(r.reason)} · by ${esc(nameOf(r.reporterId))}</div>${r.note?`<div class="muted" style="font-size:13px">${esc(r.note)}</div>`:""}<div class="dprow" style="margin-top:6px"><a class="btn sm" href="${esc(lnk)}">Open</a><button class="btn sm" data-act="rpDismiss" data-id="${esc(r.id)}">Dismiss</button>${r.type!=="user"?`<button class="btn sm danger" data-act="rpRemove" data-id="${esc(r.id)}">Remove content</button>`:""}</div></div>`; }).join("")}`:""}${S.isOwner?`<div class="muted" style="font-size:12px;margin:14px 0 4px">Admin (owner only)</div><button class="btn sm" data-act="wStats" style="margin-bottom:8px">Watch numbers (7 days)</button><p class="muted" style="margin:0 0 8px;font-size:13px">Sample content is marked “sample”. Remove it once real people are posting.</p><button class="btn sm" data-act="clearSample">Remove sample content</button>`:""}</details>`:""}`;
 }
 
 /* ---------- typing ---------- */
@@ -4398,6 +4532,7 @@ document.addEventListener("click", async e=>{
     case "rvHome": UI.exPlace=null; UI.rvNear=true; schedule(); break;
     case "rvCat": UI.rvCat=el.dataset.v; schedule(); break;
     case "lSub": UI.lsub=el.dataset.v; UI.fyN=10; schedule(); break;
+    case "srShops": UI.lsQ=el.dataset.q||""; UI.lsCat="All"; UI.htab="nb"; UI.lsub="shops"; location.hash="home"; schedule(); window.scrollTo({top:0}); break;
     case "lsCat": UI.lsCat=el.dataset.v; UI.lsN=20; schedule(); break;
     case "lsF": { UI.lsF={...(UI.lsF||{})}; UI.lsF[el.dataset.k]=!UI.lsF[el.dataset.k]; UI.lsN=20; schedule(); break; }
     case "lsView": UI.lsView=el.dataset.v; schedule(); break;
@@ -4408,7 +4543,40 @@ document.addEventListener("click", async e=>{
     case "lsLoc": { if(!navigator.geolocation){ toast("This browser can’t share your location."); break; } el.disabled=true;
       navigator.geolocation.getCurrentPosition(p=>{ UI.myLoc={lat:p.coords.latitude,lng:p.coords.longitude}; UI.lsSort="near"; schedule(); },()=>{ el.disabled=false; toast("Location is off. You can still pick your area manually."); },{timeout:10000,maximumAge:300000}); break; }
     case "rpShop": reportSheet("topic",id); setTimeout(()=>{ const r=document.querySelector('#rp-list input[value="wronginfo"]'); if(r){ r.checked=true; UI.rp.reason="wronginfo"; } },0); break;
-    case "shopEdit": { const t=S.topics.get(id); if(!t||!(S.me===t.authorId||S.isOwner)) break; shopEditModal(t); break; }
+    case "shopEdit": { const t=S.topics.get(id); if(!t||!(S.me===t.authorId||S.isOwner||t.ownerId===S.me)) break; shopEditModal(t); break; }
+    case "claimOpen": { if(!(await gate())) break; const t=S.topics.get(id); if(!t) break;
+      openModal(`<h2>Is this your shop?</h2><p class="muted" style="margin:-6px 0 4px;font-size:14px">Claim <b>${esc(t.title)}</b> so you can post offers, news and the correct timings. TopicTalk will call this number to check before you get the “Owner verified” badge. Only TopicTalk sees it.</p>
+        <label class="l">Your role<select class="f" id="cl-role"><option value="owner">I own it</option><option value="manager">I manage it</option><option value="staff">I work there</option></select></label>
+        <label class="l">Shop phone number<input class="f" id="cl-ph" type="tel" maxlength="20" placeholder="e.g. 98765 43210" value="${esc((t.shop&&t.shop.phone)||"")}"></label>
+        <label class="l">Anything that helps us check <small class="muted">optional</small><textarea class="f" id="cl-note" rows="2" maxlength="300" placeholder="e.g. Call after 11 am, ask for Kumar"></textarea></label>
+        <div class="hint" id="cl-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="claimSend" data-id="${t.id}">Send claim</button></div>`); break; }
+    case "claimSend": { const ph=($("#cl-ph").value||"").trim(), err=$("#cl-err");
+      if(!/^\+?[0-9 ()-]{6,20}$/.test(ph)||ph.replace(/\D/g,"").length<10){ err.textContent="Enter a 10-digit phone number we can call."; break; }
+      el.disabled=true; const note=($("#cl-note").value||"").trim().slice(0,300);
+      if(await W(()=>db.doc(`claims/${id}__${S.me}`).set({topicId:id,userId:S.me,phone:ph,role:$("#cl-role").value,...(note?{note}:{}),status:"pending",createdAt:Date.now()}))){ closeModal(true); toast("Claim sent. TopicTalk will call you to check."); } else el.disabled=false; break; }
+    case "claimOk": case "claimNo": { if(!S.isOwner) break; const c=S.claims.get(id); if(!c) break; const ok=a==="claimOk";
+      if(ok&&!confirm("Approve this claim? Only approve after you have called or visited the shop.")) break;
+      el.disabled=true;
+      if(ok){ if(!(await W(()=>db.doc("topics/"+c.topicId).update({ownerId:c.userId})))){ el.disabled=false; break; } }
+      if(await W(()=>db.doc("claims/"+id).update({status:ok?"approved":"rejected",decidedAt:Date.now()}))) toast(ok?"Approved. They now have the Owner verified badge.":"Claim rejected."); else el.disabled=false; break; }
+    case "ownerRemove": { if(!S.isOwner) break; const t=S.topics.get(id); if(!t||!t.ownerId) break; if(!confirm("Remove the verified owner from this shop?")) break; if(await W(()=>db.doc("topics/"+id).update({ownerId:null}))) toast("Owner removed from this shop."); break; }
+    case "spNew": { const t=S.topics.get(id); if(!t||!(t.ownerId===S.me||S.isOwner)) break; PH.sp=[]; UI.spKind="offer";
+      const d7=new Date(Date.now()+7*864e5).toISOString().slice(0,10), max=new Date(Date.now()+90*864e5).toISOString().slice(0,10), min=new Date().toISOString().slice(0,10);
+      openModal(`<h2>Post an update</h2><p class="muted" style="margin:-6px 0 4px;font-size:14px">From <b>${esc(t.title)}</b>. People who follow the shop get a notification.</p>
+        <div class="seg sp-kind" role="group">${[["offer","🏷️ Offer"],["news","📣 News"],["opened","🎉 New shop"]].map(([k,l])=>`<button type="button" class="${k==="offer"?"on":""}" data-act="spKind" data-v="${k}">${l}</button>`).join("")}</div>
+        <label class="l"><span id="sp-lbl">What is the offer?</span><textarea class="f" id="sp-text" rows="3" maxlength="500" placeholder="e.g. Diwali offer: 10% off all LED TVs, free wall mount"></textarea></label>
+        <label class="l" id="sp-endl">Offer ends on<input class="f" id="sp-end" type="date" value="${d7}" min="${min}" max="${max}"></label>
+        <div class="l">Photo <small class="muted">optional</small>${phBox("sp").replace("📷 Add photos","📷 Add a photo").replace(" multiple hidden"," hidden").replace("Optional · up to "+PH_MAX,"One photo")}</div>
+        <p class="muted" style="font-size:12.5px;margin:0">Only real offers and news. Expired offers are hidden automatically.</p>
+        <div class="hint" id="sp-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="spSave" data-id="${t.id}">Post</button></div>`); break; }
+    case "spKind": { UI.spKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const off=UI.spKind==="offer"; $("#sp-endl").hidden=!off; $("#sp-lbl").textContent=off?"What is the offer?":UI.spKind==="opened"?"Tell people about the new shop":"What’s new?"; $("#sp-text").placeholder=off?"e.g. Diwali offer: 10% off all LED TVs, free wall mount":UI.spKind==="opened"?"e.g. We’ve opened at Jothi Nagar main road. Fresh juices and snacks, 7 am to 10 pm":"e.g. New stock of school uniforms has arrived"; break; }
+    case "spSave": { const t=S.topics.get(id); if(!t) break; const text=($("#sp-text").value||"").trim(), err=$("#sp-err"), k=UI.spKind||"offer";
+      if(text.length<5){ err.textContent="Write a few words about it."; break; }
+      let endsAt=null; if(k==="offer"){ const v=$("#sp-end").value; if(!v){ err.textContent="Pick when the offer ends."; break; } endsAt=new Date(v+"T23:59:00+05:30").getTime(); if(endsAt<Date.now()||endsAt>Date.now()+90*864e5){ err.textContent="Offers can run for up to 90 days."; break; } }
+      if((PH.sp||[]).length>1){ err.textContent="One photo per update."; break; }
+      el.disabled=true; const pid=rid("sp"); const media=(PH.sp||[]).length?await phSave("sp",{topicId:t.id}):[]; if(media===null){ el.disabled=false; break; }
+      if(await W(()=>db.doc("shopposts/"+pid).set({topicId:t.id,authorId:S.me,kind:k,text:text.slice(0,500),...(endsAt?{endsAt}:{}),...(media.length?{media:media.slice(0,1)}:{}),createdAt:Date.now()}))){ PH.sp=[]; closeModal(true); toast("Posted. Followers will be notified."); } else el.disabled=false; break; }
+    case "spDel": { const x=S.shopposts.get(id); if(!x||!(x.authorId===S.me||S.isOwner)) break; if(!confirm("Delete this update?")) break; await W(()=>db.doc("shopposts/"+id).delete()); break; }
     case "seCopy": { const f=document.querySelector('.se-d[data-d="1"]'); if(!f) break; const a=f.querySelector(".se-a").value, b=f.querySelector(".se-b").value; document.querySelectorAll(".se-d").forEach(r=>{ if(r.querySelector(".se-on").checked){ r.querySelector(".se-a").value=a; r.querySelector(".se-b").value=b; } }); break; }
     case "shopSave": { const t=S.topics.get(id); if(!t) break; const err=$("#se-err"); const ph=($("#se-ph").value||"").trim();
       if(ph&&(!/^\+?[0-9 ()-]{6,20}$/.test(ph)||ph.replace(/\D/g,"").length<6)){ err.textContent="That phone number doesn’t look right."; break; }
@@ -4416,7 +4584,9 @@ document.addEventListener("click", async e=>{
       else for(let k=0;k<7;k++) hours[k]="";
       if(bad){ err.textContent="Check the opening and closing times for each open day."; break; }
       const items=($("#se-items").value||"").split("\n").map(l=>l.trim()).filter(Boolean).slice(0,40).map(l=>{ const [n,...p]=l.split("|"); const o={n:n.trim().slice(0,80)}; const pr=p.join("|").trim().slice(0,40); if(pr) o.p=pr; return o; }).filter(o=>o.n);
-      const shop={address:($("#se-addr").value||"").trim().slice(0,200),phone:ph,whatsapp:!!$("#se-wa").checked&&!!ph,delivery:!!$("#se-del").checked,hours,items,updatedAt:Date.now()};
+      const types=[...document.querySelectorAll(".se-ty input:checked")].map(x=>x.value).slice(0,3);
+      if(document.querySelectorAll(".se-ty input:checked").length>3){ err.textContent="Pick up to 3 types."; break; }
+      const shop={types,address:($("#se-addr").value||"").trim().slice(0,200),phone:ph,whatsapp:!!$("#se-wa").checked&&!!ph,delivery:!!$("#se-del").checked,hours,items,updatedAt:Date.now()};
       el.disabled=true; if(await W(()=>db.doc("topics/"+id).update({shop}))){ closeModal(true); toast("Shop details saved"); } else el.disabled=false; break; }
     case "newsNew": if(!(await gate())) break; if(!S.isOwner){ toast("Only the TopicTalk team can post news."); break; } newsModal(); break;
     case "newsSave": { if(!S.isOwner) break; const title=($("#nw-title").value||"").trim(), desc=($("#nw-desc").value||"").trim(), err=$("#nw-err"), pl=placeOf($("#nw-loc").value);
@@ -5040,7 +5210,7 @@ document.addEventListener("change", async e=>{
     UI.dp=c.toDataURL("image/jpeg",0.82); $("#h-dp").innerHTML=`<img class="av lg" src="${UI.dp}" alt="">`; if(err) err.textContent="";
   }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t use that photo."; }
 });
-document.addEventListener("change",e=>{ if(e.target.id==="n-cat") UI.catTouched=true; if(e.target.id==="ls-sort"){ UI.lsSort=e.target.value; schedule(); } });
+document.addEventListener("change",e=>{ if(e.target.closest&&e.target.closest(".se-hours")){ const nh=document.getElementById("se-nohours"); if(nh) nh.checked=false; } if(e.target.id==="n-cat") UI.catTouched=true; if(e.target.id==="ls-sort"){ UI.lsSort=e.target.value; schedule(); } });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="ls-q"){ e.preventDefault(); lsSaveRecent(e.target.value); e.target.blur(); } });
 document.addEventListener("input",e=>{ if(UI.fdKind&&/^n-(title|desc|budget|tags|loc)$/.test(e.target.id||"")){ clearTimeout(UI.fdT); UI.fdT=setTimeout(fdSave,400); } });
 document.addEventListener("change",e=>{ if(UI.fdKind&&/^n-(cat|loc)$/.test(e.target.id||"")) fdSave(); });
@@ -5106,7 +5276,7 @@ render();
   const sub=(col,map)=>db.collection(col).onSnapshot(snap=>{ map.clear(); snap.docs.forEach(d=>map.set(d.id,{id:d.id,...d.data()})); S.ready[col]=true; schedule(); }, err=>{ console.warn(col,err); });
   sub("topics",R.topics); sub("comments",R.comments); sub("reviews",R.reviews); sub("likes",S.likes); sub("follows",S.follows); sub("handles",S.handles);
   sub("battles",R.battles); sub("groups",S.groups); sub("gmembers",S.gmembers); sub("duels",R.duels); sub("media",S.media); sub("dvotes",S.dvotes); sub("bvotes",S.bvotes); sub("pvotes",S.pvotes);
-  if(S.me){ sub("gmsgs",S.gmsgs); sub("friends",S.friends); sub("tmembers",S.tmembers); sub("joinreqs",S.joinreqs); sub("blocks",S.blocks); sub("reports",S.reports); } sub("ufollows",S.ufollows);
+  if(S.me){ sub("gmsgs",S.gmsgs); sub("friends",S.friends); sub("tmembers",S.tmembers); sub("joinreqs",S.joinreqs); sub("blocks",S.blocks); sub("reports",S.reports); } sub("ufollows",S.ufollows); sub("shopposts",S.shopposts); if(S.me) sub("claims",S.claims);
   if(S.me) db.collection("notifs").where("to","==",S.me).onSnapshot(snap=>{ S.notifs=snap.docs.map(d=>({id:d.id,...d.data()})); schedule(); },()=>{});
   render();
 })();

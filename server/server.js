@@ -52,7 +52,7 @@ const q = {
 };
 
 // ---------- documents in memory ----------
-const COLS = ["topics", "comments", "reviews", "likes", "follows", "handles", "battles", "bvotes", "pvotes", "groups", "gmembers", "duels", "dvotes", "media", "notifs", "friends", "ufollows", "tmembers", "joinreqs", "reports", "blocks", "gmsgs"];
+const COLS = ["topics", "comments", "reviews", "likes", "follows", "handles", "battles", "bvotes", "pvotes", "groups", "gmembers", "duels", "dvotes", "media", "notifs", "friends", "ufollows", "tmembers", "joinreqs", "reports", "blocks", "gmsgs", "claims", "shopposts"];
 const DOCS = Object.fromEntries(COLS.map(c => [c, new Map()]));
 function seedIfEmpty() {
   if (q.count.get().n > 0 || !fs.existsSync(SEED_DIR)) return;
@@ -146,6 +146,8 @@ function visible(col, id, d, uid) {
   if (uid && !isAdmin(uid) && ["topics", "comments", "reviews", "battles", "duels"].includes(col) && blockedPair(uid, authorOf(col, d))) return false;
   switch (col) {
     case "reports": return !!uid && (d.reporterId === uid || isAdmin(uid));
+    case "claims": return !!uid && (d.userId === uid || isAdmin(uid));   // the phone number stays between the claimant and the admin
+    case "shopposts": return topicVisible(DOCS.topics.get(d.topicId), uid);
     case "blocks": return !!uid && d.blockerId === uid;
     case "topics": return topicVisible(d, uid) || stubOK(d, uid);
     case "comments": case "reviews": case "battles": case "duels": return topicVisible(DOCS.topics.get(d.topicId), uid);
@@ -197,7 +199,9 @@ const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 function shopOK(x, kind) {
   if (kind !== "place") bad("Shop details are only for places.");
   if (typeof x !== "object" || Array.isArray(x)) bad("Those shop details aren’t valid.");
-  const keys = ["address", "phone", "whatsapp", "hours", "items", "delivery", "updatedAt"];
+  const keys = ["types", "address", "phone", "whatsapp", "hours", "items", "delivery", "updatedAt"];
+  const TYPES = ["restaurant", "bakery", "cafe", "grocery", "clothing", "footwear", "electronics", "mobile", "computer", "hardware", "pharmacy", "hospital", "dental", "school", "bikes", "fuel", "bank", "jewellery", "beauty", "furniture", "optical", "sports", "worship", "transport", "govt", "repair"];
+  if (x.types != null && (!Array.isArray(x.types) || x.types.length > 3 || x.types.some(k => !TYPES.includes(k)))) bad("Pick up to 3 shop types.");
   if (Object.keys(x).some(k => !keys.includes(k))) bad("Those shop details aren’t valid.");
   const str = (v, n) => v == null || (typeof v === "string" && v.length <= n);
   if (!str(x.address, 200)) bad("Keep the address under 200 characters.");
@@ -248,6 +252,39 @@ function check(op, col, id, prev, next, patch, uid) {
     if (op === "delete") return;
     if (prev || !DOCS.handles.has(b) || next.blockerId !== uid || next.blockedId !== b) bad(); return;
   }
+  if (col === "claims") {
+    if (op === "delete") { if (admin || prev.userId === uid) return; deny(); }
+    if (!prev) {
+      if (!uid || next.userId !== uid || id !== `${next.topicId}__${uid}`) deny();
+      const t = DOCS.topics.get(next.topicId);
+      if (!t || t.kind !== "place" || t.deletedAt) bad("That shop wasn’t found.");
+      if (t.ownerId) bad("This shop already has a verified owner.");
+      if (Object.keys(next).some(k => !["topicId", "userId", "phone", "role", "note", "status", "createdAt"].includes(k))) bad();
+      if (typeof next.phone !== "string" || !/^\+?[0-9 ()-]{6,20}$/.test(next.phone) || next.phone.replace(/\D/g, "").length < 10) bad("Enter the shop’s phone number.");
+      if (!["owner", "manager", "staff"].includes(next.role)) bad();
+      if (next.note != null && (typeof next.note !== "string" || next.note.length > 300)) bad("Keep the note under 300 characters.");
+      if (next.status !== "pending" || !Number.isFinite(next.createdAt)) bad();
+      return;
+    }
+    if (admin && op === "update" && onlyKeys(patch, ["status", "decidedAt"]) && ["approved", "rejected"].includes(next.status)) return;
+    deny();
+  }
+  if (col === "shopposts") {
+    const t = DOCS.topics.get((next || prev).topicId);
+    if (op === "delete") { if (admin || prev.authorId === uid) return; deny(); }
+    if (prev) deny("Updates can’t be edited. Delete it and post again.");
+    if (!uid || next.authorId !== uid) deny();
+    if (!t || t.kind !== "place" || t.deletedAt) bad("That shop wasn’t found.");
+    if (t.ownerId !== uid && !admin) deny("Only the shop’s verified owner can post updates.");
+    if (Object.keys(next).some(k => !["topicId", "authorId", "kind", "text", "endsAt", "media", "createdAt"].includes(k))) bad();
+    if (!["offer", "news", "opened"].includes(next.kind)) bad();
+    if (typeof next.text !== "string" || !next.text.trim() || next.text.length > 500) bad("Write the update in up to 500 characters.");
+    if (next.kind === "offer") { if (!Number.isFinite(next.endsAt) || next.endsAt < Date.now() || next.endsAt > Date.now() + 92 * 864e5) bad("Offers can run for up to 90 days."); }
+    else if (next.endsAt != null) bad();
+    if (next.media != null && (!Array.isArray(next.media) || next.media.length > 1 || next.media.some(m => typeof m !== "string" || !DOCS.media.has(m)))) bad("One photo per update.");
+    if (!admin) { let n = 0; const since = Date.now() - 864e5; for (const x of DOCS.shopposts.values()) if (x.topicId === next.topicId && x.createdAt > since) n++; if (n >= 3) deny("Up to 3 updates a day for each shop."); }
+    return;
+  }
   if (col === "reports") {
     if (op === "delete" || prev) { if (admin) return; deny(); }
     if (!uid || next.reporterId !== uid) deny();
@@ -280,7 +317,10 @@ function check(op, col, id, prev, next, patch, uid) {
       if (next && next.kind === "news" && !admin && (!prev || prev.kind !== "news")) deny("Only the TopicTalk team can post news.");
       if (!prev && next.parentId) { const par = DOCS.topics.get(next.parentId); if (par && !topicVisible(par, uid)) deny("You can’t branch from a topic you can’t see."); }
       if (!prev && next.kind === "place" && !admin) { let n = 0; const since = Date.now() - 864e5; for (const t of DOCS.topics.values()) if (t.authorId === uid && t.kind === "place" && t.createdAt > since) n++; if (n >= 5) deny("You can add up to 5 places a day. Try again tomorrow."); }
+      if (next && (next.ownerId ?? null) !== ((prev && prev.ownerId) ?? null) && !admin) deny("Only the admin can verify a shop owner.");
+      if (next && next.ownerId != null && (typeof next.ownerId !== "string" || !q.userById.get(next.ownerId))) bad("That owner wasn’t found.");
       if (!prev) { if (next.authorId !== uid) deny(); if (next.groupId && !role(next.groupId, uid) && !admin) deny("Join the group first."); return; }
+      if (op === "update" && prev.ownerId === uid && onlyKeys(patch, ["shop"])) return;
       if (admin || prev.authorId === uid) { if (!same("authorId")) deny(); return; }
       if (op === "update" && prev.groupId && role(prev.groupId, uid) === "admin" && onlyKeys(patch, ["madePublic", "publicAt"])) return;
       if (op === "update" && onlyKeys(patch, ["answer"]) && topicVisible(prev, uid)) return;
@@ -441,9 +481,9 @@ function addMember(tid, mu, by) {
   if (!t || t.authorId === mu || DOCS.tmembers.has(k) || !DOCS.handles.has(mu)) return;
   apply("tmembers", k, { topicId: tid, userId: mu, role: "member", addedBy: by || t.authorId, createdAt: Date.now() });
 }
-const PUSH_LABEL = { reply: "replied to you", mention: "mentioned you", gmention: "mentioned you in a group chat", tagged: "tagged you in a topic", comment: "commented on a topic you follow", branch: "branched your comment into a new topic", newbranch: "started a branch from a topic you follow", review: "reviewed a topic you follow", like: "liked your post", battle: "started a battle about your comment", newbattle: "started a battle in a topic you follow", resolved: "resolved a prediction you voted on", grouppost: "posted in your group", joined: "joined your group", duel_challenge: "challenged you to a debate duel", duel_accept: "accepted your debate challenge", duel_decline: "declined your debate challenge", duel_turn: "replied in your debate. Your turn", duel_vote: "finished a debate. Voting is open", friend_req: "sent you a friend request", friend_ok: "accepted your friend request", follow: "started following you", invited: "invited you to a discussion", helpreq: "needs help finding something near you", helped: "marked your recommendation as the one that helped" };
+const PUSH_LABEL = { reply: "replied to you", mention: "mentioned you", gmention: "mentioned you in a group chat", tagged: "tagged you in a topic", comment: "commented on a topic you follow", branch: "branched your comment into a new topic", newbranch: "started a branch from a topic you follow", review: "reviewed a topic you follow", like: "liked your post", battle: "started a battle about your comment", newbattle: "started a battle in a topic you follow", resolved: "resolved a prediction you voted on", grouppost: "posted in your group", joined: "joined your group", duel_challenge: "challenged you to a debate duel", duel_accept: "accepted your debate challenge", duel_decline: "declined your debate challenge", duel_turn: "replied in your debate. Your turn", duel_vote: "finished a debate. Voting is open", friend_req: "sent you a friend request", friend_ok: "accepted your friend request", follow: "started following you", invited: "invited you to a discussion", helpreq: "needs help finding something near you", helped: "marked your recommendation as the one that helped", claim: "says they own a shop. Check and approve", claimok: "approved you as the owner of", claimno: "couldn’t verify your shop claim for", shopupd: "posted an update from a shop you follow" };
 // Settings categories (same grouping as the app). A person can switch each one off; all are on by default.
-const NCAT = { reply: "reply", comment: "reply", helped: "reply", branch: "reply", newbranch: "reply", mention: "mention", gmention: "mention", tagged: "mention", battle: "battle", newbattle: "battle", duel_vote: "battle", duel_turn: "battle", duel_challenge: "battle", duel_accept: "battle", duel_decline: "battle", like: "like", review: "like", grouppost: "group", joined: "group", invited: "group", friend_req: "friends", friend_ok: "friends", follow: "friends", helpreq: "local", resolved: "pred" };
+const NCAT = { reply: "reply", comment: "reply", helped: "reply", branch: "reply", newbranch: "reply", mention: "mention", gmention: "mention", tagged: "mention", battle: "battle", newbattle: "battle", duel_vote: "battle", duel_turn: "battle", duel_challenge: "battle", duel_accept: "battle", duel_decline: "battle", like: "like", review: "like", grouppost: "group", joined: "group", invited: "group", friend_req: "friends", friend_ok: "friends", follow: "friends", helpreq: "local", resolved: "pred", claim: "shops", claimok: "shops", claimno: "shops", shopupd: "shops" };
 const NCATS = new Set(Object.values(NCAT));
 function pushLatest(uid) {
   let n = 0, last = null; const off = push.off(uid);
@@ -454,7 +494,15 @@ function pushLatest(uid) {
   const text = d.text ? `: ${String(d.text).slice(0, 90)}` : "";
   return { title: n > 1 ? `TopicTalk · ${n} new` : "TopicTalk", body: `${who} ${what}${text}`, url: d.topicId ? `/#t-${d.topicId}` : d.groupId ? `/#g-${d.groupId}` : "/#alerts", tag: "tt-" + last.id };
 }
+function sysNotify(to, from, type, extra) {
+  if (!to || to === from) return;
+  const nid = newId("n", 9), n = { to, from: from || "", type, topicId: extra.topicId || "", text: String(extra.text || "").slice(0, 140), createdAt: Date.now(), read: false };
+  apply("notifs", nid, n); broadcast("notifs", nid, n, null); push.notify(to, NCAT[type]);
+}
 function afterWrite(col, id, prev, next) {
+  if (col === "claims" && next && !prev) sysNotify(adminUid(), next.userId, "claim", { topicId: next.topicId, text: (DOCS.topics.get(next.topicId) || {}).title });
+  if (col === "claims" && next && prev && prev.status !== next.status && next.status !== "pending") sysNotify(next.userId, adminUid(), next.status === "approved" ? "claimok" : "claimno", { topicId: next.topicId, text: (DOCS.topics.get(next.topicId) || {}).title });
+  if (col === "shopposts" && next && !prev) { const sent = new Set(); for (const f of DOCS.follows.values()) if (f.topicId === next.topicId && !sent.has(f.userId) && sent.size < 500) { sent.add(f.userId); sysNotify(f.userId, next.authorId, "shopupd", { topicId: next.topicId, text: next.text }); } }
   if (col === "notifs" && next && !prev && next.to) push.notify(next.to, NCAT[next.type]);
   if (col === "topics" && next) {
     if (prev && OPEN(prev.access) && !OPEN(next.access)) {
