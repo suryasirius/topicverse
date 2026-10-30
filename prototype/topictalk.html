@@ -1654,8 +1654,10 @@ function rich(text){
 // ---- video links: YouTube / Instagram play inside our pages, nothing is stored but the link ----
 function videoLinks(text){
   const out=[], seen=new Set();
-  for(const m of String(text||"").matchAll(/https?:\/\/[^\s<>"']+/g)){
-    let u; try{ u=new URL(m[0].replace(/[.,;:!?)]+$/,"")); }catch{ continue; }
+  for(const m of String(text||"").matchAll(/(?:https?:\/\/)?(?:www\.|m\.)?(?:youtu\.be|youtube\.com|music\.youtube\.com|instagram\.com)\/\S*/gi)){
+    let raw=m[0].replace(/[.,;:!?)]+$/,"");
+    if(!/^https?:\/\//i.test(raw)) raw="https://"+raw;
+    let u; try{ u=new URL(raw); }catch{ continue; }
     const h=u.hostname.replace(/^(www|m)\./,""), parts=u.pathname.split("/").filter(Boolean); let v=null;
     if(h==="youtu.be"&&/^[\w-]{11}$/.test(parts[0]||"")) v={prov:"yt",id:parts[0],t:+(u.searchParams.get("t")||0)||0};
     else if(h==="youtube.com"||h==="music.youtube.com"){
@@ -2641,6 +2643,7 @@ const gUnread=gid=>{ if(!memberOf(gid)) return 0; const t=gRead(gid); let n=0; f
 function gMsgs(gid){ const m=new Map(); for(const x of (UI.gOld||new Map()).values()) if(x.groupId===gid) m.set(x.id,x); for(const x of S.gmsgs.values()) if(x.groupId===gid) m.set(x.id,x); return [...m.values()]; }
 const gMedia=id=>S.media.get(id)||UI.gOldMedia?.get(id);
 const gTxt=t=>rich(String(t||"").replace(/\n{3,}/g,"\n\n")).replace(/\n\n/g,'<span class="gpb"></span>').replace(/\n/g,"<br>");
+function gChatVideo(text){ const v=videoLinks(text)[0]; return v?videoCardFor(v,{compact:true}):""; }
 const hhmm=t=>new Date(t).toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"});
 const dayLbl=t=>{ const d=new Date(t), n=new Date(), y=new Date(Date.now()-864e5); const same=(a,b)=>a.toDateString()===b.toDateString(); return same(d,n)?"Today":same(d,y)?"Yesterday":d.toLocaleDateString("en-IN",{day:"numeric",month:"short",year:d.getFullYear()===n.getFullYear()?undefined:"numeric"}); };
 function miniBattle(b){
@@ -2694,7 +2697,7 @@ function gMsgHTML(m,prev,gid,nested){
   const body=m.deletedAt?`<i class="gdel">🚫 This message was deleted</i>`
     :`${rep?`<button type="button" class="gq" data-act="gJump" data-id="${esc(rep.id)}"><b>${esc(rep.authorId===S.me?"You":nameOf(rep.authorId))}</b><span>${esc(rep.deletedAt?"Deleted message":(rep.text||"📷 Photo").slice(0,90))}</span></button>`:""}
       ${(m.media||[]).length?`<div class="gph">${m.media.map(id=>{ const x=gMedia(id); return x?`<button type="button" data-act="viewMedia" data-id="${esc(id)}" aria-label="Open photo"><img src="${x.data}" alt="" loading="lazy" style="aspect-ratio:${x.w||4}/${x.h||3}"></button>`:`<span class="gph-x">📷</span>`; }).join("")}</div>`:""}
-      ${m.ref&&m.text?`<div class="gtx gtx-note">${gTxt(m.text)}</div>`:""}${m.ref?`<div class="gshared"><div class="gshl">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:(m.text?`<div class="gtx">${gTxt(m.text)}</div>`:"")}${gLinkCards(m.text)}`;
+      ${m.ref&&m.text?`<div class="gtx gtx-note">${gTxt(m.text)}</div>`:""}${m.ref?`<div class="gshared"><div class="gshl">↪ Shared a post</div>${gShareEmbed(m.ref)}</div>`:(m.text?`<div class="gtx">${gTxt(m.text)}</div>`:"")}${!m.ref&&m.text?gChatVideo(m.text):""}${gLinkCards(m.text)}`;
   const sel=UI.gSel===m.id&&!m.deletedAt, canDel=mine||isAdmin(gid);
   return `<div class="gm ${mine?"me":""} ${cont?"cont":""}${m.ref&&!m.deletedAt?" hasref":""}${m.deletedAt?" isdel":""}${isNew?" gnew":""}${isStk?" gstk":""}" id="gm-${esc(m.id)}" data-day="${esc(dayLbl(m.createdAt))}" data-who="${esc(mine?"You":nameOf(m.authorId))}">
     ${!mine&&!cont?`<a class="gm-av" href="#u-${esc(m.authorId)}">${avatar(m.authorId,"xs")}</a>`:""}
