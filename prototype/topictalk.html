@@ -2770,7 +2770,7 @@ function gcEl(){
   c=document.createElement("div"); c.id="gcomp"; c.className="gcomp"; c.hidden=true;
   c.innerHTML=`<div class="gc-typing" id="gc-typing" hidden aria-live="polite"></div>
     <div class="gc-bar" id="gc-bar" hidden></div>
-    <div class="gc-menu" id="gc-menu" hidden><button type="button" data-act="newQuestion" class="gc-mi">❓ Ask the group</button><button type="button" data-act="newBattle" class="gc-mi">⚔️ Battle</button><button type="button" data-act="newTopic" class="gc-mi">💬 Topic</button><label class="gc-mi">📷 Photo<input type="file" id="gc-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></label></div>
+    <div class="gc-menu" id="gc-menu" hidden><button type="button" data-act="newTopic" class="gc-mi">💬 Post</button><button type="button" data-act="newBattle" class="gc-mi">⚔️ Battle</button><label class="gc-mi">📷 Photo<input type="file" id="gc-file" accept="image/png,image/jpeg,image/webp,image/gif" multiple hidden></label></div>
     <div class="gc-row"><button type="button" class="gc-plus" data-act="gPlus" aria-label="Start a topic, battle or prediction, or add a photo">＋</button>
       <textarea id="gc-ta" rows="1" maxlength="2000" placeholder="Message" aria-label="Message"></textarea>
       <button type="button" class="gc-send" data-act="gSend" aria-label="Send"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.6 2-12.6 2z"/></svg></button></div>`;
