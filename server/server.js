@@ -213,9 +213,14 @@ function shopOK(x, kind) {
     if (typeof x.hours !== "object" || Array.isArray(x.hours)) bad("Those opening hours aren’t valid.");
     for (const [d, v] of Object.entries(x.hours)) {
       if (!/^[0-6]$/.test(d)) bad("Those opening hours aren’t valid.");
-      if (v === "" || v === "closed") continue;
-      const m = typeof v === "string" && v.split("-");
-      if (!m || m.length !== 2 || !HHMM.test(m[0]) || !HHMM.test(m[1])) bad("Those opening hours aren’t valid.");
+      if (v === "" || v === "closed" || v === "24h") continue;
+      if (typeof v !== "string") bad("Those opening hours aren’t valid.");
+      const segs = v.split(",");
+      if (segs.length > 2) bad("Up to 2 sessions a day.");
+      for (const seg of segs) {
+        const m = seg.split("-");
+        if (m.length !== 2 || !HHMM.test(m[0]) || !HHMM.test(m[1])) bad("Those opening hours aren’t valid.");
+      }
     }
   }
   if (x.items != null) {

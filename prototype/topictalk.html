@@ -1510,8 +1510,18 @@ body{font-size:15.5px;letter-spacing:-.003em}
 .sp-items{list-style:none;margin:0 0 4px;padding:0;display:grid;gap:0}.sp-items li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px}.sp-items li:first-child{border-top:0}.sp-items b{font-weight:600;white-space:nowrap}
 .sp-f{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}.sp-f span:last-child{display:flex;gap:12px}
 .sp-empty{display:grid;gap:4px;justify-items:start}.sp-empty span{font-size:13.5px;color:var(--muted)}.sp-empty .btn{margin-top:6px}
-.se-hours{display:grid;gap:6px;margin-top:6px}.se-d{display:grid;grid-template-columns:120px 1fr auto 1fr;gap:6px;align-items:center}.se-d .f{margin:0;height:38px;padding:0 8px}.se-d span{font-size:13px;color:var(--muted)}.se-dn{display:flex;gap:6px;align-items:center;font-size:14px}
-@media(max-width:420px){.se-d{grid-template-columns:96px 1fr auto 1fr}.se-dn{font-size:13px}}
+.se-hours{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.se-d{border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+.se-row1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.se-dn{display:flex;gap:6px;align-items:center;font-size:14px;font-weight:600}
+.se-24l{display:flex;gap:4px;align-items:center;font-size:12.5px;color:var(--muted);font-weight:400}
+.se-sessions{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.se-sess{display:flex;align-items:center;gap:6px}
+.se-sess .f{margin:0;height:38px;padding:0 8px;flex:1;min-width:0}
+.se-sess span{font-size:13px;color:var(--muted);flex:none}
+.se-x{flex:none;color:var(--danger);font-size:13px}
+.se-add{align-self:flex-start;font-size:12.5px}
+.se-wk{display:flex;gap:14px;flex-wrap:wrap}
 
 .ls-need{font-size:13.5px;color:var(--muted);margin:0 0 12px}.ls-need b{color:var(--ink);font-weight:600}
 .se-types{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;max-height:180px;overflow:auto}.se-ty{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px}.se-ty input{margin:0}.se-ty:has(input:checked){background:var(--brand-soft);border-color:var(--brand);color:var(--brand-deep)}
@@ -2143,14 +2153,22 @@ function topRatedList(n,mode){ const hp=homePlace(); const all=LIVE().filter(t=>
 const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], DAYS_L=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 const istNow=()=>{ const p=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Kolkata",weekday:"short",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date()); const g=k=>(p.find(x=>x.type===k)||{}).value; return {d:DAYS.indexOf(g("weekday")),m:(+g("hour")%24)*60+ +g("minute")}; };
 const toMin=v=>{ const [h,m]=v.split(":").map(Number); return h*60+m; };
-const fmt12=v=>{ const [h,m]=v.split(":").map(Number); return (h%12||12)+(m?":"+String(m).padStart(2,"0"):"")+(h<12?" am":" pm"); };
+const fmtMin=m=>{ m=((m%1440)+1440)%1440; const h=Math.floor(m/60), mm=m%60; return (h%12||12)+(mm?":"+String(mm).padStart(2,"0"):"")+(h<12?" am":" pm"); };
+const fmt12=v=>fmtMin(toMin(v));
+// a day's stored value -> list of [startMin,endMin] sessions. "closed"/empty -> []. "24h" -> whole day. "a-b" or "a-b,c-d" -> up to 2 sessions
+const daySessions=v=>{ if(!v||v==="closed") return []; if(v==="24h") return [[0,1440]]; return v.split(",").map(s=>{ const [a,b]=s.split("-"); return [toMin(a),toMin(b)]; }); };
+// one day's hours, for display: "Closed" / "Open 24 hours" / "9 am – 9 pm" / "9 am – 1 pm, 4 pm – 9 pm"
+const dayLabel=v=>{ if(!v||v==="closed") return "Closed"; if(v==="24h") return "Open 24 hours"; return v.split(",").map(s=>{ const [a,b]=s.split("-"); return fmt12(a)+" – "+fmt12(b); }).join(", "); };
 const hasHours=sh=>!!(sh&&sh.hours&&Object.values(sh.hours).some(v=>v&&v!=="closed"));
 // open or closed right now, worked out in India time from the hours the shop listed
-function openState(sh){ if(!hasHours(sh)) return null; const H=sh.hours, {d,m}=istNow(); const iv=k=>{ const v=H[k]; return v&&v!=="closed"?v.split("-"):null; };
-  const t=iv(d); if(t){ const a=toMin(t[0]),b=toMin(t[1]); if(b>a?(m>=a&&m<b):(m>=a||m<b)) return {open:true,txt:"Open now · closes "+fmt12(t[1])}; }
-  const y=iv((d+6)%7); if(y){ const a=toMin(y[0]),b=toMin(y[1]); if(b<=a&&m<b) return {open:true,txt:"Open now · closes "+fmt12(y[1])}; }
-  if(t&&m<toMin(t[0])) return {open:false,txt:"Closed · opens "+fmt12(t[0])};
-  for(let i=1;i<=7;i++){ const k=(d+i)%7, v=iv(k); if(v) return {open:false,txt:"Closed · opens "+(i===1?"tomorrow ":DAYS[k]+" ")+fmt12(v[0])}; }
+function openState(sh){ if(!hasHours(sh)) return null; const H=sh.hours, {d,m}=istNow();
+  if(H[d]==="24h") return {open:true,txt:"Open now · open 24 hours"};
+  const today=daySessions(H[d]), yest=daySessions(H[(d+6)%7]);
+  for(const [a,b] of today) if(b>a?(m>=a&&m<b):(m>=a||m<b)) return {open:true,txt:"Open now · closes "+fmtMin(b)};
+  for(const [a,b] of yest) if(b<=a&&m<b) return {open:true,txt:"Open now · closes "+fmtMin(b)};
+  const future=today.filter(([a])=>m<a).sort((x,y)=>x[0]-y[0]);
+  if(future.length) return {open:false,txt:"Closed · opens "+fmtMin(future[0][0])};
+  for(let i=1;i<=7;i++){ const k=(d+i)%7, segs=daySessions(H[k]); if(segs.length) return {open:false,txt:"Closed · opens "+(i===1?"tomorrow ":DAYS[k]+" ")+fmtMin(segs[0][0])}; }
   return {open:false,txt:"Closed"}; }
 const waLink=ph=>{ const d=String(ph||"").replace(/\D/g,""); const n=d.length===10&&/^[6-9]/.test(d)?"91"+d:d.length===12&&d.startsWith("91")?d:d.length===11&&d.startsWith("0")&&/^[6-9]/.test(d[1])?"91"+d.slice(1):""; return n?"https://wa.me/"+n:""; };
 const dirLink=t=>geoOk(t.geo)?`https://www.google.com/maps/dir/?api=1&destination=${t.geo.lat},${t.geo.lng}`:(t.shop&&t.shop.address)?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.shop.address+(t.location?", "+t.location:""))}`:"";
@@ -2164,7 +2182,7 @@ function shopPanel(t){
   const qs=LIVE().filter(x=>x.about===t.id).sort((a,b)=>lastAct(b)-lastAct(a));
   const info=sh.address||sh.phone||hasHours(sh)||(sh.items||[]).length||sh.delivery;
   const acts=[sh.phone?`<a class="btn sm" href="tel:${esc(String(sh.phone).replace(/[^+0-9]/g,""))}">📞 Call</a>`:"",wa?`<a class="btn sm" href="${esc(wa)}" target="_blank" rel="noopener">💬 WhatsApp</a>`:"",dir?`<a class="btn sm" href="${esc(dir)}" target="_blank" rel="noopener">🧭 Directions</a>`:"",`<button type="button" class="btn sm" data-act="askShop" data-id="${t.id}">❓ Ask about this shop</button>`].join("");
-  const hours=hasHours(sh)?`<details class="sp-hours"><summary>${st?`<b class="sp-st ${st.open?"on":""}">${esc(st.txt)}</b>`:""}<span>All hours</span></summary><table>${[1,2,3,4,5,6,0].map(k=>{ const v=sh.hours[k]; return `<tr class="${k===today?"td":""}"><td>${DAYS_L[k]}</td><td>${v&&v!=="closed"?v.split("-").map(fmt12).join(" – "):"Closed"}</td></tr>`; }).join("")}</table><small>Times as listed for this shop, in India time.</small></details>`:"";
+  const hours=hasHours(sh)?`<details class="sp-hours"><summary>${st?`<b class="sp-st ${st.open?"on":""}">${esc(st.txt)}</b>`:""}<span>All hours</span></summary><table>${[1,2,3,4,5,6,0].map(k=>{ const v=sh.hours[k]; return `<tr class="${k===today?"td":""}"><td>${DAYS_L[k]}</td><td>${dayLabel(v)}</td></tr>`; }).join("")}</table><small>Times as listed for this shop, in India time.</small></details>`:"";
   const items=(sh.items||[]).length?`<div class="sp-sec"><h3>Products and services</h3><ul class="sp-items">${sh.items.map(it=>`<li><span>${esc(it.n)}</span>${it.p?`<b>${esc(it.p)}</b>`:""}</li>`).join("")}</ul><small class="muted">Prices are as listed and may change. Check with the shop.</small></div>`:"";
   const ask=`<div class="sp-sec"><div class="sp-h"><h3>Questions about this shop${qs.length?` · ${qs.length}`:""}</h3><button type="button" class="linkb" data-act="askShop" data-id="${t.id}">Ask</button></div>${qs.length?`<div class="list">${qs.slice(0,5).map(x=>{ const s2=stat(x.id); return `<a href="#t-${x.id}"><div class="txt"><b>${esc(cleanTitle(x))}</b><div class="meta"><span>${esc(nameOf(x.authorId))}</span><span>${s2.comments} answer${s2.comments===1?"":"s"}</span><span>${agoShort(x.createdAt)}</span></div></div></a>`; }).join("")}</div>`:`<p class="muted" style="margin:0;font-size:14px">No questions yet. Ask people who have been here about prices, service or quality.</p>`}</div>`;
   const myClaim=S.me&&S.claims.get(t.id+"__"+S.me);
@@ -2180,14 +2198,18 @@ function shopPanel(t){
 }
 function shopEditModal(t){
   const sh=t.shop||{}, H=sh.hours||{};
-  const row=k=>{ const v=H[k], on=v&&v!=="closed", [a,b]=on?v.split("-"):["09:00","21:00"]; return `<div class="se-d" data-d="${k}"><label class="se-dn"><input type="checkbox" class="se-on" ${on||!Object.keys(H).length&&k!==0?"checked":""}> ${DAYS_L[k]}</label><input type="time" class="f se-a" value="${a}"><span>to</span><input type="time" class="f se-b" value="${b}"></div>`; };
+  const sessRow=(i,a,b)=>`<div class="se-sess"><input type="time" class="f se-a" value="${a}"><span>to</span><input type="time" class="f se-b" value="${b}">${i?`<button type="button" class="linkb se-x" data-act="seRmSess">✕</button>`:""}</div>`;
+  const row=k=>{ const v=H[k], closed=!v||v==="closed", h24=v==="24h", on=!closed||(!Object.keys(H).length&&k!==0);
+    const segs=(!closed&&!h24)?v.split(",").map(s=>s.split("-")):[["09:00","21:00"]];
+    return `<div class="se-d" data-d="${k}"><div class="se-row1"><label class="se-dn"><input type="checkbox" class="se-on" ${on?"checked":""}> ${DAYS_L[k]}</label><label class="se-24l"><input type="checkbox" class="se-24" ${h24?"checked":""}> 24 hrs</label></div>
+      <div class="se-sessions"${!on||h24?" hidden":""}>${segs.map((s,i)=>sessRow(i,s[0],s[1])).join("")}${segs.length<2?`<button type="button" class="linkb se-add" data-act="seAddSess">+ Add another session (e.g. a lunch break)</button>`:""}</div></div>`; };
   openModal(`<h2>Shop details</h2><p class="muted" style="margin:-6px 0 4px;font-size:14px">Only add what you know is correct. Everyone can see these.</p>
     <div class="l">What does it sell? <small class="muted">pick up to 3, so people searching “shirt” or “TV” find it</small><div class="se-types">${STYPES.map(([k,l,ic])=>`<label class="chip se-ty"><input type="checkbox" value="${k}" ${(sh.types&&sh.types.length?sh.types:shopTypes(t)).includes(k)?"checked":""}> ${ic} ${esc(l)}</label>`).join("")}</div></div>
     <label class="l">Address<input class="f" id="se-addr" maxlength="200" value="${esc(sh.address||"")}" placeholder="Door no, street, landmark"></label>
     <label class="l">Shop phone number<input class="f" id="se-ph" type="tel" maxlength="20" value="${esc(sh.phone||"")}" placeholder="e.g. 98765 43210"></label>
     <label class="privrow"><input type="checkbox" id="se-wa" ${sh.whatsapp?"checked":""}> <span>This number is on WhatsApp</span></label>
     <label class="privrow"><input type="checkbox" id="se-del" ${sh.delivery?"checked":""}> <span>They do home delivery</span></label>
-    <div class="l">Opening hours <small class="muted">Untick a day when the shop is closed</small><div class="se-hours">${[1,2,3,4,5,6,0].map(row).join("")}</div><button type="button" class="linkb" data-act="seCopy">Use Monday’s hours for every open day</button></div>
+    <div class="l">Opening hours <small class="muted">Untick a day when the shop is closed. Check “24 hrs” for a shop that never closes.</small><div class="se-hours">${[1,2,3,4,5,6,0].map(row).join("")}</div><div class="se-wk"><button type="button" class="linkb" data-act="seCopy">Use Monday’s hours for every open day</button><button type="button" class="linkb" data-act="seCopyWeekend">Use Saturday’s hours for Sunday too</button></div></div>
     <label class="l">Products and services <small class="muted">one per line, add a price after | if you know it</small><textarea class="f" id="se-items" rows="5" maxlength="3000" placeholder="Phone screen guard | ₹150&#10;Laptop service | from ₹500&#10;Fresh bread">${esc((sh.items||[]).map(it=>it.n+(it.p?" | "+it.p:"")).join("\n"))}</textarea></label>
     <label class="privrow"><input type="checkbox" id="se-nohours" ${!hasHours(sh)?"checked":""}> <span>I don’t know the opening hours</span></label>
     <div class="hint" id="se-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="shopSave" data-id="${t.id}">Save details</button></div>`);
@@ -4718,12 +4740,23 @@ document.addEventListener("click", async e=>{
       el.disabled=true; const pid=rid("sp"); const media=(PH.sp||[]).length?await phSave("sp",{topicId:t.id}):[]; if(media===null){ el.disabled=false; break; }
       if(await W(()=>db.doc("shopposts/"+pid).set({topicId:t.id,authorId:S.me,kind:k,text:text.slice(0,500),...(endsAt?{endsAt}:{}),...(media.length?{media:media.slice(0,1)}:{}),createdAt:Date.now()}))){ PH.sp=[]; closeModal(true); toast("Posted. Followers will be notified."); } else el.disabled=false; break; }
     case "spDel": { const x=S.shopposts.get(id); if(!x||!(x.authorId===S.me||S.isOwner)) break; if(!confirm("Delete this update?")) break; await W(()=>db.doc("shopposts/"+id).delete()); break; }
-    case "seCopy": { const f=document.querySelector('.se-d[data-d="1"]'); if(!f) break; const a=f.querySelector(".se-a").value, b=f.querySelector(".se-b").value; document.querySelectorAll(".se-d").forEach(r=>{ if(r.querySelector(".se-on").checked){ r.querySelector(".se-a").value=a; r.querySelector(".se-b").value=b; } }); break; }
+    case "seAddSess": { const box=el.closest(".se-sessions"); if(!box||box.querySelectorAll(".se-sess").length>=2) break; const d=document.createElement("div"); d.className="se-sess"; d.innerHTML=`<input type="time" class="f se-a" value="16:00"><span>to</span><input type="time" class="f se-b" value="21:00"><button type="button" class="linkb se-x" data-act="seRmSess">✕</button>`; box.insertBefore(d,el); if(box.querySelectorAll(".se-sess").length>=2) el.remove(); break; }
+    case "seRmSess": { const row=el.closest(".se-sess"), box=el.closest(".se-sessions"); if(row) row.remove(); if(box&&!box.querySelector(".se-add")){ const btn=document.createElement("button"); btn.type="button"; btn.className="linkb se-add"; btn.dataset.act="seAddSess"; btn.textContent="+ Add another session (e.g. a lunch break)"; box.appendChild(btn); } break; }
+    case "seCopy": { const f=document.querySelector('.se-d[data-d="1"]'); if(!f) break; const h24=f.querySelector(".se-24").checked, html=f.querySelector(".se-sessions").innerHTML;
+      document.querySelectorAll(".se-d").forEach(r=>{ if(r===f||!r.querySelector(".se-on").checked) return; r.querySelector(".se-24").checked=h24; const box=r.querySelector(".se-sessions"); box.innerHTML=html; box.hidden=h24; }); break; }
+    case "seCopyWeekend": { const f=document.querySelector('.se-d[data-d="6"]'), su=document.querySelector('.se-d[data-d="0"]'); if(!f||!su) break; const h24=f.querySelector(".se-24").checked;
+      su.querySelector(".se-on").checked=true; su.querySelector(".se-24").checked=h24; const box=su.querySelector(".se-sessions"); box.innerHTML=f.querySelector(".se-sessions").innerHTML; box.hidden=h24; break; }
     case "shopSave": { const t=S.topics.get(id); if(!t) break; const err=$("#se-err"); const ph=($("#se-ph").value||"").trim();
       if(ph&&(!/^\+?[0-9 ()-]{6,20}$/.test(ph)||ph.replace(/\D/g,"").length<6)){ err.textContent="That phone number doesn’t look right."; break; }
-      const hours={}; let bad=false; if(!$("#se-nohours").checked) document.querySelectorAll(".se-d").forEach(r=>{ const k=r.dataset.d, on=r.querySelector(".se-on").checked, a=r.querySelector(".se-a").value, b=r.querySelector(".se-b").value; if(!on){ hours[k]="closed"; return; } if(!/^\d\d:\d\d$/.test(a)||!/^\d\d:\d\d$/.test(b)||a===b){ bad=true; return; } hours[k]=a+"-"+b; });
+      const hours={}; let bad=false; if(!$("#se-nohours").checked) document.querySelectorAll(".se-d").forEach(r=>{ const k=r.dataset.d, on=r.querySelector(".se-on").checked;
+        if(!on){ hours[k]="closed"; return; }
+        if(r.querySelector(".se-24").checked){ hours[k]="24h"; return; }
+        const segs=[...r.querySelectorAll(".se-sess")].map(s=>[s.querySelector(".se-a").value,s.querySelector(".se-b").value]);
+        if(!segs.length||segs.some(([a,b])=>!/^\d\d:\d\d$/.test(a)||!/^\d\d:\d\d$/.test(b)||a===b)){ bad=true; return; }
+        if(segs.length===2&&toMin(segs[1][0])<toMin(segs[0][1])){ bad=true; return; }
+        hours[k]=segs.map(([a,b])=>a+"-"+b).join(","); });
       else for(let k=0;k<7;k++) hours[k]="";
-      if(bad){ err.textContent="Check the opening and closing times for each open day."; break; }
+      if(bad){ err.textContent="Check the opening and closing times for each open day. A second session must start after the first one ends."; break; }
       const items=($("#se-items").value||"").split("\n").map(l=>l.trim()).filter(Boolean).slice(0,40).map(l=>{ const [n,...p]=l.split("|"); const o={n:n.trim().slice(0,80)}; const pr=p.join("|").trim().slice(0,40); if(pr) o.p=pr; return o; }).filter(o=>o.n);
       const types=[...document.querySelectorAll(".se-ty input:checked")].map(x=>x.value).slice(0,3);
       if(document.querySelectorAll(".se-ty input:checked").length>3){ err.textContent="Pick up to 3 types."; break; }
@@ -5385,7 +5418,9 @@ document.addEventListener("change", async e=>{
     UI.dp=c.toDataURL("image/jpeg",0.82); $("#h-dp").innerHTML=`<img class="av lg" src="${UI.dp}" alt="">`; if(err) err.textContent="";
   }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t use that photo."; }
 });
-document.addEventListener("change",e=>{ if(e.target.closest&&e.target.closest(".se-hours")){ const nh=document.getElementById("se-nohours"); if(nh) nh.checked=false; } if(e.target.id==="n-cat") UI.catTouched=true; if(e.target.id==="ls-sort"){ UI.lsSort=e.target.value; schedule(); } });
+document.addEventListener("change",e=>{ if(e.target.closest&&e.target.closest(".se-hours")){ const nh=document.getElementById("se-nohours"); if(nh) nh.checked=false;
+    if(e.target.classList.contains("se-on")||e.target.classList.contains("se-24")){ const d=e.target.closest(".se-d"), box=d&&d.querySelector(".se-sessions"); if(box) box.hidden=!d.querySelector(".se-on").checked||d.querySelector(".se-24").checked; } }
+  if(e.target.id==="n-cat") UI.catTouched=true; if(e.target.id==="ls-sort"){ UI.lsSort=e.target.value; schedule(); } });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="ls-q"){ e.preventDefault(); lsSaveRecent(e.target.value); e.target.blur(); } });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.id==="iv-in"){ e.preventDefault(); ivAdd(e.target.value); e.target.value=""; } });
 document.addEventListener("input",e=>{ if(UI.fdKind&&/^n-(title|desc|budget|tags|loc)$/.test(e.target.id||"")){ clearTimeout(UI.fdT); UI.fdT=setTimeout(fdSave,400); } });
