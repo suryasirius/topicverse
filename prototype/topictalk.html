@@ -1080,6 +1080,9 @@ body:not(.ingchat) .gsticky{display:none}
 .rvcats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px 14px;padding:0 14px}.rvcats::-webkit-scrollbar{display:none}.rvcats .chip{white-space:nowrap}.rvcats small{opacity:.7;margin-left:2px}
 .rvlist .tile.rvt{flex:none;width:38px;height:38px;font-size:13px;border-radius:10px}
 .rvtr{display:block;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#B7791F;margin-top:2px;white-space:nowrap}
+.rvttl{display:flex;align-items:center;gap:6px;min-width:0}.rvttl b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.rvnew{flex:none;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.04em;color:#fff;background:var(--brand);padding:1px 6px;border-radius:999px}
+.rvhl{font-size:12.5px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* SEARCH v2 */
 .srh{font-size:26px;font-weight:800;margin:0 0 8px;overflow-wrap:anywhere}
 .sq{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 12px}.sqp{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:var(--brand-soft);color:var(--brand-deep);font-size:13px;font-weight:700}.sqx{color:var(--muted);font-weight:700}.sqa{flex-basis:100%;font-size:13px;color:var(--muted)}
@@ -2265,10 +2268,16 @@ function claimCard(c,o={}){ const t=S.topics.get(c.topicId); const R={owner:"Own
   return `<div class="clc"><div class="clc-h">${o.noShop?"":`<a href="#t-${esc(c.topicId)}"><b>${esc(t?t.title:"Shop")}</b></a> · `}<a href="#u-${esc(c.userId)}">${esc(nameOf(c.userId))}</a> · ${esc(R)} · ${agoShort(c.createdAt)}</div>
     <div class="clc-p">📞 <a href="tel:${esc(String(c.phone||"").replace(/[^0-9+]/g,""))}">${esc(c.phone||"")}</a>${t&&t.shop&&t.shop.phone?` <small class="muted">Listed shop number: ${esc(t.shop.phone)}</small>`:""}</div>${c.note?`<div class="muted clc-n">${esc(c.note)}</div>`:""}
     <div class="dprow"><button class="btn sm pri" data-act="claimOk" data-id="${esc(c.id)}">✓ Approve</button><button class="btn sm" data-act="claimNo" data-id="${esc(c.id)}">Reject</button></div></div>`; }
-function localUpdates(hp){ const L2=shopPostsIn(hp), offers=L2.filter(x=>x.kind==="offer"), rest=L2.filter(x=>x.kind!=="offer");
+function localUpdates(hp){ const all=shopPostsIn(hp);
   const head=`<div class="lu-h"><b>🏷️ Offers and news from shops in ${esc(hp.name)}</b><span class="muted">Posted only by owners TopicTalk has verified. Expired offers disappear on their own.</span></div>`;
-  if(!L2.length) return head+emptyBox("No shop updates yet","When a verified shop owner posts an offer or news, it shows up here. Own a shop? Open it in Shops and tap “🏪 This is my shop”.",`<button class="btn sm" data-act="lSub" data-v="shops">Browse shops</button>`);
-  return head+(offers.length?`<section class="hsec">${SH("🏷️ Offers right now · "+offers.length,"")}<div class="spcs">${offers.map(x=>spCard(x)).join("")}</div></section>`:"")
+  if(!all.length) return head+emptyBox("No shop updates yet","When a verified shop owner posts an offer or news, it shows up here. Own a shop? Open it in Shops and tap “🏪 This is my shop”.",`<button class="btn sm" data-act="lSub" data-v="shops">Browse shops</button>`);
+  const cc=new Map(); all.forEach(x=>{ const t=S.topics.get(x.topicId); if(t) cc.set(t.category,(cc.get(t.category)||0)+1); });
+  const cats=[...cc].sort((a,b)=>b[1]-a[1]), cat=UI.ofCat||"All";
+  const chips=cats.length?`<div class="tagrow catrow of-cats">${[["All",all.length],...cats].map(([c,n])=>`<button type="button" class="chip ${cat===c?"on":""}" data-act="ofCat" data-v="${esc(c)}">${c==="All"?"All":(HF_IC[c]||"🏪")+" "+esc(c)} <small>${n}</small></button>`).join("")}</div>`:"";
+  const L2=cat==="All"?all:all.filter(x=>{ const t=S.topics.get(x.topicId); return t&&t.category===cat; });
+  const offers=L2.filter(x=>x.kind==="offer"), rest=L2.filter(x=>x.kind!=="offer");
+  if(!L2.length) return head+chips+emptyBox(`No ${esc(cat)} offers or news right now`,"Try another category, or check back later.",`<button class="btn sm" data-act="ofCat" data-v="All">Show all</button>`);
+  return head+chips+(offers.length?`<section class="hsec">${SH("🏷️ Offers right now · "+offers.length,"")}<div class="spcs">${offers.map(x=>spCard(x)).join("")}</div></section>`:"")
     +(rest.length?`<section class="hsec">${SH("📣 Shop news","")}<div class="spcs">${rest.slice(0,30).map(x=>spCard(x)).join("")}</div></section>`:""); }
 // offers and news from shops, newest first; expired offers are left out
 const spLive=x=>x.kind!=="offer"||x.endsAt>Date.now();
@@ -2441,7 +2450,8 @@ function vHome(){
     const rest=rated.filter(t=>inCat(t)&&!near.includes(t)), hot=rest.map(t=>[t,act(t)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
     const trending=hot.length?hot:rest.sort((a,b)=>stat(b.id).reviews-stat(a.id).reviews||lastRv(b)-lastRv(a));
     body=`<div class="rvhead"><div><b>Find out what people think about anything.</b><span class="muted">Places, products, films, apps and more. One review per person.</span></div>
-        <div class="rvbar"><input class="f" id="rvq" type="search" enterkeyhint="search" autocomplete="off" placeholder="Search a product, place, movie, app…" aria-label="Search reviews"><button type="button" class="btn pri" data-act="reviewPick">⭐ Write a review</button></div></div>`
+        <div class="rvbar"><input class="f" id="rvq" type="search" enterkeyhint="search" autocomplete="off" placeholder="Search a product, place, movie, app…" aria-label="Search reviews"><button type="button" class="btn pri" data-act="reviewPick">⭐ Write a review</button></div>
+        <div class="tagrow rvsugg" id="rv-sugg" hidden>${rvSuggestions(hp).map(s=>`<button type="button" class="chip" data-act="rvSugg" data-v="${esc(s)}">${esc(s)}</button>`).join("")}</div></div>`
       +(cats.length>1?`<div class="tagrow rvcats" role="group" aria-label="Categories">${[["All",rated.length],...cats].map(([c,n])=>`<button type="button" class="chip ${rc===c?"on":""}" aria-pressed="${rc===c}" data-act="rvCatH" data-v="${esc(c)}">${esc(c)} <small>${n}</small></button>`).join("")}</div>`:"")
       +(hp?`<section class="hsec">${SH("📍 Reviews near you",esc(hp.name)+(near.length?` · ${near.length} reviewed`:""))}${near.length?`<div class="list rvlist">${near.slice(0,UI.fyN||10).map(rvRow).join("")}</div>`:emptyBox(rc==="All"?"No local reviews yet":`No ${esc(rc)} reviews near you yet`,`Rate something in ${esc(hp.name)} you know.`,`<button class="btn pri sm" data-act="reviewPick">Write a review</button>`)}</section>`:"")
       +(trending.length?`<section class="hsec">${SH(hot.length?"🔥 Trending opinions":"⭐ Most reviewed",hot.length?"Most review and comment activity this week":"From everywhere")}<div class="list rvlist">${trending.slice(0,10).map(rvRow).join("")}</div></section>`:"")
@@ -4581,9 +4591,13 @@ function simRender(){
 const simScore=(a,b)=>{ const A=new Set(normTok(a)),B=new Set(normTok(b)); if(!A.size||!B.size) return 0; let i=0; A.forEach(w=>{ if(B.has(w)) i++; }); return i/Math.min(A.size,B.size); };
 const rvScore=t=>{ const s=stat(t.id); return (s.avg*s.reviews+3.5*3)/(s.reviews+3); };
 const rvTrust=n=>n<3?"Early reviews":n<5?"Limited feedback":"";
-function rvRow(t){ const s=stat(t.id), nb=(IX.bByTopic.get(t.id)||[]).length, tr=rvTrust(s.reviews);
-  return `<a href="#t-${t.id}"><div class="tile rvt" style="--h:${catHue(t.category)}">${esc((()=>{ const w=String(t.title).trim().split(/\s+/).filter(Boolean); return (w.length>1?w[0][0]+w[1][0]:(w[0]||"").slice(0,2)).toUpperCase(); })())}</div><div class="txt"><b>${esc(t.title)}</b><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${s.comments?`<span title="Comments">💬 ${s.comments}</span>`:""}${nb?`<span title="Battles">⚔️ ${nb}</span>`:""}</div></div><div class="rv-sc"><b class="${s.avg>=4?"hi":""}">★ ${s.avg.toFixed(1)}<small> out of 5</small></b><span>${s.reviews} review${s.reviews===1?"":"s"}</span>${tr?`<em class="rvtr" title="Based on only ${s.reviews} review${s.reviews===1?"":"s"}">${tr}</em>`:""}</div></a>`; }
+function rvRow(t){ const s=stat(t.id), nb=(IX.bByTopic.get(t.id)||[]).length, tr=rvTrust(s.reviews), fresh=s.reviews&&lastRv(t)>Date.now()-48*36e5;
+  return `<a href="#t-${t.id}"><div class="tile rvt" style="--h:${catHue(t.category)}">${esc((()=>{ const w=String(t.title).trim().split(/\s+/).filter(Boolean); return (w.length>1?w[0][0]+w[1][0]:(w[0]||"").slice(0,2)).toUpperCase(); })())}</div><div class="txt"><div class="rvttl"><b>${esc(t.title)}</b>${fresh?`<em class="rvnew" title="New review in the last 2 days">NEW</em>`:""}</div><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${s.comments?`<span title="Comments">💬 ${s.comments}</span>`:""}${nb?`<span title="Battles">⚔️ ${nb}</span>`:""}</div>${rvHighlight(t)}</div><div class="rv-sc"><b class="${s.avg>=4?"hi":""}">★ ${s.avg.toFixed(1)}<small> out of 5</small></b><span>${s.reviews} review${s.reviews===1?"":"s"}</span>${tr?`<em class="rvtr" title="Based on only ${s.reviews} review${s.reviews===1?"":"s"}">${tr}</em>`:""}</div></a>`; }
 const lastRv=t=>Math.max(0,...(IX.rByTopic.get(t.id)||[]).map(r=>r.updatedAt||r.createdAt));
+function rvSearchGo(v){ v=v.trim(); if(!v) return; UI.query=v; UI.sTabQ=v; UI.sTab="rv"; if(typeof q!=="undefined"&&q) q.value=v; if(location.hash==="#search") schedule(); else location.hash="search"; }
+function rvSuggestions(hp){ const city=hp?hp.name:"your area"; return ["Best restaurants in "+city,"Best smartphones under ₹15,000","Best hospitals near "+city,"Best movies this week"]; }
+// a short, real excerpt from the most recent review — never invented
+function rvHighlight(t){ const rs=(IX.rByTopic.get(t.id)||[]).filter(r=>r.text&&r.text.trim()).sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)); const r=rs[0]; if(!r) return ""; const txt=r.text.trim().replace(/\s+/g," ").slice(0,90); return `<div class="rvhl">“${esc(txt)}${r.text.trim().length>90?"…":""}”<span class="muted"> — ${esc(nameOf(r.authorId))}</span></div>`; }
 function vReviews(){
   const home=homePlace(), xp=UI.exPlace?PLACES.byId.get(UI.exPlace):null, hp=xp||home, away=!!(xp&&(!home||xp.id!==home.id)), near=UI.rvNear??!!hp, kind=UI.rvKind||"all";
   let items=LIVE().filter(t=>t.kind!=="battle"&&t.kind!=="prediction"&&(t.kind==="place"||stat(t.id).reviews>0));
@@ -4636,6 +4650,7 @@ document.addEventListener("click", async e=>{
     case "bizAdd": closeModal(false); reviewPicker(); break;
     case "bizFind": closeModal(false); UI.htab="nb"; UI.lsub="shops"; location.hash="home"; schedule(); window.scrollTo({top:0}); break;
     case "rvCatH": UI.rvc=el.dataset.v; UI.fyN=10; schedule(); break;
+    case "rvSugg": rvSearchGo(el.dataset.v); break;
     case "rpKind": { UI.rpKind=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); const l=$("#rp-locl"); if(l) l.hidden=UI.rpKind!=="place"; const gb=$("#rp-geo"); if(gb) gb.hidden=UI.rpKind!=="place"; break; }
     case "rpCat": { UI.rpCat=el.dataset.v; el.parentNode.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b===el)); rpHits(); break; }
     case "rpForce": UI.rpDupOk=true; $("#rp-err").textContent=""; $("[data-act=rpSave]")?.click(); break;
@@ -4659,6 +4674,7 @@ document.addEventListener("click", async e=>{
     case "lSub": UI.lsub=el.dataset.v; UI.fyN=10; schedule(); break;
     case "srShops": UI.lsQ=el.dataset.q||""; UI.lsCat="All"; UI.htab="nb"; UI.lsub="shops"; location.hash="home"; schedule(); window.scrollTo({top:0}); break;
     case "lsCat": UI.lsCat=el.dataset.v; UI.lsN=20; schedule(); break;
+    case "ofCat": UI.ofCat=el.dataset.v; schedule(); break;
     case "lsF": { UI.lsF={...(UI.lsF||{})}; UI.lsF[el.dataset.k]=!UI.lsF[el.dataset.k]; UI.lsN=20; schedule(); break; }
     case "lsView": UI.lsView=el.dataset.v; schedule(); break;
     case "lsMore": UI.lsN=(UI.lsN||20)+20; schedule(); break;
@@ -5355,6 +5371,8 @@ document.addEventListener("click", async e=>{
 });
 document.addEventListener("focusin",e=>{ if(e.target.matches&&e.target.matches("textarea,input")) document.documentElement.classList.add("kb"); });
 document.addEventListener("focusout",()=>setTimeout(()=>{ if(!document.activeElement||!document.activeElement.matches("textarea,input")) document.documentElement.classList.remove("kb"); },150));
+document.addEventListener("focusin",e=>{ if(e.target.id==="rvq"&&!e.target.value.trim()){ const s=$("#rv-sugg"); if(s) s.hidden=false; } });
+document.addEventListener("focusout",e=>{ if(e.target.id==="rvq") setTimeout(()=>{ const s=$("#rv-sugg"); if(s) s.hidden=true; },150); });
 document.addEventListener("change", async e=>{
   if(e.target.id==="n-bfile"||e.target.id==="bm-file"){ const f=e.target.files&&e.target.files[0]; if(!f) return; const bm=e.target.id==="bm-file", err=$(bm?"#bm-err":"#n-err");
     try{ const st=await loadBanner(f); const box=$(bm?"#bm-pre":"#n-bn"); if(box) bnAdjust(box,st,err); }catch(ex){ if(err) err.textContent=ex.message||"Couldn’t use that picture."; } return; }
@@ -5376,13 +5394,14 @@ document.addEventListener("click",e=>{ if(UI.fdKind&&e.target.closest&&e.target.
 document.addEventListener("input", e=>{ if(e.target.id==="n-tagin"||e.target.id==="n-group") tagSuggest();
   if(e.target.id==="inv-q"){ const l=$("#inv-list"); if(l) l.innerHTML=invRows(e.target.value); }
   if(e.target.id==="pm-q"){ const l=$("#pm-res"); if(l) l.innerHTML=pmResults(e.target.value); }
+  if(e.target.id==="rvq"){ const s=$("#rv-sugg"); if(s) s.hidden=!!e.target.value.trim(); }
   const id=e.target?.dataset?.wc; if(!id) return; const n=wordCount(e.target.value), el=document.getElementById(id);
   if(el){ el.textContent=`${n} / ${MAX_WORDS} words`; el.style.color=n>MAX_WORDS?"var(--danger)":""; }
 });
 addEventListener("wheel",()=>{ UI.gcHold=0; },{passive:true}); addEventListener("touchmove",()=>{ UI.gcHold=0; },{passive:true});
 document.addEventListener("pointerdown",e=>{ const m=document.getElementById("gc-menu"); if(m&&!m.hidden&&!e.target.closest("#gcomp")) m.hidden=true; });
 document.addEventListener("keydown", e=>{
-  if(e.key==="Enter"&&e.target.id==="rvq"){ const v=e.target.value.trim(); if(v){ e.preventDefault(); UI.query=v; UI.sTabQ=v; UI.sTab="rv"; if(typeof q!=="undefined"&&q) q.value=v; if(location.hash==="#search") schedule(); else location.hash="search"; } return; }
+  if(e.key==="Enter"&&e.target.id==="rvq"){ const v=e.target.value.trim(); if(v) rvSearchGo(v); return; }
   if(e.key==="Escape"&&!epEl.hidden){ epClose(true); return; }
   if(e.key==="Escape"&&$("#modal").innerHTML) closeModal(false);
   if(e.key==="Enter"&&!e.shiftKey&&!e.metaKey&&!e.ctrlKey&&!e.altKey&&!e.isComposing&&e.target.tagName==="TEXTAREA"&&e.target.closest(".composer")&&epEl.hidden&&matchMedia("(hover:hover) and (pointer:fine)").matches){
