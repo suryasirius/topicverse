@@ -1391,6 +1391,18 @@ body{font-size:15.5px;letter-spacing:-.003em}
 .btn.sm,.chip,.tag{border-radius:999px}
 .fcard p,.fbody,.fdesc,.cbody,.ctext{font-weight:400}
 
+/* ---- PREMIUM v1: real depth on cards instead of flat borders (glossy, no blur) ---- */
+:root{--shadow-card:inset 0 1px 0 rgba(255,255,255,.7),0 1px 2px rgba(18,32,27,.04),0 3px 8px rgba(18,32,27,.05),0 20px 40px -14px rgba(18,32,27,.22);--shadow-card-h:inset 0 1px 0 rgba(255,255,255,.8),0 1px 2px rgba(18,32,27,.05),0 6px 14px rgba(18,32,27,.08),0 28px 54px -16px rgba(18,32,27,.3)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--shadow-card:inset 0 1px 0 rgba(255,255,255,.05),0 1px 2px rgba(0,0,0,.5),0 3px 10px rgba(0,0,0,.35),0 22px 44px -16px rgba(0,0,0,.65);--shadow-card-h:inset 0 1px 0 rgba(255,255,255,.07),0 1px 2px rgba(0,0,0,.55),0 8px 18px rgba(0,0,0,.4),0 30px 58px -18px rgba(0,0,0,.75)}}
+:root[data-theme="dark"]{--shadow-card:inset 0 1px 0 rgba(255,255,255,.05),0 1px 2px rgba(0,0,0,.5),0 3px 10px rgba(0,0,0,.35),0 22px 44px -16px rgba(0,0,0,.65);--shadow-card-h:inset 0 1px 0 rgba(255,255,255,.07),0 1px 2px rgba(0,0,0,.55),0 8px 18px rgba(0,0,0,.4),0 30px 58px -18px rgba(0,0,0,.75)}
+.fcard,.focard,.excard,.list,.panel,.st-card,.gcard,.sbox{border-color:color-mix(in srgb,var(--line) 42%,transparent)!important;border-radius:18px!important;box-shadow:var(--shadow-card);background-image:linear-gradient(180deg,color-mix(in srgb,#fff 5%,transparent),transparent 28%)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .fcard,:root:not([data-theme="light"]) .focard,:root:not([data-theme="light"]) .excard,:root:not([data-theme="light"]) .list,:root:not([data-theme="light"]) .panel,:root:not([data-theme="light"]) .st-card,:root:not([data-theme="light"]) .gcard,:root:not([data-theme="light"]) .sbox{background-image:linear-gradient(180deg,color-mix(in srgb,#fff 3%,transparent),transparent 28%)}}
+:root[data-theme="dark"] .fcard,:root[data-theme="dark"] .focard,:root[data-theme="dark"] .excard,:root[data-theme="dark"] .list,:root[data-theme="dark"] .panel,:root[data-theme="dark"] .st-card,:root[data-theme="dark"] .gcard,:root[data-theme="dark"] .sbox{background-image:linear-gradient(180deg,color-mix(in srgb,#fff 3%,transparent),transparent 28%)}
+@media(hover:hover){
+  .fcard,.focard,.excard,.gcard,.st-card{transition:box-shadow .18s ease,transform .18s ease}
+  .fcard:hover,.focard:hover,.excard:hover,.gcard:hover,.st-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card-h)}
+}
+
 /* ---- MOBILE v2 ---- */
 .hf-all{display:block;width:100%;margin-top:8px;padding:8px 2px;border:0;background:none;text-align:left;font:600 13.5px var(--f-body);color:color-mix(in srgb,var(--ink) 82%,var(--muted));cursor:pointer}.hf-all:hover{color:var(--brand-deep)}
 .hf-loc .hf-row .btn.sm,.home2 .hf-loc .hf-row a.btn.sm,.hf-loc .hf-row a.btn.pri.sm{height:30px!important;min-height:30px!important;padding:0 12px!important;font-size:13px!important}
