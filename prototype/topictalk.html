@@ -3203,7 +3203,7 @@ function vTopic(id){
     ${t.desc&&!t.deletedAt?`<p class="desc ctext">${rich(t.desc)}</p>`:""}${t.deletedAt?"":videoCards((t.title||"")+" "+(t.desc||""))}
     ${t.deletedAt?"":phStrip([...(t.media||[]),...(IX.rByTopic.get(id)||[]).flatMap(r=>r.media||[])].slice(0,12))}
     ${t.kind==="place"&&!t.deletedAt?shopPanel(t):""}
-    ${t.kind==="place"&&geoOk(t.geo)&&!t.deletedAt?`<div class="tmapw"><div class="tmap" data-k="tm-${esc(id)}-${t.geo.lat},${t.geo.lng}" data-lat="${t.geo.lat}" data-lng="${t.geo.lng}" data-t="${esc(t.title)}" role="img" aria-label="Map showing where ${esc(t.title)} is"></div><div class="tmap-f"><a href="${geoLink(t.geo)}" target="_blank" rel="noopener">Open in Google Maps ↗</a>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div>`:""}
+    ${t.kind==="place"&&!t.deletedAt?(geoOk(t.geo)?`<div class="tmapw"><div class="tmap" data-k="tm-${esc(id)}-${t.geo.lat},${t.geo.lng}" data-lat="${t.geo.lat}" data-lng="${t.geo.lng}" data-t="${esc(t.title)}" role="img" aria-label="Map showing where ${esc(t.title)} is"></div><div class="tmap-f"><a href="${geoLink(t.geo)}" target="_blank" rel="noopener">Open in Google Maps ↗</a>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div>`:`<div class="tmapw"><div class="tmap-f"><a href="${placeMapsLink(t)}" target="_blank" rel="noopener">View on Google Maps ↗</a>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}</div></div>`):""}
     ${(t.tags||[]).length?`<div class="tagrow" style="margin-top:12px">${t.tags.map(x=>`<a class="chip" href="#tag-${enc(x)}">#${esc(x)}</a>`).join("")}</div>`:""}
     <div style="margin-top:16px">${topicAnswerBox(t)}</div>
     ${t.kind==="prediction"?`<div style="margin-top:16px">${predCard(t)}</div>`:""}
@@ -4500,6 +4500,9 @@ function geoParse(raw){
   return {geo:g,name};
 }
 const geoLink=g=>`https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lng}`;
+// a plain Google Maps link for a place: the exact pin when we have one, otherwise a name search.
+// No API key, nothing of Google's stored or copied - just an outbound link.
+const placeMapsLink=t=>geoOk(t.geo)?geoLink(t.geo):`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.title+", "+(t.location||"India"))}`;
 // the map library (Leaflet, served from our own server) loads only when a map is first needed
 let LFP=null;
 function leaflet(){ return LFP||(LFP=new Promise((ok,no)=>{ const c=document.createElement("link"); c.rel="stylesheet"; c.href="/leaflet.css"; document.head.append(c);
