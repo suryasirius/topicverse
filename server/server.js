@@ -46,6 +46,7 @@ const q = {
   dropSession: sql.prepare("DELETE FROM sessions WHERE token = ?"),
   setPw: sql.prepare("UPDATE users SET salt = ?, hash = ? WHERE id = ?"),
   dropUserSessions: sql.prepare("DELETE FROM sessions WHERE uid = ?"),
+  delUser: sql.prepare("DELETE FROM users WHERE id = ?"),
   oldSessions: sql.prepare("DELETE FROM sessions WHERE created < ?"),
   getMeta: sql.prepare("SELECT v FROM meta WHERE k = ?"),
   setMeta: sql.prepare("INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v"),
@@ -583,6 +584,24 @@ function write(uid, { op, col, id, data }) {
   if (col === "topics" && prev && next && (prev.madePublic !== next.madePublic || prev.groupId !== next.groupId)) reloadFor(() => true);
 }
 
+// account deletion: the login (username/email/password) is gone for good and the public
+// profile is scrubbed, but topics/comments/reviews the person wrote stay in place - other
+// people's replies and the reviews shops rely on aren't pulled out from under them. Anything
+// that held a personal detail (a shop-claim phone number) is removed too.
+function deleteAccount(uid) {
+  const prevH = DOCS.handles.get(uid);
+  const nextH = { handle: "Deleted user", bio: "", avatar: "", createdAt: (prevH && prevH.createdAt) || Date.now(), deletedAt: Date.now() };
+  apply("handles", uid, nextH);
+  broadcast("handles", uid, nextH, prevH);
+  for (const t of [...DOCS.topics.values()]) {
+    if (t.ownerId === uid) { const next = { ...t, ownerId: null }; apply("topics", t.id, next); broadcast("topics", t.id, next, t); }
+  }
+  for (const [cid, c] of [...DOCS.claims]) if (c.userId === uid) { apply("claims", cid, null); broadcast("claims", cid, null, c); }
+  q.dropUserSessions.run(uid);
+  push.deleteAll(uid);
+  q.delUser.run(uid);
+}
+
 // ---------- email codes ----------
 const CODES = new Map();   // email -> { hash, exp, tries, sent }
 setInterval(() => { for (const [k, v] of CODES) if (v.exp < Date.now()) CODES.delete(k); }, 6e4).unref();
@@ -789,6 +808,15 @@ const server = http.createServer(async (req, res) => {
       q.dropUserSessions.run(uid);   // sign out every other device, then keep this one signed in
       setSession(res, uid);
       return json(res, 200, { ok: true });
+    }
+
+    if (p === "/api/account/delete") {
+      if (limited("delacct:" + uid, 5, 36e5)) return json(res, 429, { error: { code: "resource_exhausted", message: "Too many tries. Try again in an hour." } });
+      const u = q.userById.get(uid);
+      const ok = u && crypto.timingSafeEqual(Buffer.from(hashPw(String(body.password || ""), u.salt), "hex"), Buffer.from(u.hash, "hex"));
+      if (!ok) return json(res, 400, { error: { code: "bad_request", message: "Your password isn’t right." } });
+      deleteAccount(uid);
+      return json(res, 200, { ok: true }, { "Set-Cookie": "tt_sess=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0" });
     }
 
     if (p === "/api/card") {

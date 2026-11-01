@@ -3434,7 +3434,7 @@ function pmResults(q){
   return hits.length?hits.map(([u])=>`<div class="mrow">${avatar(u,"xs")}<span class="nm">${esc(nameOf(u))}</span>${idTag(u)}<button class="btn pri sm" data-act="memAdd" data-id="${esc(t.id)}" data-u="${esc(u)}">Add</button></div>`).join(""):`<div class="muted" style="font-size:13px;padding:6px 0">Nobody found.</div>`;
 }
 function peopleBtns(id){
-  if(!S.me||id===S.me) return "";
+  if(!S.me||id===S.me||S.handles.get(id)?.deletedAt) return "";
   const fs=friendState(id);
   const fb= fs==="friends"?`<button class="btn sm" data-act="friendRemove" data-id="${esc(id)}">✓ Friends</button>`
     : fs==="sent"?`<button class="btn sm" data-act="friendRemove" data-id="${esc(id)}">Request sent · Cancel</button>`
@@ -3476,15 +3476,21 @@ function vSettings(){
     +row("Interests",(hh.interests||[]).length?`${esc((hh.interests||[]).join(", "))} · ${hh.interestsOn?"invites on":"invites off"}`:"Not set — e.g. cricket, chess",`<button type="button" class="btn sm" data-act="ivOpen">Edit</button>`); })()}</section>
   <section class="st-card"><h3>Blocked people</h3>${bl.length?bl.map(u=>`<div class="st-row"><div style="display:flex;gap:10px;align-items:center">${avatar(u,"xs")}<b>${esc(nameOf(u))}</b></div><button type="button" class="btn sm" data-act="unblock" data-id="${esc(u)}">Unblock</button></div>`).join(""):`<p class="st-note" style="margin:0">You haven’t blocked anyone.</p>`}</section>
   <section class="st-card"><h3>Account</h3>${row("Password","Change it any time",`<button type="button" class="btn sm" data-act="pwOpen">Change</button>`)}
-    ${row("Sign out","",`<button type="button" class="btn sm danger" data-act="logout2">Sign out</button>`)}</section>
+    ${row("Sign out","",`<button type="button" class="btn sm danger" data-act="logout2">Sign out</button>`)}
+    ${row("Delete my account","Your login is removed for good. Your posts stay, shown as “Deleted user”",`<button type="button" class="btn sm danger" data-act="delAcctOpen">Delete</button>`)}</section>
   <section class="st-card"><h3>Legal</h3>${row("Privacy Policy","What we collect and why",`<a class="btn sm" href="/privacy" target="_blank" rel="noopener">Open</a>`)}${row("Terms &amp; Community Guidelines","The rules everyone agrees to",`<a class="btn sm" href="/terms" target="_blank" rel="noopener">Open</a>`)}</section>
-  <section class="st-card"><h3>Coming soon</h3>${soon("Who can message me","Direct message privacy")}${soon("Who can see my activity","Comments, reviews and votes")}${soon("Mute people","Quieter than blocking")}${soon("Download my data","Get a copy as a file")}${soon("Delete my account","Remove your profile")}</section></div>`;
+  <section class="st-card"><h3>Coming soon</h3>${soon("Who can message me","Direct message privacy")}${soon("Who can see my activity","Comments, reviews and votes")}${soon("Mute people","Quieter than blocking")}${soon("Download my data","Get a copy as a file")}</section></div>`;
 }
 function pwModal(){
   openModal(`<h2>Change password</h2><label class="l">Current password<input class="f" id="pw-cur" type="password" autocomplete="current-password"></label>
     <label class="l">New password<input class="f" id="pw-new" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label>
     <label class="l">Confirm new password<input class="f" id="pw-new2" type="password" autocomplete="new-password"></label>
     <div class="hint" id="pw-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="pwSave">Save password</button></div>`);
+}
+function delAcctModal(){
+  openModal(`<h2>Delete your account?</h2><p class="muted" style="margin:-4px 0 8px;font-size:14px">This can’t be undone. Your login, name, photo and contact details are removed right away. Topics, comments and reviews you’ve written stay up so other people’s replies and shop reviews aren’t affected, but they’ll show as posted by <b>“Deleted user”</b>.</p>
+    <label class="l">Enter your password to confirm<input class="f" id="da-pw" type="password" autocomplete="current-password"></label>
+    <div class="hint" id="da-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="delAcctSave">Delete my account</button></div>`);
 }
 const inHome=(h,hp)=>{ if(!h.homeCity||!hp) return false; return hp.type==="area"?(h.homeArea===hp.id||h.homeCity===hp.id):(h.homeCity===hp.id); };
 function professionSearch(hp,q){
@@ -3561,6 +3567,7 @@ function vProfile(id){
   if(UI.ptab==="comments") body=cs.length?`<div class="list">${cs.slice(0,40).map(c=>{const t=S.topics.get(c.topicId);return t?`<a href="#t-${t.id}~${c.id}"><div class="txt"><div class="meta">in ${esc(t.title)} · ${ago(c.createdAt)} · ${likes(c)} likes</div><div class="q">${esc(c.text)}</div></div></a>`:""}).join("")}</div>`:emptyBox("No comments yet","");
   return `<div class="phead pfh">${avatar(id,"lg")}<div class="pf-main"><div class="pf-top"><h1>${esc(nameOf(id))}${isSeed(id)?' <span class="sample">sample account</span>':""}</h1><div class="pf-act">${isMe?`<button class="btn sm" data-act="editHandle">Edit profile</button><a class="btn sm" href="#settings" aria-label="Settings">⚙️ Settings</a>`:peopleBtns(id)}</div></div>
      <div class="pf-id">${idTag(id)}${isMe?` <button class="act" data-act="copyId" data-id="${ttCode(id)}" title="Share it so friends can search for you">Copy</button> `:""}</div>
+     ${h?.deletedAt?`<p class="muted" style="margin:2px 0 8px;font-size:14px">This account has been deleted. Older posts stay up but aren’t linked to a live account.</p>`:""}
      ${h?.bio?`<p class="pf-bio">${esc(h.bio)}</p>`:isMe?`<button type="button" class="linkb pf-addbio" data-act="editHandle">＋ Add a bio</button>`:""}${(()=>{ const hc=PLACES.byId.get(h?.homeCity||(isMe?UI.homeLocal?.c:"")), ha2=PLACES.byId.get(h?.homeArea||(isMe?UI.homeLocal?.a:"")); return hc?`<div class="muted pf-loc">📍 ${esc(ha2?ha2.name+", ":"")}${esc(hc.name)}${hc.state?", "+esc(hc.state):""}</div>`:""; })()}
      ${h?.profession&&(isMe||h.professionOn)?`<div class="pf-pro">🧰 ${esc(h.profession)}${isMe&&!h.professionOn?` <small class="muted">(hidden — <a href="javascript:void 0" data-act="prOpen">show it</a>)</small>`:!isMe?` <button type="button" class="btn sm" data-act="askHelp" data-id="${esc(id)}">Ask for help</button>`:""}</div>`:""}
      ${h?.interests?.length&&(isMe||h.interestsOn)?`<div class="pf-pro">⭐ ${esc(h.interests.join(", "))}${isMe&&!h.interestsOn?` <small class="muted">(hidden — <a href="javascript:void 0" data-act="ivOpen">show it</a>)</small>`:""}</div>`:""}
@@ -5332,6 +5339,13 @@ document.addEventListener("click", async e=>{
     case "nPref": { const k=el.dataset.k; if(NPOFF.has(k)) NPOFF.delete(k); else NPOFF.add(k); try{ localStorage.setItem("tt-npoff",JSON.stringify([...NPOFF])); }catch{} pushPrefs(); schedule(); break; }
     case "nAll": { const on=el.dataset.v==="on"; NPOFF=on?new Set():new Set(NCATS.map(c=>c[0])); try{ localStorage.setItem("tt-npoff",JSON.stringify([...NPOFF])); }catch{} pushPrefs(); schedule(); break; }
     case "pwOpen": pwModal(); break;
+    case "delAcctOpen": delAcctModal(); break;
+    case "delAcctSave": { const pw=$("#da-pw").value, err=$("#da-err");
+      if(!pw){ err.textContent="Enter your password to confirm."; break; }
+      el.disabled=true;
+      try{ const r=await fetch("/api/account/delete",{method:"POST",headers:{"content-type":"application/json","x-tt":"1"},body:JSON.stringify({password:pw})}); const j=await r.json().catch(()=>({})); if(!r.ok){ err.textContent=j.error?.message||"Couldn’t delete the account."; el.disabled=false; break; } location.href="/"; }
+      catch{ err.textContent="Couldn’t reach the server. Try again."; el.disabled=false; }
+      break; }
     case "askHelp": { if(!(await gate())) break; const h=S.handles.get(id); if(!h) break;
       openModal(`<h2>Ask ${esc(nameOf(id))} for help</h2><p class="muted" style="margin:-4px 0 8px;font-size:14px">Listed as <b>${esc(h.profession)}</b>. They'll get a notification with your message and can reply or ignore it. Your phone number is never shared.</p>
         <textarea class="f" id="ah-text" rows="3" maxlength="240" placeholder="What do you need help with?"></textarea>

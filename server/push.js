@@ -26,6 +26,7 @@ module.exports = function createPush({ sql, dir, subject }) {
     add: sql.prepare("INSERT INTO push (endpoint, uid, created) VALUES (?, ?, ?) ON CONFLICT (endpoint) DO UPDATE SET uid = excluded.uid"),
     del: sql.prepare("DELETE FROM push WHERE endpoint = ?"),
     delMine: sql.prepare("DELETE FROM push WHERE endpoint = ? AND uid = ?"),
+    delUid: sql.prepare("DELETE FROM push WHERE uid = ?"),
     byUid: sql.prepare("SELECT endpoint FROM push WHERE uid = ?"),
     count: sql.prepare("SELECT COUNT(*) AS n FROM push WHERE uid = ?"),
     offGet: sql.prepare("SELECT off FROM pushoff WHERE uid = ?"),
@@ -57,5 +58,6 @@ module.exports = function createPush({ sql, dir, subject }) {
     off: getOff,
     setOff: (uid, arr) => { const a = [...new Set(arr)]; if (a.length) q.offSet.run(uid, a.join(",")); else q.offDel.run(uid); offCache.set(uid, new Set(a)); },
     notify: (uid, cat) => { if (cat && getOff(uid).has(cat)) return; for (const { endpoint } of q.byUid.all(uid)) ping(endpoint); },
+    deleteAll: uid => { q.delUid.run(uid); q.offDel.run(uid); offCache.delete(uid); },
   };
 };
