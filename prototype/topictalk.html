@@ -2483,6 +2483,7 @@ function vHome(){
     const cc=new Map(); rated.forEach(t=>cc.set(t.category,(cc.get(t.category)||0)+1));
     const cats=[...cc].sort((a,b)=>b[1]-a[1]), rc=cc.has(UI.rvc)?UI.rvc:"All", inCat=t=>rc==="All"||t.category===rc;
     const near=hp?rated.filter(t=>inPlace(t,hp)&&inCat(t)).sort((a,b)=>lastRv(b)-lastRv(a)):[];
+    const unratedNear=hp?LIVE().filter(t=>t.kind==="place"&&!stat(t.id).reviews&&inPlace(t,hp)&&inCat(t)).sort((a,b)=>b.createdAt-a.createdAt):[];
     const act=t=>(IX.rByTopic.get(t.id)||[]).filter(r=>(r.updatedAt||r.createdAt)>wk).length+(IX.cByTopic.get(t.id)||[]).filter(c=>!c.deletedAt&&c.createdAt>wk).length;
     const rest=rated.filter(t=>inCat(t)&&!near.includes(t)), hot=rest.map(t=>[t,act(t)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
     const trending=hot.length?hot:rest.sort((a,b)=>stat(b.id).reviews-stat(a.id).reviews||lastRv(b)-lastRv(a));
@@ -2491,6 +2492,7 @@ function vHome(){
         <div class="tagrow rvsugg" id="rv-sugg" hidden>${rvSuggestions(hp).map(s=>`<button type="button" class="chip" data-act="rvSugg" data-v="${esc(s)}">${esc(s)}</button>`).join("")}</div></div>`
       +(cats.length>1?`<div class="tagrow rvcats" role="group" aria-label="Categories">${[["All",rated.length],...cats].map(([c,n])=>`<button type="button" class="chip ${rc===c?"on":""}" aria-pressed="${rc===c}" data-act="rvCatH" data-v="${esc(c)}">${esc(c)} <small>${n}</small></button>`).join("")}</div>`:"")
       +(hp?`<section class="hsec">${SH("📍 Reviews near you",esc(hp.name)+(near.length?` · ${near.length} reviewed`:""))}${near.length?`<div class="list rvlist">${near.slice(0,UI.fyN||10).map(rvRow).join("")}</div>`:emptyBox(rc==="All"?"No local reviews yet":`No ${esc(rc)} reviews near you yet`,`Rate something in ${esc(hp.name)} you know.`,`<button class="btn pri sm" data-act="reviewPick">Write a review</button>`)}</section>`:"")
+      +(unratedNear.length?`<section class="hsec">${SH("🆕 New, not yet reviewed","Be the first to rate these.")}<div class="list">${unratedNear.slice(0,5).map(rvUnratedRow).join("")}</div></section>`:"")
       +(trending.length?`<section class="hsec">${SH(hot.length?"🔥 Trending opinions":"⭐ Most reviewed",hot.length?"Most review and comment activity this week":"From everywhere")}<div class="list rvlist">${trending.slice(0,10).map(rvRow).join("")}</div></section>`:"")
       +(!rated.length&&!hp?emptyBox("No reviews yet","Rate a place, product or film you know.",`<button class="btn pri sm" data-act="reviewPick">Write the first review</button>`):"")
       +`<a class="morep" href="#reviews">All reviews →</a>`;
@@ -4631,6 +4633,7 @@ const rvTrust=n=>n<3?"Early reviews":n<5?"Limited feedback":"";
 function rvRow(t){ const s=stat(t.id), nb=(IX.bByTopic.get(t.id)||[]).length, tr=rvTrust(s.reviews), fresh=s.reviews&&lastRv(t)>Date.now()-48*36e5;
   return `<a href="#t-${t.id}"><div class="tile rvt" style="--h:${catHue(t.category)}">${esc((()=>{ const w=String(t.title).trim().split(/\s+/).filter(Boolean); return (w.length>1?w[0][0]+w[1][0]:(w[0]||"").slice(0,2)).toUpperCase(); })())}</div><div class="txt"><div class="rvttl"><b>${esc(t.title)}</b>${fresh?`<em class="rvnew" title="New review in the last 2 days">NEW</em>`:""}</div><div class="meta"><span>${esc(t.category)}</span>${t.location?`<span>📍 ${esc(t.location)}</span>`:""}${s.comments?`<span title="Comments">💬 ${s.comments}</span>`:""}${nb?`<span title="Battles">⚔️ ${nb}</span>`:""}</div>${rvHighlight(t)}</div><div class="rv-sc"><b class="${s.avg>=4?"hi":""}">★ ${s.avg.toFixed(1)}<small> out of 5</small></b><span>${s.reviews} review${s.reviews===1?"":"s"}</span>${tr?`<em class="rvtr" title="Based on only ${s.reviews} review${s.reviews===1?"":"s"}">${tr}</em>`:""}</div></a>`; }
 const lastRv=t=>Math.max(0,...(IX.rByTopic.get(t.id)||[]).map(r=>r.updatedAt||r.createdAt));
+function rvUnratedRow(t){ return `<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${catChip(t.category)}${locChip(t.location)}<span>No reviews yet</span></div></div></a>`; }
 function rvSearchGo(v){ v=v.trim(); if(!v) return; UI.query=v; UI.sTabQ=v; UI.sTab="rv"; if(typeof q!=="undefined"&&q) q.value=v; if(location.hash==="#search") schedule(); else location.hash="search"; }
 function rvSuggestions(hp){ const city=hp?hp.name:"your area"; return ["Best restaurants in "+city,"Best smartphones under ₹15,000","Best hospitals near "+city,"Best movies this week"]; }
 // a short, real excerpt from the most recent review — never invented
@@ -4649,7 +4652,7 @@ function vReviews(){
   <div class="tabs" role="tablist">${[["all","All"],["place","Places"],["thing","Products"]].map(([k,l])=>`<button class="${kind===k?"on":""}" data-act="rvKind" data-v="${k}">${l}</button>`).join("")}${hp?`<button class="${near?"on":""}" data-act="rvNear">${near?"📍 Near "+esc(hp.name):"Everywhere"}</button>`:""}</div>
   <div class="tagrow catrow" style="margin-bottom:16px">${cats.map(c=>`<button class="chip ${cat===c?"on":""}" data-act="rvCat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>
   ${rated.length?`<div class="list rvlist">${rated.map(row).join("")}</div>`:emptyBox("Nothing rated here yet","Be the first. Pick a place you know and rate it from 1 to 5.",`<button class="btn pri" data-act="reviewPick">Review something</button>`)}
-  ${unrated.length?`<section class="sec"><div class="sech"><h2>Waiting for a first review</h2></div><div class="list">${unrated.slice(0,8).map(t=>`<a href="#t-${t.id}" data-act="pickReview" data-id="${t.id}"><div class="txt"><b>${esc(t.title)}</b><div class="meta">${catChip(t.category)}${locChip(t.location)}<span>No reviews yet</span></div></div></a>`).join("")}</div></section>`:""}`;
+  ${unrated.length?`<section class="sec"><div class="sech"><h2>Waiting for a first review</h2></div><div class="list">${unrated.slice(0,8).map(rvUnratedRow).join("")}</div></section>`:""}`;
 }
 
 /* ---------- events ---------- */
