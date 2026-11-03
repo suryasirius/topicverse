@@ -90,6 +90,8 @@ main{padding-block:22px 110px}
 .sec{margin-bottom:34px}
 .sech{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
 .sech h2{font-size:22px;font-weight:700}
+.sh-ic{width:19px;height:19px;vertical-align:-4px;margin-right:7px;color:var(--brand-deep);flex-shrink:0}
+.harea .sh-ic,.linkb .sh-ic{width:15px;height:15px;vertical-align:-2.5px;margin-right:4px;color:var(--muted)}
 .sech a{color:var(--brand-deep);font-weight:600;font-size:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px}
@@ -2421,7 +2423,7 @@ function vHome(){
   let body="";
   if(tab==="fy"){
     const newN=hp?LIVE().filter(t=>inPlace(t,hp)&&now-t.createdAt<864e5).length:0;
-    const area=hp?`<div class="harea fyarea"><button type="button" class="linkb" data-act="hTab" data-v="nb">📍 <b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b>${newN?`<span class="hpill">${newN} new</span>`:""}</button><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button></div>`
+    const area=hp?`<div class="harea fyarea"><button type="button" class="linkb" data-act="hTab" data-v="nb"><svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b>${newN?`<span class="hpill">${newN} new</span>`:""}</button><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button></div>`
       :`<div class="harea fyarea"><span class="muted">Add your city to see what’s happening near you.</span><button type="button" class="linkb" data-act="plOpen" data-m="home">Choose city</button></div>`;
     const live=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)).sort((a,b)=>{ const x=IX.bv.get(a.id),y=IX.bv.get(b.id); return (y.a+y.b)-(x.a+x.b)||b.createdAt-a.createdAt; }).slice(0,6);
     const liveIds=new Set(live.map(b=>b.topicId)), tr=topRatedList(6), trIds=new Set(tr.list.map(t=>t.id));
@@ -2430,12 +2432,15 @@ function vHome(){
     const all=LIVE().filter(t=>t.kind!=="prediction"&&!(t.kind==="battle"&&liveIds.has(t.id))&&!trIds.has(t.id)&&!hfIds.has(t.id)&&!weakEnded(t)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1)).map(x=>x[0]);
     { const m=mixFeed(all); all.length=0; all.push(...m); }
     const n=UI.fyN||10, items=all.slice(0,n);
-    const hfSec=hfOpen.length?`<section class="hsec hf-loc">${SH("🙋 "+(hp?"People near you need help":"People need help"),"Someone nearby needs a recommendation. Can you help?","")}<div class="hfcs">${hfOpen.map(hfCard).join("")}</div>${hp?`<button type="button" class="hf-all" data-act="seeHelp">See all ${hfAll.length} request${hfAll.length===1?"":"s"} →</button>`:""}</section>`:"";
-    const strip=tr.list.length?`<section class="hstrip">${SH(tr.near?"⭐ Reviews near you":"⭐ Popular reviews","",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</small></a>`; }).join("")}</div></section>`:"";
+    const icHelp='<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6"/></svg>';
+    const icStar='<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/></svg>';
+    const icFlame='<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5c1.1 2.6-2.4 3.9-2.4 6.8a2.4 2.4 0 0 0 4.8 0c0-.7-.6-1.4-.6-1.4 1.6.9 2.6 2.6 2.6 4.4a4.4 4.4 0 0 1-8.8 0c0-4.3 3.4-5.3 4.4-9.8z"/></svg>';
+    const hfSec=hfOpen.length?`<section class="hsec hf-loc">${SH(icHelp+(hp?"People near you need help":"People need help"),"Someone nearby needs a recommendation. Can you help?","")}<div class="hfcs">${hfOpen.map(hfCard).join("")}</div>${hp?`<button type="button" class="hf-all" data-act="seeHelp">See all ${hfAll.length} request${hfAll.length===1?"":"s"} →</button>`:""}</section>`:"";
+    const strip=tr.list.length?`<section class="hstrip">${SH(icStar+(tr.near?"Reviews near you":"Popular reviews"),"",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</small></a>`; }).join("")}</div></section>`:"";
     const feed=items.map((t,i)=>fCard(t)+(i===2?strip:"")).join("")+(items.length<3?strip:"");
     const tagCount=new Map(), wk=now-7*864e5; for(const t of LIVE()) if(lastAct(t)>wk&&(!hp||inPlace(t,hp))) (t.tags||[]).forEach(x=>{ if(!hp||x!==PLACES.sl(hp.name).replace(/-/g,"")) tagCount.set(x,(tagCount.get(x)||0)+1); });
     const tags=[...tagCount].sort((a,b)=>b[1]-a[1]).slice(0,8);
-    body=area+(live.length?`<section class="hsec">${SH("🔥 "+L("Live battles"),"",`<button type="button" class="linkb" data-act="hTab" data-v="bt">${L("See all")} →</button>`)}<div class="grid b bscroll hbattles">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:"")+hfSec
+    body=area+(live.length?`<section class="hsec">${SH(icFlame+L("Live battles"),"",`<button type="button" class="linkb" data-act="hTab" data-v="bt">${L("See all")} →</button>`)}<div class="grid b bscroll hbattles">${live.map(b=>battleCard(b,{topicLink:true})).join("")}</div></section>`:"")+hfSec
       +`<div class="hfeed">${feed}</div>`+(all.length>n?`<button type="button" class="btn hmore" data-act="fyMore">Load more posts</button>`:"")
       +(tags.length?`<section class="hsec hdisc">${SH(hp?"Popular in "+esc(hp.name)+" this week":"Popular this week","")}<div class="tagrow">${tags.map(([g])=>`<a class="chip" href="#tag-${enc(g)}">#${esc(g)}</a>`).join("")}</div></section>`:"");
   } else if(tab==="nb"){
