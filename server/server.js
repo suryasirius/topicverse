@@ -236,6 +236,10 @@ function shopOK(x, kind) {
 }
 
 // ---------- write rules ----------
+// same short, generic list as the client: not exhaustive moderation, just a deterrent - checked again
+// here so it can't be skipped by calling the API directly.
+const BAD_WORDS = ["fuck", "shit", "bitch", "asshole", "bastard", "slut", "whore", "rape", "chutiya", "madarchod", "bhenchod", "lavda", "gandu", "pundai", "thevdiya", "soole", "harami"];
+const hasBadWord = s => { const n = " " + String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ") + " "; return BAD_WORDS.some(w => n.includes(" " + w + " ")); };
 const ID_RE = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
 const HANDLE_RE = /^[A-Za-z0-9_]{3,24}$/;
 class Deny extends Error { constructor(code, message) { super(message); this.code = code; } }
@@ -394,7 +398,11 @@ function check(op, col, id, prev, next, patch, uid) {
       if (!d.votingEndsAt || Date.now() >= d.votingEndsAt) deny("Voting isn’t open."); return;
     }
     case "handles": {
-      if (id !== uid) deny();
+      if (id !== uid) {
+        // the admin may only switch a reported profession off - never edit anyone else's profile
+        if (admin && op === "update" && onlyKeys(patch, ["professionOn"]) && patch.professionOn === false) return;
+        deny();
+      }
       if (next) {
         if (next.avatar && String(next.avatar).length > 60000) bad("That photo is too large.");
         if (next.textSize && !["s", "m", "l", "x"].includes(next.textSize)) bad();
@@ -403,6 +411,7 @@ function check(op, col, id, prev, next, patch, uid) {
         const u = q.userByName.get(next.handle); if (u && u.id !== uid) deny("That username is taken.");
         if (next.accountType != null && !["personal", "business"].includes(next.accountType)) bad();
         if (next.profession != null && (typeof next.profession !== "string" || next.profession.length > 30)) bad("Keep your profession under 30 characters.");
+        if (next.profession && hasBadWord(next.profession)) bad("Keep it clean — that word isn’t allowed there.");
         if (next.professionOn != null && typeof next.professionOn !== "boolean") bad();
         if (next.interests != null) {
           if (!Array.isArray(next.interests) || next.interests.length > 5 || next.interests.some(x => typeof x !== "string" || !x.trim() || x.length > 24)) bad("Up to 5 interests, each under 24 characters.");
@@ -411,6 +420,9 @@ function check(op, col, id, prev, next, patch, uid) {
         if (next.mutedInterests != null) {
           if (!Array.isArray(next.mutedInterests) || next.mutedInterests.length > 5 || next.mutedInterests.some(x => typeof x !== "string")) bad();
         }
+        if (next.phone != null && next.phone !== "" && (typeof next.phone !== "string" || !/^\+?[0-9 ()-]{6,20}$/.test(next.phone) || next.phone.replace(/\D/g, "").length < 10)) bad("That phone number doesn’t look right.");
+        if (next.phoneVis != null && !["hidden", "open", "onrequest"].includes(next.phoneVis)) bad();
+        if (next.phoneVis && next.phoneVis !== "hidden" && !next.phone) bad("Add a phone number first.");
       }
       return;
     }
@@ -458,10 +470,12 @@ function check(op, col, id, prev, next, patch, uid) {
     case "notifs":
       if (!prev) {
         if (next.from !== uid) deny();
-        if (!["askhelp", "playcall"].includes(next.type)) deny("Notifications of that kind can’t be sent directly.");
+        if (!["askhelp", "playcall", "sharedphone"].includes(next.type)) deny("Notifications of that kind can’t be sent directly.");
         if (!next.to || next.to === uid || !DOCS.handles.has(next.to)) bad();
         if (next.text != null && (typeof next.text !== "string" || next.text.length > 240)) bad("Keep your message under 240 characters.");
         if (next.type === "playcall" && (!next.topicId || !DOCS.topics.get(next.topicId))) bad();
+        // a person sharing their own number with someone who asked for help: the number must be theirs
+        if (next.type === "sharedphone") { const h = DOCS.handles.get(uid); if (!h || !h.phone || next.text !== h.phone) bad(); }
         return;
       }
       if (op === "delete") { if (prev.to !== uid) deny(); return; }
@@ -506,9 +520,9 @@ function addMember(tid, mu, by) {
   if (!t || t.authorId === mu || DOCS.tmembers.has(k) || !DOCS.handles.has(mu)) return;
   apply("tmembers", k, { topicId: tid, userId: mu, role: "member", addedBy: by || t.authorId, createdAt: Date.now() });
 }
-const PUSH_LABEL = { reply: "replied to you", mention: "mentioned you", gmention: "mentioned you in a group chat", tagged: "tagged you in a topic", comment: "commented on a topic you follow", branch: "branched your comment into a new topic", newbranch: "started a branch from a topic you follow", review: "reviewed a topic you follow", like: "liked your post", battle: "started a battle about your comment", newbattle: "started a battle in a topic you follow", resolved: "resolved a prediction you voted on", grouppost: "posted in your group", joined: "joined your group", duel_challenge: "challenged you to a debate duel", duel_accept: "accepted your debate challenge", duel_decline: "declined your debate challenge", duel_turn: "replied in your debate. Your turn", duel_vote: "finished a debate. Voting is open", friend_req: "sent you a friend request", friend_ok: "accepted your friend request", follow: "started following you", invited: "invited you to a discussion", helpreq: "needs help finding something near you", helped: "marked your recommendation as the one that helped", claim: "says they own a shop. Check and approve", claimok: "approved you as the owner of", claimno: "couldn’t verify your shop claim for", shopupd: "posted an update from a shop you follow", askhelp: "asked you for help", playcall: "invited you to join" };
+const PUSH_LABEL = { reply: "replied to you", mention: "mentioned you", gmention: "mentioned you in a group chat", tagged: "tagged you in a topic", comment: "commented on a topic you follow", branch: "branched your comment into a new topic", newbranch: "started a branch from a topic you follow", review: "reviewed a topic you follow", like: "liked your post", battle: "started a battle about your comment", newbattle: "started a battle in a topic you follow", resolved: "resolved a prediction you voted on", grouppost: "posted in your group", joined: "joined your group", duel_challenge: "challenged you to a debate duel", duel_accept: "accepted your debate challenge", duel_decline: "declined your debate challenge", duel_turn: "replied in your debate. Your turn", duel_vote: "finished a debate. Voting is open", friend_req: "sent you a friend request", friend_ok: "accepted your friend request", follow: "started following you", invited: "invited you to a discussion", helpreq: "needs help finding something near you", helped: "marked your recommendation as the one that helped", claim: "says they own a shop. Check and approve", claimok: "approved you as the owner of", claimno: "couldn’t verify your shop claim for", shopupd: "posted an update from a shop you follow", askhelp: "asked you for help", playcall: "invited you to join", sharedphone: "shared their phone number with you" };
 // Settings categories (same grouping as the app). A person can switch each one off; all are on by default.
-const NCAT = { reply: "reply", comment: "reply", helped: "reply", branch: "reply", newbranch: "reply", mention: "mention", gmention: "mention", tagged: "mention", battle: "battle", newbattle: "battle", duel_vote: "battle", duel_turn: "battle", duel_challenge: "battle", duel_accept: "battle", duel_decline: "battle", like: "like", review: "like", grouppost: "group", joined: "group", invited: "group", friend_req: "friends", friend_ok: "friends", follow: "friends", helpreq: "local", resolved: "pred", claim: "shops", claimok: "shops", claimno: "shops", shopupd: "shops", askhelp: "local", playcall: "playcall" };
+const NCAT = { reply: "reply", comment: "reply", helped: "reply", branch: "reply", newbranch: "reply", mention: "mention", gmention: "mention", tagged: "mention", battle: "battle", newbattle: "battle", duel_vote: "battle", duel_turn: "battle", duel_challenge: "battle", duel_accept: "battle", duel_decline: "battle", like: "like", review: "like", grouppost: "group", joined: "group", invited: "group", friend_req: "friends", friend_ok: "friends", follow: "friends", helpreq: "local", resolved: "pred", claim: "shops", claimok: "shops", claimno: "shops", shopupd: "shops", askhelp: "local", playcall: "playcall", sharedphone: "local" };
 const NCATS = new Set(Object.values(NCAT));
 function pushLatest(uid) {
   let n = 0, last = null; const off = push.off(uid);
