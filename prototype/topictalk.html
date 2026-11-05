@@ -2611,7 +2611,7 @@ function exCard(t){
 }
 function vExplore(){
   const cats = ["All",...new Set(LIVE().map(t=>t.category))];
-  const tabs=[["trending","Trending"],["watch","▶ Watch"],["latest","Latest"],["battles","Battles"],["duels","Debates"],["discussed","Most discussed"],["reviewed","Most reviewed"],["branched","Most branched"],["questions","Questions"]];
+  const tabs=[["trending","Trending"],["latest","Latest"],["battles","Battles"],["reviewed","Most reviewed"],["questions","Questions"]];
   const head=`<div class="sech" style="margin-bottom:6px"><h1 style="font-size:32px;font-weight:800;margin:0">${L("Explore")}</h1><span style="display:flex;gap:6px"><a class="btn sm" href="#reviews">⭐ Reviews</a><a class="btn sm" href="#groups">${L("Groups")}</a></span></div>
   <div class="tabs extabs" role="tablist">${tabs.map(([k,l])=>`<button class="${UI.exSort===k?"on":""}" data-act="exSort" data-v="${k}" aria-pressed="${UI.exSort===k}">${l}</button>`).join("")}</div>
   <div class="tagrow catrow excats">${cats.map(c=>`<button class="chip tag c-${CAT_TONE[c]||"gen"} ${UI.exCat===c?"on":""}" data-act="exCat" data-v="${esc(c)}" aria-pressed="${UI.exCat===c}">${esc(c)}</button>`).join("")}</div>`;
@@ -3190,7 +3190,7 @@ function vTopic(id){
     ${t.deletedAt?"":UI.rvOpen?reviewForm(t,mine):`<div style="margin-bottom:12px"><button class="btn sm ${mine?"":"pri"}" data-act="openReview">${mine?"Edit your review":L("Write a review")}</button></div>`}
     ${rs.length?`<div>${rs.map(r=>reviewNode(r)).join("")}</div>`:(UI.rvOpen?"":emptyBox("No reviews yet","Rate it from 1 to 5 and say why."))}`;
 
-  if(cs.length&&!vTopic.hint){ vTopic.hint=1; try{ if(!localStorage.getItem("tt_h1")){ localStorage.setItem("tt_h1","1"); setTimeout(()=>toast("Tap ⋯ on any comment to branch, settle or duel."),700); } }catch{} }
+  if(cs.length&&!vTopic.hint){ vTopic.hint=1; try{ if(!localStorage.getItem("tt_h1")){ localStorage.setItem("tt_h1","1"); setTimeout(()=>toast("Tap ⋯ on any comment to branch it or settle it."),700); } }catch{} }
   return `<div class="tp"><div>
     ${t.banner&&!t.deletedAt?`<div class="banner"><img src="${esc(t.banner)}" alt=""></div>`:""}
     ${chain.length?`<div class="lineage"><span>Branched from</span>${chain.map(p=>`<a href="#t-${p.id}">${esc(p.deletedAt?"Deleted topic":p.title)}</a>`).join("<span>›</span>")}</div>`:""}
@@ -5314,7 +5314,7 @@ document.addEventListener("click", async e=>{
     case "cmore": {
       const c=S.comments.get(id); if(!c) break; const own=c.authorId===S.me, txt=(c.text||"").trim();
       const words=txt.split(/\s+/).filter(Boolean).length, rich_ok=words>=5&&!isEmojiOnly(txt), items=[];
-      if(rich_ok){ items.push(["branch","Branch into topic ↗"],["settle","Settle it (A vs B vote)"]); if(!own) items.push(["duel","Challenge to a duel"]); }
+      if(rich_ok){ items.push(["branch","Branch into topic ↗"],["settle","Settle it (A vs B vote)"]); }
       if(txt) items.push(["copyC","Copy text"]);
       if(own){ items.push(["editC","Edit"],["delC","Delete"]); } else if(S.me){ items.push(["rpC","Report comment"],["blkU","Block "+nameOf(c.authorId)]); }
       openModal(`<h2 style="font-size:18px">Comment actions</h2><div class="sheet">${items.map(([a2,l])=>`<button type="button" class="btn${a2==="delC"?" danger":""}" data-act="${a2}" data-id="${esc(id)}">${l}</button>`).join("")}</div><div class="acts"><button class="btn" data-act="closeModal">Close</button></div>`);
