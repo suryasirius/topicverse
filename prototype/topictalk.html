@@ -1791,7 +1791,7 @@ const TS_Z={s:.94,m:1.07,l:1.2,x:1.33}; let curTS="";
 function applyTheme(v){ const r=document.documentElement; if(v==="dark"||v==="light") r.dataset.theme=v; else delete r.dataset.theme; }
 const getTheme=()=>{ try{ return localStorage.getItem("tt_theme")||"auto"; }catch{ return "auto"; } };
 applyTheme(getTheme());
-const NG={claim:"shops",claimok:"shops",claimno:"shops",shopupd:"shops",reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like",grouppost:"group",joined:"group",invited:"group",friend_req:"friends",friend_ok:"friends",follow:"friends",helpreq:"local",askhelp:"local",playcall:"playcall",resolved:"pred"};
+const NG={claim:"shops",claimok:"shops",claimno:"shops",shopupd:"shops",reply:"reply",comment:"reply",helped:"reply",branch:"reply",newbranch:"reply",mention:"mention",gmention:"mention",tagged:"mention",battle:"battle",newbattle:"battle",duel_vote:"battle",duel_turn:"battle",duel_challenge:"battle",duel_accept:"battle",duel_decline:"battle",like:"like",review:"like",grouppost:"group",joined:"group",invited:"group",friend_req:"friends",friend_ok:"friends",follow:"friends",helpreq:"local",askhelp:"local",helpmatch:"local",playcall:"playcall",resolved:"pred"};
 let NPOFF=new Set(); try{ NPOFF=new Set(JSON.parse(localStorage.getItem("tt-npoff")||"[]")); }catch{}
 function applyTS(v){ if(!TS_Z[v]) v="m"; curTS=v; document.documentElement.style.setProperty("--tz",TS_Z[v]); }
 try{ applyTS(localStorage.getItem("tt_ts")||"m"); }catch{ applyTS("m"); }
@@ -3363,7 +3363,7 @@ function groupNotifs(ns){
 function vAlerts(){
   if(!S.me) return emptyBox("Sign in to see notifications","Open this page in claude.ai while signed in.");
   const ns=notifList().sort((a,b)=>b.createdAt-a.createdAt);
-  const label={claim:"asked to be verified as the shop owner",claimok:"approved you as the verified owner",claimno:"couldn’t verify your shop claim",shopupd:"posted a new offer or news",reply:"replied to you",mention:"mentioned you",gmention:"mentioned you in",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped",askhelp:"asked you for help",playcall:"invited you to join",sharedphone:"shared their phone number with you"};
+  const label={claim:"asked to be verified as the shop owner",claimok:"approved you as the verified owner",claimno:"couldn’t verify your shop claim",shopupd:"posted a new offer or news",reply:"replied to you",mention:"mentioned you",gmention:"mentioned you in",tagged:"tagged you in a topic",comment:"commented on a topic you follow",branch:"branched your comment into a new topic",newbranch:"started a branch from a topic you follow",review:"reviewed a topic you follow",like:"liked your post",battle:"started a battle about your comment",newbattle:"started a battle in a topic you follow",resolved:"resolved a prediction you voted on",grouppost:"posted in your group",joined:"joined your group",duel_challenge:"challenged you to a debate duel",duel_accept:"accepted your debate challenge",duel_decline:"declined your debate challenge",duel_turn:"replied in your debate. Your turn",duel_vote:"finished a debate. Voting is open",friend_req:"sent you a friend request",friend_ok:"accepted your friend request",follow:"started following you",invited:"invited you to a discussion",joinreq:"asked to join your topic",joinok:"let you into a topic",added:"added you to a private topic",madeprivate:"made a topic private",friend_no:"declined your friend request",helpreq:"needs help finding something near you",helped:"marked your recommendation as the one that helped",askhelp:"asked you for help",playcall:"invited you to join",sharedphone:"shared their phone number with you",helpmatch:"posted a nearby request that matches your profession"};
   if(!PUSH.checked) pushRefresh();
   return pushCard(false)+`<div class="sech"><h1 style="font-size:32px;font-weight:800">Notifications</h1>${ns.some(n=>!n.read||UI.keep?.has(n.id))?`<button class="btn sm" data-act="readAll">Mark all read</button>`:""}</div>
   ${ns.length?`<div class="list nlist">${groupNotifs(ns).map(n=>{ const t=S.topics.get(n.topicId); const g=n.groupId&&S.groups.get(n.groupId); const un=n.ids.some(i=>!S.notifs.find(x=>x.id===i)?.read||UI.keep?.has(i)); const who=n.count>1?`<b>${esc(nameOf(n.from))}</b> ${n.type==="reply"?"replied":n.type==="like"?"liked":"commented"} ${n.count} times`:`<b>${esc(nameOf(n.from))}</b> ${label[n.type]||"did something"}`; return `<a class="nrow${un?" unread":""}" data-nids="${n.ids.join(",")}"${n.gmsgId?` data-gm="${esc(n.gmsgId)}"`:""} href="${n.duelId?"#d-"+esc(n.duelId):(n.type==="joined"||n.type==="gmention")?"#g-"+esc(n.groupId):/^(friend_req|friend_ok|follow|askhelp|sharedphone)$/.test(n.type)?"#u-"+esc(n.from):"#t-"+esc(n.topicId)+(n.commentId?"~"+esc(n.commentId):"")}">${un?'<i class="ndot" aria-label="Unread"></i>':""}${avatar(n.from)}<div class="txt"><div>${who}${t?` in <b>${esc(t.title)}</b>`:g?` <b>${esc(g.name)}</b>`:""}</div>${n.text&&n.type!=="joined"?`<div class="q muted">${esc(n.text)}</div>`:""}<div class="meta">${ago(n.createdAt)}</div>${n.type==="friend_req"&&friendState(n.from)==="incoming"?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="friendAccept" data-id="${esc(n.from)}">Accept</button><button class="btn sm" data-act="friendDecline" data-id="${esc(n.from)}">Reject</button><span class="btn sm vp" data-go="#u-${esc(n.from)}">View profile</span></div>`:n.type==="friend_req"&&friendState(n.from)==="friends"?`<div class="meta" style="color:var(--brand-deep)">✓ You are now friends</div>`:n.type==="askhelp"&&n.count===1&&(S.handles.get(S.me)||{}).phoneVis==="onrequest"&&(S.handles.get(S.me)||{}).phone?`<div class="dprow" style="margin-top:6px"><button class="btn pri sm" data-act="shareNum" data-id="${esc(n.from)}">Share my number with them</button></div>`:""}</div></a>`; }).join("")}</div>`
@@ -3518,6 +3518,7 @@ function professionModal(){
     <label class="l">Profession<input class="f" id="pr-v" maxlength="30" placeholder="e.g. Electrician" value="${esc(h.profession||"")}"></label>
     <div class="tagrow">${PROFESSIONS.map(p=>`<button type="button" class="chip" data-act="prPick" data-v="${esc(p)}">${esc(p)}</button>`).join("")}</div>
     <label class="qtog" style="margin-top:4px"><input type="checkbox" id="pr-on" ${h.professionOn?"checked":""}><span><b>Show on my profile and in search</b><small>Off by default. Turn on so people searching your profession near them can find you and ask for help.</small></span></label>
+    <label class="qtog" style="margin-top:4px"><input type="checkbox" id="pr-alert" ${h.helpAlertsOn?"checked":""}><span><b>Notify me when someone nearby needs this</b><small>Off by default, and only works while "Show on my profile and in search" is on. You'll get a notification, never their phone number. At most a few a day.</small></span></label>
     <div class="hint" id="pr-err"></div><div class="acts"><button class="btn" data-act="closeModal">Cancel</button><button class="btn pri" data-act="prSave">Save</button></div>`);
 }
 function phoneModal(){
@@ -4041,6 +4042,12 @@ function helpNotify(t,tid){ const pl=placeOf(t.location); if(!pl) return; const 
   for(const [u,h] of S.handles) if(u!==S.me&&h.homeCity===city) to.add(u);
   for(const f of S.ufollows.values()) if(f.followingId===S.me) to.add(f.followerId);
   const arr=[...to].filter(u=>!isSeed(u)).slice(0,30); arr.length&&notify(arr.map(u=>[u,"helpreq"]),{topicId:tid,text:t.title}); }
+function helpMatchNotify(t,tid){
+  const pl=placeOf(t.location); if(!pl) return; const city=pl.type==="area"?pl.city:pl.id;
+  const nt=sNorm((t.title||"")+" "+(t.desc||"")), bl=new Set(myBlocks());
+  const match=prof=>{ const words=sNorm(prof).trim().split(" ").filter(w=>w.length>=4); if(!words.length) return nt.includes(sNorm(prof).trim()); return words.some(w=>nt.includes(" "+w+" ")); };
+  const cand=[...S.handles].filter(([u,h])=>u!==S.me&&h.professionOn&&h.helpAlertsOn&&h.profession&&h.homeCity===city&&!isSeed(u)&&!bl.has(u)&&match(h.profession)).map(([u])=>u).slice(0,3);
+  cand.length&&notify(cand.map(u=>[u,"helpmatch"]),{topicId:tid,text:t.title}); }
 function notifyGroup(gid,tid,text){ if(!gid) return; notify((IX.gMem.get(gid)||[]).map(m=>[m.userId,"grouppost"]),{topicId:tid,text,groupId:gid}); }
 const followersOf = tid => (IX.fByTopic.get(tid)||[]);
 async function ensureFollow(tid){ if(!IX.myFollows.has(tid)){ try{ await db.doc(`follows/${tid}__${S.me}`).set({topicId:tid,userId:S.me,createdAt:Date.now()}); }catch{} } }
@@ -5289,7 +5296,7 @@ document.addEventListener("click", async e=>{
           mu.length&&notify(mu.map(u=>[u,"mention"]),{topicId:tid,text:t.title});
           tg.size&&notify([...tg].map(u=>[u,"tagged"]),{topicId:tid,text:t.title}); }
         notifyGroup(t.groupId,tid,t.title);
-        if(t.help&&!t.groupId&&acc==="open") helpNotify(t,tid);
+        if(t.help&&!t.groupId&&acc==="open"){ helpNotify(t,tid); helpMatchNotify(t,tid); }
         if(UI.fromWatch){ ev("watch_topic_created"); UI.fromWatch=false; }
         if(inGChat()&&t.groupId===UI.gcLast){ stayInChat(); break; }
         if(videoLinks(t.title+" "+t.desc).length||(t.media||[]).length) setTimeout(()=>openCard("topic",tid,"feed",{title:"🎬 Posted!",sub:"Share it so people join the conversation."}),650);
@@ -5381,11 +5388,11 @@ document.addEventListener("click", async e=>{
     case "prOpen": professionModal(); break;
     case "phOpen": phoneModal(); break;
     case "prPick": $("#pr-v").value=el.dataset.v; break;
-    case "prSave": { const v=$("#pr-v").value.trim().slice(0,30), on=$("#pr-on").checked, err=$("#pr-err"), prev=S.handles.get(S.me)||{};
+    case "prSave": { const v=$("#pr-v").value.trim().slice(0,30), on=$("#pr-on").checked, alertOn=!!v&&on&&$("#pr-alert").checked, err=$("#pr-err"), prev=S.handles.get(S.me)||{};
       if(on&&!v){ err.textContent="Add a profession first, or leave Show off."; break; }
       if(v&&hasBadWord(v)){ err.textContent="Keep it clean — that word isn’t allowed here."; break; }
       el.disabled=true;
-      if(await W(()=>db.doc("handles/"+S.me).update({profession:v,professionOn:!!v&&on}))){ Object.assign(prev,{profession:v,professionOn:!!v&&on}); closeModal(true); toast("Saved"); schedule(); } else el.disabled=false;
+      if(await W(()=>db.doc("handles/"+S.me).update({profession:v,professionOn:!!v&&on,helpAlertsOn:alertOn}))){ Object.assign(prev,{profession:v,professionOn:!!v&&on,helpAlertsOn:alertOn}); closeModal(true); toast("Saved"); schedule(); } else el.disabled=false;
       break; }
     case "ivOpen": interestsModal(); break;
     case "phSave": { const v=$("#ph-v").value.trim().slice(0,20), vis=($(".modal input[name=ph-vis]:checked")||{}).value||"hidden", err=$("#ph-err"), prev=S.handles.get(S.me)||{};

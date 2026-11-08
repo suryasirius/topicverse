@@ -413,6 +413,8 @@ function check(op, col, id, prev, next, patch, uid) {
         if (next.profession != null && (typeof next.profession !== "string" || next.profession.length > 30)) bad("Keep your profession under 30 characters.");
         if (next.profession && hasBadWord(next.profession)) bad("Keep it clean — that word isn’t allowed there.");
         if (next.professionOn != null && typeof next.professionOn !== "boolean") bad();
+        if (next.helpAlertsOn != null && typeof next.helpAlertsOn !== "boolean") bad();
+        if (next.helpAlertsOn === true && !next.professionOn) bad("Turn on “Show on my profile and in search” first.");
         if (next.interests != null) {
           if (!Array.isArray(next.interests) || next.interests.length > 5 || next.interests.some(x => typeof x !== "string" || !x.trim() || x.length > 24)) bad("Up to 5 interests, each under 24 characters.");
         }
@@ -470,12 +472,22 @@ function check(op, col, id, prev, next, patch, uid) {
     case "notifs":
       if (!prev) {
         if (next.from !== uid) deny();
-        if (!["askhelp", "playcall", "sharedphone"].includes(next.type)) deny("Notifications of that kind can’t be sent directly.");
+        if (!["askhelp", "playcall", "sharedphone", "helpmatch"].includes(next.type)) deny("Notifications of that kind can’t be sent directly.");
         if (!next.to || next.to === uid || !DOCS.handles.has(next.to)) bad();
         if (next.text != null && (typeof next.text !== "string" || next.text.length > 240)) bad("Keep your message under 240 characters.");
         if (next.type === "playcall" && (!next.topicId || !DOCS.topics.get(next.topicId))) bad();
         // a person sharing their own number with someone who asked for help: the number must be theirs
         if (next.type === "sharedphone") { const h = DOCS.handles.get(uid); if (!h || !h.phone || next.text !== h.phone) bad(); }
+        // profession-match alerts: only to people who opted in, tied to a real topic, capped per recipient per day
+        if (next.type === "helpmatch") {
+          const rh = DOCS.handles.get(next.to);
+          if (!rh || !rh.professionOn || !rh.helpAlertsOn) deny("That person hasn’t opted in to these alerts.");
+          if (!next.topicId || !DOCS.topics.get(next.topicId)) bad();
+          const dayAgo = Date.now() - 86400000;
+          let count = 0;
+          for (const n of DOCS.notifs.values()) if (n.to === next.to && n.type === "helpmatch" && n.createdAt > dayAgo) count++;
+          if (count >= 3) deny("That person has already had enough of these alerts today.");
+        }
         return;
       }
       if (op === "delete") { if (prev.to !== uid) deny(); return; }
