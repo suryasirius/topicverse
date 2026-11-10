@@ -644,6 +644,11 @@ function normEmail(raw) {
 
 // ---------- http ----------
 let PAGE = buildPage();
+// Weak validator for the app page, so a browser that already has this exact build gets a tiny 304 instead of the whole page again.
+// Weak (W/) on purpose: a compressing proxy in front (Caddy, nginx) passes weak validators through untouched.
+let PAGE_FOR = null, PAGE_TAG = "";
+const pageTag = () => { if (PAGE_FOR !== PAGE) { PAGE_FOR = PAGE; PAGE_TAG = 'W/"' + crypto.createHash("sha256").update(PAGE).digest("base64url").slice(0, 22) + '"'; } return PAGE_TAG; };
+const tagMatches = (hdr, tag) => typeof hdr === "string" && hdr.split(",").some(x => x.trim().replace(/^W\//, "") === tag.replace(/^W\//, ""));
 function json(res, code, obj, extra = {}) {
   const body = JSON.stringify(obj);
   res.writeHead(code, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...extra });
@@ -673,7 +678,9 @@ const server = http.createServer(async (req, res) => {
   const p = url.pathname;
   try {
     if (req.method === "GET" && (p === "/" || p === "/index.html")) {
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache", ...SEC });
+      const etag = pageTag(), head = { "Cache-Control": "no-cache", ETag: etag, ...SEC };
+      if (tagMatches(req.headers["if-none-match"], etag)) { res.writeHead(304, head); return res.end(); }
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", ...head });
       return res.end(PAGE);
     }
     if (req.method === "GET" && STATIC[p]) { const f = STATIC[p]; res.writeHead(200, { "Content-Type": f.t, "Cache-Control": p === "/sw.js" ? "no-cache" : "public, max-age=86400", ...SEC }); return res.end(f.b); }
