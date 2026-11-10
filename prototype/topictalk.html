@@ -92,6 +92,7 @@ main{padding-block:22px 110px}
 .sech h2{font-size:22px;font-weight:700}
 .sh-ic{width:19px;height:19px;vertical-align:-4px;margin-right:7px;color:var(--brand-deep);flex-shrink:0}
 .harea .sh-ic,.linkb .sh-ic{width:15px;height:15px;vertical-align:-2.5px;margin-right:4px;color:var(--muted)}
+.pushcard .sh-ic{width:16px;height:16px;vertical-align:-3px;margin-right:5px;color:var(--brand-deep)}
 .sech a{color:var(--brand-deep);font-weight:600;font-size:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
 .cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px}
@@ -801,6 +802,7 @@ body:has(.sp-mode) .toast{bottom:auto;top:calc(16px + env(safe-area-inset-top,0p
 .hmain{min-width:0}
 .sbox{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
 .sbh{display:flex;justify-content:space-between;align-items:center;gap:8px}.sbh b{font:800 15.5px var(--f-display)}
+.sbh .sh-ic,.sbox>b .sh-ic{width:16px;height:16px;vertical-align:-3px;margin-right:5px;color:var(--brand-deep)}
 .sbig{font:800 17px var(--f-display)}.sbsm{font-size:13px}.sbacts{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.sbacts .linkb{font-size:13px}
 .slist{list-style:none;margin:0;padding:0;counter-reset:s}.slist li{counter-increment:s;border-top:1px solid var(--line)}.slist li:first-child{border-top:0}
 .slist a{display:grid;grid-template-columns:1fr;column-gap:8px;padding:8px 0;text-decoration:none;color:var(--ink)}.slist a::before{display:none;content:counter(s);grid-row:span 2;width:24px;height:24px;border-radius:50%;background:var(--brand-soft);color:var(--brand-deep);font-weight:800;font-size:13px;display:grid;place-items:center;margin-top:1px}
@@ -1871,6 +1873,16 @@ function descCount(id, seen=new Set()){ if(seen.has(id)) return 0; seen.add(id);
 function cities(){ const m=new Map(); for(const t of LIVE()){ if(!t.location) continue; const s=slugCity(t.location); if(!m.has(s)) m.set(s,{slug:s,name:placeName(s)||t.location,n:0,score:0}); const c=m.get(s); c.n++; c.score+=IX.trend.get(t.id); } return [...m.values()].sort((a,b)=>b.score-a.score); }
 
 const LOCK='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="vertical-align:-1px"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+// Shared small section-header icons (replace the emoji these spots used to show, so every "sh-ic" icon shares one stroke style).
+const ICO={
+  pin:'<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  flame:'<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5c1.1 2.6-2.4 3.9-2.4 6.8a2.4 2.4 0 0 0 4.8 0c0-.7-.6-1.4-.6-1.4 1.6.9 2.6 2.6 2.6 4.4a4.4 4.4 0 0 1-8.8 0c0-4.3 3.4-5.3 4.4-9.8z"/></svg>',
+  star:'<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/></svg>',
+  chat:'<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6"/></svg>',
+  trophy:'<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M8.5 12.5 7 21l5-3 5 3-1.5-8.5"/></svg>',
+  people:'<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14a6 6 0 0 1 3.5 6"/></svg>',
+  bell:'<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.5 20a1.5 1.5 0 0 0 3 0"/></svg>',
+};
 const isAdmin = gid => !!S.me && (S.gmembers.get(gid+"__"+S.me)?.role==="admin");
 const memberOf = gid => S.myGroups.has(gid);
 function groupTag(t){ if(!t.groupId) return ""; const g=S.groups.get(t.groupId); if(!g) return ""; const priv=g.visibility==="private"&&!t.madePublic; return `<span class="gtag">${priv?LOCK+" ":""}${t.madePublic?"from ":"in "}${esc(g.name)}</span>`; }
@@ -2423,7 +2435,7 @@ function vHome(){
   let body="";
   if(tab==="fy"){
     const newN=hp?LIVE().filter(t=>inPlace(t,hp)&&now-t.createdAt<864e5).length:0;
-    const area=hp?`<div class="harea fyarea"><button type="button" class="linkb" data-act="hTab" data-v="nb"><svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b>${newN?`<span class="hpill">${newN} new</span>`:""}</button><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button></div>`
+    const area=hp?`<div class="harea fyarea"><button type="button" class="linkb" data-act="hTab" data-v="nb">${ICO.pin}<b>${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b>${newN?`<span class="hpill">${newN} new</span>`:""}</button><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button></div>`
       :`<div class="harea fyarea"><span class="muted">Add your city to see what’s happening near you.</span><button type="button" class="linkb" data-act="plOpen" data-m="home">Choose city</button></div>`;
     const live=[...S.battles.values()].filter(b=>b.endsAt>now&&S.topics.has(b.topicId)).sort((a,b)=>{ const x=IX.bv.get(a.id),y=IX.bv.get(b.id); return (y.a+y.b)-(x.a+x.b)||b.createdAt-a.createdAt; }).slice(0,6);
     const liveIds=new Set(live.map(b=>b.topicId)), tr=topRatedList(6), trIds=new Set(tr.list.map(t=>t.id));
@@ -2432,9 +2444,7 @@ function vHome(){
     const all=LIVE().filter(t=>t.kind!=="prediction"&&!(t.kind==="battle"&&liveIds.has(t.id))&&!trIds.has(t.id)&&!hfIds.has(t.id)&&!weakEnded(t)).map(t=>[t,lastAct(t)]).sort((a,b)=>b[1]-a[1]||(a[0].id<b[0].id?-1:1)).map(x=>x[0]);
     { const m=mixFeed(all); all.length=0; all.push(...m); }
     const n=UI.fyN||10, items=all.slice(0,n);
-    const icHelp='<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6"/></svg>';
-    const icStar='<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.8l6.1-.9z"/></svg>';
-    const icFlame='<svg class="sh-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5c1.1 2.6-2.4 3.9-2.4 6.8a2.4 2.4 0 0 0 4.8 0c0-.7-.6-1.4-.6-1.4 1.6.9 2.6 2.6 2.6 4.4a4.4 4.4 0 0 1-8.8 0c0-4.3 3.4-5.3 4.4-9.8z"/></svg>';
+    const icHelp=ICO.chat, icStar=ICO.star, icFlame=ICO.flame;
     const hfSec=hfOpen.length?`<section class="hsec hf-loc">${SH(icHelp+(hp?"People near you need help":"People need help"),"Someone nearby needs a recommendation. Can you help?","")}<div class="hfcs">${hfOpen.map(hfCard).join("")}</div>${hp?`<button type="button" class="hf-all" data-act="seeHelp">See all ${hfAll.length} request${hfAll.length===1?"":"s"} →</button>`:""}</section>`:"";
     const strip=tr.list.length?`<section class="hstrip">${SH(icStar+(tr.near?"Reviews near you":"Popular reviews"),"",`<a href="#reviews">${L("See all")} →</a>`)}<div class="hmini">${tr.list.map(t=>{ const s2=stat(t.id); return `<a class="hrv" href="#t-${t.id}"><b>${esc(t.title)}</b><span>★ ${s2.avg.toFixed(1)}</span> <small>· ${s2.reviews} review${s2.reviews===1?"":"s"}${s2.reviews<3?" · early":""}</small></a>`; }).join("")}</div></section>`:"";
     const feed=items.map((t,i)=>fCard(t)+(i===2?strip:"")).join("")+(items.length<3?strip:"");
@@ -2511,21 +2521,21 @@ function homeSide(){
   const pool=hp?LIVE().filter(t=>inPlace(t,hp)):[];
   let area="";
   if(hp){ const act=pool.filter(t=>lastAct(t)>wk).length, cc=new Map(); pool.forEach(t=>cc.set(t.category,(cc.get(t.category)||0)+1)); const cats=[...cc].sort((a,b)=>b[1]-a[1]).slice(0,3);
-    area=`<section class="sbox"><div class="sbh"><b>📍 ${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button></div>${pool.length?`<div class="sbig">${act} active topic${act===1?"":"s"} this week</div><div class="muted sbsm">${cats.map(([c,n])=>`${esc(c)} · ${n}`).join("  ·  ")}</div><div class="sbacts"><button type="button" class="linkb" data-act="hTab" data-v="nb">See ${esc(hp.name)} →</button><button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></div>`:`<div class="muted sbsm">No local topics yet.</div><button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start the first one</button>`}</section>`; }
-  else area=`<section class="sbox"><b>📍 Your area</b><div class="muted sbsm">Choose your city to see what’s happening near you.</div><button class="btn pri sm" data-act="plOpen" data-m="home">Choose city</button></section>`;
+    area=`<section class="sbox"><div class="sbh"><b>${ICO.pin}${esc(ha?ha.name+", ":"")}${esc(hp.name)}</b><button type="button" class="linkb" data-act="plOpen" data-m="home">Change</button></div>${pool.length?`<div class="sbig">${act} active topic${act===1?"":"s"} this week</div><div class="muted sbsm">${cats.map(([c,n])=>`${esc(c)} · ${n}`).join("  ·  ")}</div><div class="sbacts"><button type="button" class="linkb" data-act="hTab" data-v="nb">See ${esc(hp.name)} →</button><button type="button" class="linkb" data-act="plOpen" data-m="explore">Explore another area</button></div>`:`<div class="muted sbsm">No local topics yet.</div><button class="btn pri sm" data-act="newTopic" data-loc="${esc(hp.label||hp.name)}">Start the first one</button>`}</section>`; }
+  else area=`<section class="sbox"><b>${ICO.pin}Your area</b><div class="muted sbsm">Choose your city to see what’s happening near you.</div><button class="btn pri sm" data-act="plOpen" data-m="home">Choose city</button></section>`;
   const src=pool.length>=3?pool:LIVE(); const sc=t=>(IX.cByTopic.get(t.id)||[]).filter(c=>!c.deletedAt&&c.createdAt>wk).length+(IX.rByTopic.get(t.id)||[]).filter(r=>(r.updatedAt||r.createdAt)>wk).length;
   let tr=src.filter(t=>t.kind!=="prediction").map(t=>[t,sc(t)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(tr.length<3) tr=src.filter(t=>t.kind!=="prediction").map(t=>[t,stat(t.id).comments]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const trend=tr.length?`<section class="sbox"><div class="sbh"><b>🔥 Trending${src===pool?" in "+esc(hp.name):""}</b></div><ul class="slist">${tr.map(([t])=>{ const n=stat(t.id).comments; return `<li><a href="#t-${t.id}"><span>${esc(cleanTitle(t))}</span><small>${t.kind==="battle"?"Battle · ":""}${n} comment${n===1?"":"s"}</small></a></li>`; }).join("")}</ul></section>`:"";
+  const trend=tr.length?`<section class="sbox"><div class="sbh"><b>${ICO.flame}Trending${src===pool?" in "+esc(hp.name):""}</b></div><ul class="slist">${tr.map(([t])=>{ const n=stat(t.id).comments; return `<li><a href="#t-${t.id}"><span>${esc(cleanTitle(t))}</span><small>${t.kind==="battle"?"Battle · ":""}${n} comment${n===1?"":"s"}</small></a></li>`; }).join("")}</ul></section>`:"";
   const gs=[...S.groups.values()].filter(g=>g.visibility==="public"&&!memberOf(g.id)).map(g=>[g,(IX.gMem.get(g.id)||[]).length]).sort((a,b)=>b[1]-a[1]).slice(0,3);
-  const groups=gs.length?`<section class="sbox"><div class="sbh"><b>👥 Groups to join</b><a class="linkb" href="#groups">See all</a></div>${gs.map(([g,n])=>`<div class="sgrp"><a href="#g-${esc(g.id)}"><b>${esc(g.name)}</b><small>${n} member${n===1?"":"s"}</small></a><button class="btn sm" data-act="joinGroup" data-id="${esc(g.id)}">Join</button></div>`).join("")}</section>`:"";
+  const groups=gs.length?`<section class="sbox"><div class="sbh"><b>${ICO.people}Groups to join</b><a class="linkb" href="#groups">See all</a></div>${gs.map(([g,n])=>`<div class="sgrp"><a href="#g-${esc(g.id)}"><b>${esc(g.name)}</b><small>${n} member${n===1?"":"s"}</small></a><button class="btn sm" data-act="joinGroup" data-id="${esc(g.id)}">Join</button></div>`).join("")}</section>`:"";
   const tp=(hp?pool:[]).filter(t=>t.kind==="place"&&stat(t.id).reviews).sort((a,b)=>rvScore(b)-rvScore(a)).slice(0,4);
-  const places=tp.length?`<section class="sbox"><div class="sbh"><b>⭐ Top places near you</b><button type="button" class="linkb" data-act="goTab" data-v="nb">See all</button></div><ul class="slist">${tp.map(t=>{ const s2=stat(t.id); return `<li><a href="#t-${t.id}"><span>${esc(cleanTitle(t))}</span><small>★ ${s2.avg.toFixed(1)} · ${s2.reviews} review${s2.reviews===1?"":"s"} · ${esc(t.category)}</small></a></li>`; }).join("")}</ul></section>`:"";
+  const places=tp.length?`<section class="sbox"><div class="sbh"><b>${ICO.star}Top places near you</b><button type="button" class="linkb" data-act="goTab" data-v="nb">See all</button></div><ul class="slist">${tp.map(t=>{ const s2=stat(t.id); return `<li><a href="#t-${t.id}"><span>${esc(cleanTitle(t))}</span><small>★ ${s2.avg.toFixed(1)} · ${s2.reviews} review${s2.reviews===1?"":"s"} · ${esc(t.category)}</small></a></li>`; }).join("")}</ul></section>`:"";
   const act=new Map(); const bump=(u,n)=>{ if(u&&!isSeed(u)) act.set(u,(act.get(u)||0)+n); };
   for(const c of S.comments.values()) if(c.createdAt>wk&&!c.deletedAt) bump(c.authorId,1);
   for(const r of S.reviews.values()) if((r.updatedAt||r.createdAt)>wk) bump(r.authorId,3);
   const top=[...act].sort((a,b)=>b[1]-a[1]).slice(0,5);
-  const people=top.length>=2?`<section class="sbox"><div class="sbh"><b>🏆 Most active this week</b></div><ol class="srank">${top.map(([u,n],i)=>`<li><a href="#u-${esc(u)}"><i>${i+1}</i>${avatar(u,"xs")}<span>${esc(nameOf(u))}</span></a></li>`).join("")}</ol><div class="muted sbsm">Counts comments and reviews from the last 7 days.</div></section>`:"";
+  const people=top.length>=2?`<section class="sbox"><div class="sbh"><b>${ICO.trophy}Most active this week</b></div><ol class="srank">${top.map(([u,n],i)=>`<li><a href="#u-${esc(u)}"><i>${i+1}</i>${avatar(u,"xs")}<span>${esc(nameOf(u))}</span></a></li>`).join("")}</ol><div class="muted sbsm">Counts comments and reviews from the last 7 days.</div></section>`:"";
   return area+trend+places+people+groups;
 }
 function vHomeClassic(){
@@ -3343,13 +3353,13 @@ function pushAuto(){
   document.addEventListener("click",go,true); }
 function pushCard(slim){
   if(!S.me) return "";
-  if(PUSH.sub) return slim?"":`<div class="pushcard ok"><span>🔔 Phone alerts are on</span><button type="button" class="linkb" data-act="pushOff">Turn off</button></div>`;
+  if(PUSH.sub) return slim?"":`<div class="pushcard ok"><span>${ICO.bell} Phone alerts are on</span><button type="button" class="linkb" data-act="pushOff">Turn off</button></div>`;
   let later=false; try{ later=slim&&localStorage.getItem("tt_pushlater")==="1"; }catch{}
   if(later) return "";
-  if(IS_IOS&&!IS_STANDALONE) return slim?"":`<div class="pushcard"><span class="pc-t"><b>🔔 Get alerts on your iPhone</b><span>Tap Share, then “Add to Home Screen”. Open TopicTalk from that icon and turn alerts on here.</span></span></div>`;
+  if(IS_IOS&&!IS_STANDALONE) return slim?"":`<div class="pushcard"><span class="pc-t"><b>${ICO.bell} Get alerts on your iPhone</b><span>Tap Share, then “Add to Home Screen”. Open TopicTalk from that icon and turn alerts on here.</span></span></div>`;
   if(!PUSH.sup) return "";
   if(Notification.permission==="denied") return slim?"":`<div class="pushcard"><span class="pc-t"><b>Alerts are blocked</b><span>Allow notifications for this site in your browser settings to get them.</span></span></div>`;
-  return `<div class="pushcard${slim?" slim":""}"><span class="pc-t"><b>🔔 Get alerts on your phone</b><span>Replies, mentions and help requests, even when TopicTalk is closed.</span></span><span class="pc-b"><button type="button" class="btn pri sm" data-act="pushOn">Turn on</button>${slim?`<button type="button" class="pc-x" data-act="pushLater" aria-label="Not now">✕</button>`:""}</span></div>`;
+  return `<div class="pushcard${slim?" slim":""}"><span class="pc-t"><b>${ICO.bell} Get alerts on your phone</b><span>Replies, mentions and help requests, even when TopicTalk is closed.</span></span><span class="pc-b"><button type="button" class="btn pri sm" data-act="pushOn">Turn on</button>${slim?`<button type="button" class="pc-x" data-act="pushLater" aria-label="Not now">✕</button>`:""}</span></div>`;
 }
 setTimeout(()=>pushRefresh(),4000);
 function groupNotifs(ns){
